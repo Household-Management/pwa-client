@@ -14,6 +14,7 @@ const MockStore = ({state, children}) => {
             tasks: TaskStateConfiguration({
                 taskLists: {
                     "1": {
+                        id: "1",
                         name: "List 1",
                         tasks: [
                             {...new Task("1", "Task 1-1", "Description 1")},
@@ -22,6 +23,7 @@ const MockStore = ({state, children}) => {
                         ]
                     },
                     "2": {
+                        id: "2",
                         name: "List 2",
                         tasks: [
                             {...new Task("1", "Task 2-1", "Description 1")},
