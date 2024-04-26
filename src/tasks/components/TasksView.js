@@ -12,6 +12,7 @@ import Task from "../model/Task";
  * @constructor
  */
 // TODO: Check for if a task is being edited when trying to open another one?
+// TODO: Handle deleting lists and tasks.
 export function TasksView({taskLists, selectedList, dispatch, ...props}) {
 
     return <Fragment>
@@ -24,7 +25,7 @@ export function TasksView({taskLists, selectedList, dispatch, ...props}) {
                           dispatch(getActions().SelectList(newList.id));
                       }}
         />
-        {selectedList && <TaskListDetail list={taskLists[selectedList]}
+        {selectedList && taskLists[selectedList] && <TaskListDetail list={taskLists[selectedList]}
                                          selectedTask={props.selectedTask}
                                          onTaskSelected={(task) => dispatch(getActions().SelectTask(task))}
                                          onTaskCreated={() => {
@@ -34,7 +35,12 @@ export function TasksView({taskLists, selectedList, dispatch, ...props}) {
                                                  newTask: {...task}
                                              }));
                                              dispatch(getActions().SelectTask(task.id));
-                                         }}/>}
+                                         }}
+                                         onTaskChanged={(task) => dispatch(getActions().UpdateTask(task))}
+                                         onListDelete={(listId) => {
+                                             dispatch(getActions().DeleteList(listId));
+                                         }}
+        />}
     </Fragment>
 }
 
