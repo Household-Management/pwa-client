@@ -12,9 +12,9 @@ import PropTypes from "prop-types";
  * @constructor
  */
 function TaskListsBar(props) {
-    const lists = Object.keys(props.taskLists);
-    const displayedTab = lists.findIndex(id => id === props.selectedList);
-    return <Box style={{width: "100%", height: "100%"}}>
+    const lists = props.taskLists ? Object.keys(props.taskLists) : [];
+    const displayedTab = Math.max(0, lists.findIndex(id => id === props.selectedList));
+    return <Box style={{width: "100%"}}>
         <Box sx={{borderBottom: 1, borderColor: 'divider', display: "flex", flexDirection: "row"}}>
             <IconButton variant="contained" color="primary" data-testId="new-list" onClick={props.onListCreated}>
                 <AddIcon/>
