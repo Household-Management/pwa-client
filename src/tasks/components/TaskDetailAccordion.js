@@ -14,20 +14,25 @@ import moment from "moment";
 
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
-export default function TaskDetailAccordion({task, onTaskChange, sx, expanded, onToggle}) {
+export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle}) {
+
     const onPropertyChanged = (property, ev) => {
         const value = ev.target.value;
         const changed = {...task};
         changed[property] = value;
-        if (onTaskChange) {
-            onTaskChange(changed);
+        if (onChange) {
+            onChange(changed);
+        } else {
+            console.warn("No onChange handler provided, this change event will have no effect.");
         }
     }
     const onTimeChanged = (property, value) => {
         const changed = {...task};
         changed[property] = value;
-        if (onTaskChange) {
-            onTaskChange(changed);
+        if (onChange) {
+            onChange(changed);
+        } else {
+            console.warn("No onChange handler provided, this change event will have no effect.");
         }
     }
     const onRepeatChanged = (ev) => {
@@ -44,8 +49,10 @@ export default function TaskDetailAccordion({task, onTaskChange, sx, expanded, o
                 changed.repeats = RepeatMonthly(Array(31).fill(false));
                 break;
         }
-        if(onTaskChange) {
-            onTaskChange(changed);
+        if(onChange) {
+            onChange(changed);
+        } else {
+            console.warn("No onChange handler provided, this change event will have no effect.");
         }
     }
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
@@ -90,7 +97,7 @@ export default function TaskDetailAccordion({task, onTaskChange, sx, expanded, o
 
 TaskDetailAccordion.propTypes = {
     task: ModelPropTypes.isRequired,
-    onTaskChange: PropTypes.func,
+    onChange: PropTypes.func,
     readOnly: PropTypes.bool,
     onToggle: PropTypes.func
 }
