@@ -11,10 +11,11 @@ export default {
             setTask(changed)
             story.onChange(changed)
         }
-        return <TaskDetailAccordion task={task} onChange={onChange} />
+        return <TaskDetailAccordion task={task} onChange={onChange} onToggle={story.onToggle} />
     },
     args: {
-        onChange: fn()
+        onChange: fn(),
+        onToggle: fn()
     }
 }
 
