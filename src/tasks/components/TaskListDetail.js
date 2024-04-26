@@ -18,7 +18,6 @@ import PropTypes from "prop-types";
  * @constructor
  */
 // TODO: Edit name of list
-// TODO: Implement deleting lists.
 export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListDelete, selectedTask}) {
     return <Fragment>
         <Paper sx={{height: "100%"}}>
