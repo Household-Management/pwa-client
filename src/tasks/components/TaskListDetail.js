@@ -5,9 +5,10 @@ import {
     ListItemButton, ListSubheader,
     Paper,
 } from "@mui/material";
-import {AddCircleOutline, AddCircleOutlined} from "@mui/icons-material";
+import {AddCircleOutline, Delete} from "@mui/icons-material";
 import {Fragment, useState} from "react";
 import TaskDetailAccordion from "./TaskDetailAccordion";
+import {IconButton} from "@mui/material";
 import PropTypes from "prop-types";
 
 /**
@@ -17,12 +18,16 @@ import PropTypes from "prop-types";
  * @constructor
  */
 // TODO: Edit name of list
-export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, selectedTask}) {
+// TODO: Implement deleting lists.
+export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListDelete, selectedTask}) {
     return <Fragment>
         <Paper sx={{height: "100%"}}>
             <List >
-                <ListSubheader>
+                <ListSubheader sx={{width: "100%", display: "flex", justifyContent: "space-between"}}>
                     {list.name}
+                    <IconButton color="error" onClick={onListDelete.bind(null, list.id)}>
+                        <Delete/>
+                    </IconButton>
                 </ListSubheader>
                 {/* FIXME: Make a nice header */}
                 {list.tasks.map(task =>
@@ -49,6 +54,7 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
 
 TaskListDetail.propTypes = {
     list: PropTypes.array.isRequired,
-    onTaskChanged: PropTypes.func,
-    onTaskSelected: PropTypes.func
+    onTaskChanged: PropTypes.func.isRequired,
+    onTaskSelected: PropTypes.func.isRequired,
+    onListDelete: PropTypes.func.isRequired
 }

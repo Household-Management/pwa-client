@@ -25,7 +25,17 @@ export default {
             setSelectedTask(id);
             args.onTaskSelected(id);
         }
-        return <TaskListDetail list={list} onTaskChanged={onTaskChanged} onTaskCreated={onTaskCreated} onTaskSelected={onTaskSelected} selectedTask={selectedTask} />
+
+        const onListDelete = (id) => {
+            args.onListDelete(id);
+            alert("This would delete the list.");
+        }
+        return <TaskListDetail list={list}
+                               onTaskChanged={onTaskChanged}
+                               onTaskCreated={onTaskCreated}
+                               onTaskSelected={onTaskSelected}
+                               onListDelete={onListDelete}
+                               selectedTask={selectedTask} />
     }
 }
 
@@ -46,6 +56,7 @@ export const TaskListDetailStory = {
         onCancel: fn(),
         onTaskChanged: fn(),
         onTaskCreated: fn(),
-        onTaskSelected: fn()
+        onTaskSelected: fn(),
+        onListDelete: fn()
     }
 }
