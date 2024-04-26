@@ -6,11 +6,11 @@ export default {
     component: TaskListsBar,
     render: args => {
         const [selectedList, setSelectedList] = useState("1");
-        const onSelected = selected => {
+        const onSelect = selected => {
             setSelectedList(selected);
-            args.onSelected(selected);
+            args.onSelect(selected);
         }
-        return <TaskListsBar taskLists={args.taskLists} selectedList={selectedList} onNewList={args.onNewList} onSelected={onSelected}/>
+        return <TaskListsBar taskLists={args.taskLists} selectedList={selectedList} onNewList={args.onNewList} onSelect={onSelect}/>
     }
 }
 
@@ -28,6 +28,6 @@ export const TaskListsBarStory = {
             }
         },
         onNewList: fn(),
-        onSelected: fn()
+        onSelect: fn()
     }
 }
