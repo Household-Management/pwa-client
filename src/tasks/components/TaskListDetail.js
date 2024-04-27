@@ -18,7 +18,7 @@ import PropTypes from "prop-types";
  * @constructor
  */
 // TODO: Edit name of list
-export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListDelete, selectedTask}) {
+export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListDelete, onTaskDelete, selectedTask}) {
     return <Fragment>
         <Paper sx={{height: "100%"}}>
             <List >
@@ -33,6 +33,7 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
                     <ListItem>
                         <TaskDetailAccordion task={task}
                                              onChange={onTaskChanged}
+                                             onDelete={onTaskDelete}
                                              onToggle={selected => selected ? onTaskSelected(task.id) : onTaskSelected(null)}
                                              sx={{width: "100%"}}
                                              expanded={selectedTask === task.id}

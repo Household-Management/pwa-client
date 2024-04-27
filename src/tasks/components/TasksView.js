@@ -25,22 +25,26 @@ export function TasksView({taskLists, selectedList, dispatch, ...props}) {
                           dispatch(getActions().SelectList(newList.id));
                       }}
         />
-        {selectedList && taskLists[selectedList] && <TaskListDetail list={taskLists[selectedList]}
-                                         selectedTask={props.selectedTask}
-                                         onTaskSelected={(task) => dispatch(getActions().SelectTask(task))}
-                                         onTaskCreated={() => {
-                                             const task = new Task(crypto.randomUUID(), "New Task", "");
-                                             dispatch(getActions().CreateTask({
-                                                 targetList: selectedList,
-                                                 newTask: {...task}
-                                             }));
-                                             dispatch(getActions().SelectTask(task.id));
-                                         }}
-                                         onTaskChanged={(task) => dispatch(getActions().UpdateTask(task))}
-                                         onListDelete={(listId) => {
-                                             dispatch(getActions().DeleteList(listId));
-                                         }}
-        />}
+        {selectedList && taskLists[selectedList] &&
+            <TaskListDetail list={taskLists[selectedList]}
+                            selectedTask={props.selectedTask}
+                            onTaskSelected={(task) => dispatch(getActions().SelectTask(task))}
+                            onTaskCreated={() => {
+                                const task = new Task(crypto.randomUUID(), "New Task", "");
+                                dispatch(getActions().CreateTask({
+                                    targetList: selectedList,
+                                    newTask: {...task}
+                                }));
+                                dispatch(getActions().SelectTask(task.id));
+                            }}
+                            onTaskChanged={(task) => dispatch(getActions().UpdateTask(task))}
+                            onListDelete={(listId) => {
+                                dispatch(getActions().DeleteList(listId));
+                            }}
+                            onTaskDelete={(taskId) => {
+                                dispatch(getActions().DeleteTask({fromList: selectedList, taskId}));
+                            }}
+            />}
     </Fragment>
 }
 

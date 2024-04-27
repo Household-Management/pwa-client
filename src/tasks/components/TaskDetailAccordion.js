@@ -2,19 +2,19 @@ import {ModelPropTypes} from "../model/Task";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import {ExpandMore} from '@mui/icons-material';
+import {Delete, ExpandMore} from '@mui/icons-material';
 import DayPicker from "../../time/components/DayPicker";
-import {FormControl, Grid, MenuItem, Select, Stack, TextField} from "@mui/material";
+import {FormControl, Grid, IconButton, MenuItem, Select, Stack, TextField} from "@mui/material";
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {LocalizationProvider, TimeClock, TimePicker} from "@mui/x-date-pickers";
 import PropTypes from "prop-types";
-import {useState} from "react";
+import {Fragment, useState} from "react";
 import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
 import moment from "moment";
 
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
-export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle}) {
+export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle, onDelete}) {
 
     const onPropertyChanged = (property, ev) => {
         const value = ev.target.value;
@@ -58,11 +58,16 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
     return <Accordion expanded={expanded} onChange={(ev, ex) => onToggle(ex)} sx={sx}>
         <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover" : {bgcolor: "#f5f5f5"}}}>
-            {expanded && <TextField value={task.title}
+            {expanded && <Fragment><TextField value={task.title}
                                     label="Title"
                                     onChange={onPropertyChanged.bind(null, "title")}
                                     /*Keeps the accordion from collapsing when we click the input */
-                                    onClick={ev => ev.stopPropagation()} />}
+                                    onClick={ev => ev.stopPropagation()} />
+                <IconButton onClick={ev => {onDelete(task.id); ev.stopPropagation()}} color="error">
+                    <Delete/>
+                </IconButton>
+            </Fragment>
+            }
             {!expanded && task.title}
         </AccordionSummary>
         <AccordionDetails>
