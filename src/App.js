@@ -6,17 +6,20 @@ import {
 import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from 'react-redux'
 
-import TaskListsBar from "./tasks/components/TaskListsBar";
 import React from "react";
+import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
+import TasksView from "./tasks/components/TasksView";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <TaskListsBar/>
+        element: <TasksView/>
     }
 ])
 
 // TODO: Implement local persistence.
+// TODO: Implement remote persistence.
+// TODO: Implement user tutorials.
 const store = configureStore({
     initialState: {
         tasks: {
@@ -24,8 +27,10 @@ const store = configureStore({
             selectedList: null
         }
     },
-    reducers: {}
-})
+    reducer: {
+        tasks: TaskStateConfiguration().reducer
+    }
+});
 
 // TODO: Implement notifications for tasks.
 // TODO: Implement settings page.
