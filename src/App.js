@@ -9,6 +9,7 @@ import {Provider} from 'react-redux'
 import React from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
 import TasksView from "./tasks/components/TasksView";
+import {TutorialStateConfiguration} from "./tutorials/state/TutorialStateConfiguration";
 
 const router = createBrowserRouter([
     {
@@ -29,9 +30,9 @@ const initialState = localStorage.getItem("state") ? JSON.parse(localStorage.get
 // TODO: Implement user tutorials.
 // TODO: Middleware for intercepting dangerous actions.
 const store = configureStore({
-    initialState,
     reducer: {
-        tasks: TaskStateConfiguration(initialState.tasks).reducer
+        tasks: TaskStateConfiguration(initialState.tasks).reducer,
+        tutorials: TutorialStateConfiguration(initialState.tutorials).reducer
     }
 });
 
