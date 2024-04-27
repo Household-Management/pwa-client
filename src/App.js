@@ -3,8 +3,8 @@ import {
     createBrowserRouter,
     RouterProvider,
 } from "react-router-dom";
-import { configureStore } from "@reduxjs/toolkit";
-import { Provider } from 'react-redux'
+import {configureStore} from "@reduxjs/toolkit";
+import {Provider} from 'react-redux'
 
 import React from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
@@ -15,42 +15,47 @@ const router = createBrowserRouter([
         path: "/",
         element: <TasksView/>
     }
-])
+]);
 
-// TODO: Implement local persistence.
-// TODO: Implement remote persistence.
-// TODO: Implement user tutorials.
-const store = configureStore({
-    initialState: {
+const initialState = localStorage.getItem("state") ? JSON.parse(localStorage.getItem("state")) :
+    {
         tasks: {
             taskLists: {},
             selectedList: null
         }
-    },
+    };
+
+// TODO: Implement remote persistence.
+// TODO: Implement user tutorials.
+// TODO: Middleware for intercepting dangerous actions.
+const store = configureStore({
+    initialState,
     reducer: {
-        tasks: TaskStateConfiguration().reducer
+        tasks: TaskStateConfiguration(initialState.tasks).reducer
     }
+});
+
+store.subscribe(() => {
+    localStorage.setItem("state", JSON.stringify(store.getState()));
 });
 
 // TODO: Implement notifications for tasks.
 // TODO: Implement settings page.
 // TODO: Implement bottom navigation.
-
 function App() {
-  return (
-    <div className="App" style={{display: "flex", flexDirection: "column"}}>
-        <Provider store={store}>
-            <RouterProvider router={router}/>
-        </Provider>
-        {/*<Paper sx={{ display:"flex", flexGrow: 0, flexShrink: 0, justifyContent: "center", bottom: 0, left: 0, right: 0 }} elevation={3}>*/}
-        {/*    <BottomNavigation showLabels={true}>*/}
-        {/*        <BottomNavigationAction label="Todos & Chores" icon={<ListIcon/>}/>*/}
-        {/*    </BottomNavigation>*/}
-        {/*</Paper>*/}
-    </div>
-  );
+    return (
+        <div className="App" style={{display: "flex", flexDirection: "column"}}>
+            <Provider store={store}>
+                <RouterProvider router={router}/>
+            </Provider>
+            {/*<Paper sx={{ display:"flex", flexGrow: 0, flexShrink: 0, justifyContent: "center", bottom: 0, left: 0, right: 0 }} elevation={3}>*/}
+            {/*    <BottomNavigation showLabels={true}>*/}
+            {/*        <BottomNavigationAction label="Todos & Chores" icon={<ListIcon/>}/>*/}
+            {/*    </BottomNavigation>*/}
+            {/*</Paper>*/}
+        </div>
+    );
 }
-
 
 
 export default App;
