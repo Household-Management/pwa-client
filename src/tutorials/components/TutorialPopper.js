@@ -1,9 +1,14 @@
 import {Box, Paper, Popper} from "@mui/material";
-import React, {Fragment, useRef} from "react";
+import React, {Fragment, useRef, useMemo} from "react";
 import PropTypes from "prop-types";
 
-export function TutorialPopper({ targetElement, open, sx, children, highlightTarget }) {
+export function TutorialPopper({ targetElementSelector, open, sx, children, highlightTarget }) {
     const lastTarget = useRef(null);
+    let targetElement = useMemo(() => {
+        // FIXME: Make resilient for bad selectors, as querySelector can throw.
+        return  document.querySelector(targetElementSelector);
+    }, [targetElementSelector, open]);
+
     if(open && targetElement) {
         if(lastTarget.current && lastTarget.current !== targetElement) {
             lastTarget.current.style.zIndex = 0;
@@ -34,7 +39,7 @@ export function TutorialPopper({ targetElement, open, sx, children, highlightTar
 }
 
 TutorialPopper.propTypes = {
-    targetElement: PropTypes.object,
+    targetElementSelector: PropTypes.string,
     open: PropTypes.bool.isRequired,
     children: PropTypes.array.isRequired,
     highlightTarget: PropTypes.bool

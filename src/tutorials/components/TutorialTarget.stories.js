@@ -7,7 +7,8 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 
 export default {
     args: {
-        highlightTarget: true
+        highlightTarget: true,
+        popupMessage: "Hello World"
     }
 }
 
@@ -20,22 +21,22 @@ export const TutorialTarget = {
         }
 
         return <Fragment>
-            <TutorialPopper open={activeTutorial !== null} targetElement={target} highlightTarget={args.highlightTarget} >
+            <TutorialPopper open={activeTutorial !== null} targetElementSelector={target} highlightTarget={args.highlightTarget} >
                 <Paper sx={{padding: 1}}>
-                    Hello World
+                    {args.popupMessage}
                 </Paper>
             </TutorialPopper>
-            <button onClick={ev => {
+            <button id="tutorial-button-1" onClick={ev => {
                 changeActiveTutorial(activeTutorial === 1 ? null : 1);
-                setTarget(ev.target);
+                setTarget("#" + ev.target.id);
             }} style={{position: "relative"}}>{activeTutorial !== 1 ? "Start Tutorial 1" : "End Tutorial 1"}</button>
-            <button onClick={ev => {
+            <button id="tutorial-button-2" onClick={ev => {
                 changeActiveTutorial(activeTutorial === 2 ? null : 2);
-                setTarget(ev.target);
+                setTarget("#" + ev.target.id);
             }} style={{position: "relative"}}>{activeTutorial !== 2 ? "Start Tutorial 2" : "End Tutorial 2"}</button>
-            <button onClick={ev => {
+            <button id="tutorial-button-3" onClick={ev => {
                 changeActiveTutorial(activeTutorial === 3 ? null : 3)
-                setTarget(ev.target);
+                setTarget("#" + ev.target.id);
             }} style={{position: "relative"}}>{activeTutorial !== 3 ? "Start Tutorial 3" : "End Tutorial 3"}</button>
         </Fragment>
     }
@@ -53,7 +54,7 @@ export const TutorialJsxTarget = {
         return <Fragment>
             <TutorialPopper open={activeTutorial !== null} targetElement={target} highlightTarget={args.highlightTarget}>
                 <Paper sx={{padding: 1}}>
-                    Hello World
+                    {args.popupMessage}
                 </Paper>
             </TutorialPopper>
             <button onClick={ev => {
