@@ -2,19 +2,24 @@ import {Box, Paper, Popper} from "@mui/material";
 import React, {Fragment, useRef, useMemo} from "react";
 import PropTypes from "prop-types";
 
-export function TutorialPopper({ targetElementSelector, open, sx, children, highlightTarget }) {
-    const lastTarget = useRef(null);
-    let targetElement = useMemo(() => {
+export function TutorialPopper({ targetElementSelectors, open, sx, children, highlightTarget }) {
+    const lastTargets = useRef(null);
+    let targetElements = useMemo(() => {;
+        const selector = !targetElementSelectors || typeof targetElementSelectors === "string" ? targetElementSelectors : targetElementSelectors.join(", ");
         // FIXME: Make resilient for bad selectors, as querySelector can throw.
-        return  document.querySelector(targetElementSelector);
-    }, [targetElementSelector, open]);
-
-    if(open && targetElement) {
-        if(lastTarget.current && lastTarget.current !== targetElement) {
-            lastTarget.current.style.zIndex = 0;
+        if(typeof(targetElementSelectors) === "string") {
+            return document.querySelectorAll(selector);
+        } else if(Array.isArray(targetElementSelectors)) {
+            return document.querySelectorAll(selector);
         }
-        targetElement.style.zIndex = highlightTarget ? 100 : 0;
-        lastTarget.current = targetElement;
+    }, [targetElementSelectors, open]);
+
+    if(open && targetElements) {
+        if(lastTargets.current) {
+            lastTargets.current.forEach(el => el.style.zIndex = 0);
+        }
+        targetElements.forEach(el => el.style.zIndex = highlightTarget ? 100 : 0);
+        lastTargets.current = targetElements;
     }
 
     return <Fragment>
@@ -29,17 +34,16 @@ export function TutorialPopper({ targetElementSelector, open, sx, children, high
             right: 0,
             bottom: 0,
             visibility: open ? "visible" : "hidden",
-            pointerEvents: "none",
             ...sx
         }}/>
-        <Popper style={{zIndex: 1}} anchorEl={targetElement} open={open}>
+        <Popper style={{zIndex: 1}} anchorEl={targetElements && targetElements[0]} open={open}>
             {children}
         </Popper>
     </Fragment>
 }
 
 TutorialPopper.propTypes = {
-    targetElementSelector: PropTypes.string,
+    targetElementSelectors: PropTypes.arrayOf(PropTypes.string),
     open: PropTypes.bool.isRequired,
     children: PropTypes.array.isRequired,
     highlightTarget: PropTypes.bool
