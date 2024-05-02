@@ -4,24 +4,35 @@ import {
     ConnectedTutorialPopper as Tutorials
 } from "./TutorialPopper";
 import {Paper} from "@mui/material";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
+import createSagaMiddleware from "redux-saga";
 import Tutorial from "../model/Tutorial";
 import {Provider} from "react-redux";
 import {configureStore} from "@reduxjs/toolkit";
-import {TutorialStateConfiguration, getActions} from "../state/TutorialStateConfiguration";
-import * as _ from "lodash";
+import {TutorialStateConfiguration, getActions, TriggerReadyTutorialSaga} from "../state/TutorialStateConfiguration";
 
-export default {}
+export default {
+    decorators: [(story, opts) => {
+        const sagaMiddleware = createSagaMiddleware();
+        const store = configureStore({
+            reducer: {
+                tutorials: TutorialStateConfiguration({
+                    tutorials: opts.args.tutorials,
+                    activeTutorial: null
+                }).reducer
+            },
+            middleware: getDefaultMiddleware => {
+                return getDefaultMiddleware().concat([sagaMiddleware])
+            }
+        });
 
-const MockStore = initialState => configureStore({
-    reducer: {
-        tutorials: TutorialStateConfiguration(initialState).reducer
-    }
-});
+        sagaMiddleware.run(TriggerReadyTutorialSaga);
+        opts.args.getState = () => store.getState();
+        opts.args.dispatch = store.dispatch;
+        return <Provider store={store}>{story()}</Provider>
+    }],
+}
 
-export const TutorialPopper = {
+export const TutorialPoppers = {
     args: {
         tutorials: {
             "tutorial-1": new Tutorial("tutorial-1", "This is tutorial 1", ["#tutorial-button-1"], {
@@ -45,14 +56,15 @@ export const TutorialPopper = {
         }
 
         return <Fragment>
-            <TutorialPopperComponent activeTutorial={activeTutorial}>
+            <TutorialPopperComponent activeTutorial={activeTutorial} tutorials={args.tutorials}
+                                     dispatch={args.dispatch}>
                 <Paper sx={{padding: 1}}>
                     {activeTutorial?.message}
                 </Paper>
             </TutorialPopperComponent>
             {Object.values(args.tutorials).map(t => {
                 const tut = t;
-                return <button id={t.completionMatcher.target.substring(1)} onClick={ev => {
+                return <button id={tut.startTriggers[0].target.substring(1)} onClick={ev => {
                     changeActiveTutorial(activeTutorial === tut ? null : tut);
                 }}
                                style={{position: "relative"}}>{activeTutorial !== tut ? `Start Tutorial ${tut.id}` : `End Tutorial ${tut.id}`}</button>
@@ -61,15 +73,15 @@ export const TutorialPopper = {
     }
 }
 
-export const CompleteOnButtonClick = {
+export const ButtonTutorials = {
     args: {
         tutorials: {
             "tutorial-1": {
                 ...new Tutorial("tutorial-1",
-                    "Tutorials can be completed when something is clicked, like a button",
+                    "Tutorials can be completed when a button is clicked. Click the button to complete this tutorial.",
                     ["#tutorial-button-1"],
                     {
-                        type: "navigate"
+                        type: "auto"
                     },
                     {
                         type: "click",
@@ -77,34 +89,97 @@ export const CompleteOnButtonClick = {
                     })
             },
             "tutorial-2": {
-                ...new Tutorial("tutorial-2", "Tutorials can be completed when something is entered into an input", ["#tutorial-button-2"], {
-                    type: "change",
-                    target: "#tutorial-input-2"
-                })
+                ...new Tutorial("tutorial-2",
+                    "Now you started a tutorial by clicking.",
+                    ["#tutorial-button-2"],
+                    {
+                        type: "click",
+                        target: "#tutorial-button-2"
+                    },
+                    [{
+                        type: "click",
+                        target: "#tutorial-button-2"
+                    },
+                        {
+                            type: "tutorial-complete",
+                            target: "tutorial-1"
+                        }])
+            }
+        },
+    },
+    render: (args) => {
+        return <Fragment>
+            <Tutorials/>
+            <button id="tutorial-button-1"
+                    style={{position: "relative"}}>End Tutorial 1
+            </button>
+            <button id="tutorial-button-2" style={{position: "relative"}}>
+                Start Tutorial 2
+            </button>
+        </Fragment>
+    }
+}
+
+export const StartAutomatically = {
+    args: {
+        tutorials: {
+            "tutorial-1": {
+                ...new Tutorial("tutorial-1",
+                    "This tutorial opens automatically when the page loads. Click the button to complete it.",
+                    ["#tutorial-button-1"],
+                    {
+                        type: "auto"
+                    },
+                    {
+                        type: "click",
+                        target: "#tutorial-button-1"
+                    })
             },
+            "tutorial-2": {
+                ...new Tutorial("tutorial-2",
+                    "Now type into this input to complete the next tutorial.",
+                    ["#tutorial-2"],
+                    [{
+                        type: "tutorial-complete",
+                        target: "tutorial-1"
+                    }],
+                    {
+                        type: "click",
+                        target: "#tutorial-button-1"
+                    })
+            }
         },
     },
     decorators: [(story, opts) => {
-        const store = MockStore({
-            tutorials: opts.args.tutorials,
-            activeTutorial: null
+        const sagaMiddleware = createSagaMiddleware();
+        const store = configureStore({
+            reducer: {
+                tutorials: TutorialStateConfiguration({
+                    tutorials: opts.args.tutorials,
+                    activeTutorial: null
+                }).reducer
+            },
+            middleware: getDefaultMiddleware => {
+                return getDefaultMiddleware().concat([sagaMiddleware])
+            }
         });
+
+        sagaMiddleware.run(TriggerReadyTutorialSaga);
         opts.args.getState = () => store.getState();
         opts.args.dispatch = store.dispatch;
         return <Provider store={store}>{story()}</Provider>
     }],
     render: (args) => {
         return <Fragment>
-            <Tutorials>
-
-            </Tutorials>
+            <Tutorials/>
             <button id="tutorial-button-1" onClick={ev => {
                 if (!args.getState().tutorials.activeTutorial) {
                     args.dispatch(getActions().StartTutorial("tutorial-1"))
                 }
             }}
-                    style={{position: "relative"}}>{args.getState().tutorials.activeTutorial !== 1 ? "Start Tutorial 1" : "End Tutorial 1"}</button>
-            <input id="tutorial-input-1"/>
+                    style={{position: "relative"}}>{args.getState().tutorials !== 1 ? "Start Tutorial 1" : "End Tutorial 1"}</button>
+            <input id="tutorial-2"
+                   style={{position: "relative", width: "400px"}}></input>
         </Fragment>
     }
 }
