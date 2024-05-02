@@ -49,6 +49,7 @@ export function TutorialPopper({
         const handler = handleEvents(tutorialsByEvent, dispatch);
         document.body.addEventListener("click", handler);
         document.body.addEventListener("tutorial-complete", handler);
+        document.body.addEventListener("input", handler);
         if (document.readyState === "complete") {
             handleEvents(tutorialsByEvent, dispatch)({type: "auto"});
             setRerender(true);

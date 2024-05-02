@@ -120,66 +120,40 @@ export const ButtonTutorials = {
     }
 }
 
-export const StartAutomatically = {
+export const InputTutorials = {
     args: {
         tutorials: {
             "tutorial-1": {
                 ...new Tutorial("tutorial-1",
-                    "This tutorial opens automatically when the page loads. Click the button to complete it.",
-                    ["#tutorial-button-1"],
+                    "Click on the input",
+                    ["#tutorial-input-1"],
                     {
                         type: "auto"
                     },
                     {
                         type: "click",
-                        target: "#tutorial-button-1"
+                        target: "#tutorial-input-1"
                     })
             },
             "tutorial-2": {
                 ...new Tutorial("tutorial-2",
                     "Now type into this input to complete the next tutorial.",
-                    ["#tutorial-2"],
+                    ["#tutorial-input-1"],
                     [{
                         type: "tutorial-complete",
                         target: "tutorial-1"
                     }],
                     {
-                        type: "click",
-                        target: "#tutorial-button-1"
+                        type: "input",
+                        target: "#tutorial-input-1"
                     })
             }
         },
     },
-    decorators: [(story, opts) => {
-        const sagaMiddleware = createSagaMiddleware();
-        const store = configureStore({
-            reducer: {
-                tutorials: TutorialStateConfiguration({
-                    tutorials: opts.args.tutorials,
-                    activeTutorial: null
-                }).reducer
-            },
-            middleware: getDefaultMiddleware => {
-                return getDefaultMiddleware().concat([sagaMiddleware])
-            }
-        });
-
-        sagaMiddleware.run(TriggerReadyTutorialSaga);
-        opts.args.getState = () => store.getState();
-        opts.args.dispatch = store.dispatch;
-        return <Provider store={store}>{story()}</Provider>
-    }],
     render: (args) => {
         return <Fragment>
             <Tutorials/>
-            <button id="tutorial-button-1" onClick={ev => {
-                if (!args.getState().tutorials.activeTutorial) {
-                    args.dispatch(getActions().StartTutorial("tutorial-1"))
-                }
-            }}
-                    style={{position: "relative"}}>{args.getState().tutorials !== 1 ? "Start Tutorial 1" : "End Tutorial 1"}</button>
-            <input id="tutorial-2"
-                   style={{position: "relative", width: "400px"}}></input>
+            <input id="tutorial-input-1" style={{position: "relative"}}></input>
         </Fragment>
     }
 }
