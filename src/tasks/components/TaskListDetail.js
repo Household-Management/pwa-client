@@ -3,7 +3,7 @@ import {
     List,
     ListItem,
     ListItemButton, ListSubheader,
-    Paper,
+    Paper, TextField,
 } from "@mui/material";
 import {AddCircleOutline, Delete} from "@mui/icons-material";
 import {Fragment, useState} from "react";
@@ -18,13 +18,13 @@ import PropTypes from "prop-types";
  * @constructor
  */
 // TODO: Edit name of list
-export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListDelete, onTaskDelete, selectedTask}) {
+export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListChanged, onListDelete, onTaskDelete, selectedTask}) {
     return <Fragment>
         <Paper sx={{height: "100%"}}>
             <List >
                 <ListSubheader sx={{width: "100%", display: "flex", justifyContent: "space-between"}}>
-                    {list.name}
-                    <IconButton color="error" onClick={onListDelete.bind(null, list.id)}>
+                    <TextField sx={{flexGrow: 14}} value={list.name} onChange={ev => onListChanged({...list, name: ev.target.value})} />
+                    <IconButton sx={{flexGrow: 1}} color="error" onClick={onListDelete.bind(null, list.id)}>
                         <Delete/>
                     </IconButton>
                 </ListSubheader>

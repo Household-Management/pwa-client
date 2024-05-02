@@ -30,11 +30,19 @@ export default {
             args.onListDelete(id);
             alert("This would delete the list.");
         }
+
+        const onListChange = (list) => {
+            console.log(JSON.stringify(list));
+            setList(list);
+            args.onListChanged(list);
+        }
+
         return <TaskListDetail list={list}
                                onTaskChanged={onTaskChanged}
                                onTaskCreated={onTaskCreated}
                                onTaskSelected={onTaskSelected}
                                onListDelete={onListDelete}
+                               onListChanged={onListChange}
                                selectedTask={selectedTask} />
     }
 }
@@ -57,6 +65,7 @@ export const TaskListDetailStory = {
         onTaskChanged: fn(),
         onTaskCreated: fn(),
         onTaskSelected: fn(),
-        onListDelete: fn()
+        onListDelete: fn(),
+        onListChanged: fn()
     }
 }
