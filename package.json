@@ -27,11 +27,14 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "npm run worker-build && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "storybook-https": "storybook dev -p 6006 --https --ssl-cert=./localhost.crt --ssl-key=./localhost.key",
+    "build-storybook": "storybook build",
+    "worker-build-manifest": "npx workbox-cli injectManifest ./workbox-config.js && node build-serviceworker.js",
+    "worker-build": "node build-serviceworker.js"
   },
   "eslintConfig": {
     "extends": [
@@ -60,13 +63,20 @@
     "@storybook/addon-links": "^8.0.6",
     "@storybook/addon-onboarding": "^8.0.6",
     "@storybook/blocks": "^8.0.6",
+    "@storybook/cli": "^8.0.9",
     "@storybook/preset-create-react-app": "^8.0.6",
     "@storybook/react": "^8.0.6",
     "@storybook/react-webpack5": "^8.0.6",
     "@storybook/test": "^8.0.6",
     "eslint-plugin-storybook": "^0.8.0",
     "lodash": "^4.17.21",
+    "msw": "^2.2.14",
     "prop-types": "^15.8.1",
     "webpack": "^5.91.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
