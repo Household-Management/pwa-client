@@ -39,6 +39,12 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
         const value = ev.target.value;
         const changed = {...task}
         switch (value) {
+            case "NEVER":
+                changed.repeats = { // FIXME: Move into same as Daily, Weekly, Monthly
+                    repeatType: "NEVER",
+                    repeatOn: []
+                };
+                break;
             case "DAILY":
                 changed.repeats = RepeatDaily();
                 break;
@@ -80,21 +86,24 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                     <Stack>
                         Repeats {<FormControl size="small"><Select value={task.repeats.repeatType}
                                                                    onChange={onRepeatChanged}>
+                        <MenuItem value={"NEVER"}>Never</MenuItem>
                         <MenuItem value={"DAILY"}>Daily</MenuItem>
                         <MenuItem value={"WEEKLY"}>Weekly</MenuItem>
                         <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
                     </Select></FormControl>} {/* TODO: Implement switching repeat type */}
-                        <DayPicker days={task.repeats.repeatOn}/>
+                        {/* FIXME: DayPicker doesn't show days of week*/}
+                        {task.repeats && <DayPicker days={task.repeats.repeatOn}/>}
                     </Stack>
                 </Grid>
-                <Grid item>
-                    <Stack>
-                        Scheduled For
-                        <LocalizationProvider dateAdapter={AdapterMoment}>
-                            <TimePicker value={moment(task.scheduledTime)} onChange={onTimeChanged.bind(null, "scheduledTime")}></TimePicker>
-                        </LocalizationProvider>
-                    </Stack>
-                </Grid>
+                {/*TODO: Implement scheduling tasks at time */}
+                {/*<Grid item>*/}
+                {/*    <Stack>*/}
+                {/*        Scheduled For*/}
+                {/*        <LocalizationProvider dateAdapter={AdapterMoment}>*/}
+                {/*            <TimePicker value={moment(task.scheduledTime)} onChange={onTimeChanged.bind(null, "scheduledTime")}></TimePicker>*/}
+                {/*        </LocalizationProvider>*/}
+                {/*    </Stack>*/}
+                {/*</Grid>*/}
             </Grid>
         </AccordionDetails>
     </Accordion>

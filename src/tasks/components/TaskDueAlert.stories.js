@@ -39,19 +39,15 @@ export const OpenTaskNotification = {
     },
     render: (args) => <Fragment>
         WIP
+        {/*TODO: Move into application side, rather than storybook/test side.*/}
         <button onClick={() => {
             Notification.requestPermission().then((x) => {
                 if (x === "granted") {
+                    // FIXME: Windows only allows two actions.
                     navigator.serviceWorker.getRegistration()
-                        .then(reg => reg.showNotification("Hello World", {
-                            requireInteraction: true,
-                            actions: [
-                                {action: "complete", title: "Complete"},
-                                {action: "snooze", title: "Snooze"},
-                                {action: "cancel", title: "Cancel"}
-                            ]
-                        })
-                        );
+                        .then(reg => {
+                                reg.active.postMessage({type: "SHOW_NOTIFICATION"})
+                            });
                 } else {
                     alert("Permission Denied");
                 }
