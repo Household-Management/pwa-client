@@ -65,25 +65,36 @@ const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 //     ],
 //   })
 // );
-
-// This allows the web app to trigger skipWaiting via
-// registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener('message', (event) => {
+    console.log("message received", JSON.stringify(event.data));
     if (event.data)
         switch (event.data.type) {
             case 'SKIP_WAITING':
                 self.skipWaiting();
                 break;
+            case 'LOAD_STATE':
+                console.log("Loading data");
+                loadData().then(data => {
+                    event.ports[0].postMessage(data);
+                })
+
+                break;
+            case 'SAVE_STATE':
+                console.log("Saving data");
+                save(event.data.state);
+                break;
             case 'SHOW_NOTIFICATION':
-                new Notification("Test Task", {
+                registration.showNotification("Test Task", {
                     body: "Hello World",
                     requireInteraction: true,
                     actions: [
                         {action: "complete", title: "Complete"},
                         {action: "snooze", title: "Snooze"},
                         {action: "cancel", title: "Cancel"}
-                    ]
+                    ],
+                    tag: "Hello World"
                 });
+                break;
         }
 });
 
@@ -95,4 +106,63 @@ self.addEventListener('install', (event) => {
     console.log("installed");
 });
 
+self.addEventListener('notificationclick', event => {
+    console.log("Notification click");
+})
+
+self.addEventListener('notificationclose', event => {
+    console.log("Notification close");
+})
+
 // Any other custom service worker logic can go here.
+// TODO: Background timers don't work offline in pwa right now!
+// TODO: Implement persistence in service worker
+
+function save(data) {
+    console.log("Doing save")
+    return dbOpen().then(db => {
+        const tx = db.transaction("state", "readwrite");
+        const store = tx.objectStore("state");
+        console.log("Putting into db");
+        store.put({id: 1, state: data});
+    }, err => console.error(err.message));
+}
+
+function loadData() {
+    return dbOpen().then(async (db) => {
+        const tx = db.transaction("state", "readwrite");
+        console.log("Reading from db");
+        const store = tx.objectStore("state");
+        const out = await new Promise((resolve, reject) => {
+            const req = store.get(1);
+            req.onsuccess = ev => {
+                console.log("Read data from db");
+                resolve(ev.target.result?.state);
+            }
+            req.onerror = ev => reject(ev);
+        });
+        return out;
+    });
+}
+
+function dbOpen() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open("state", 1);
+        req.onsuccess = ev => {
+            console.log("Opened database");
+            resolve(ev.target.result);
+        }
+        req.onerror = ev => reject(ev);
+
+        req.onupgradeneeded = ev => {
+            console.log("Upgrading database");
+            const db = ev.target.result;
+            const objectStore = db.createObjectStore("state", {keyPath: "id"});
+
+            objectStore.transaction.oncomplete = ev => {
+
+            }
+        }
+    });
+
+}
