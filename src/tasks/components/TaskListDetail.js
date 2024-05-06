@@ -10,6 +10,7 @@ import {Fragment, useState} from "react";
 import TaskDetailAccordion from "./TaskDetailAccordion";
 import {IconButton} from "@mui/material";
 import PropTypes from "prop-types";
+import IconTile from "../../IconTile";
 
 /**
  * Component for displaying the detailed view of a TaskList model instance.
@@ -23,10 +24,11 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
         <Paper sx={{height: "100%"}}>
             <List >
                 <ListSubheader sx={{width: "100%", display: "flex", justifyContent: "space-between"}}>
-                    <TextField sx={{flexGrow: 14}} value={list.name} onChange={ev => onListChanged({...list, name: ev.target.value})} />
-                    <IconButton sx={{flexGrow: 1}} color="error" onClick={onListDelete.bind(null, list.id)}>
-                        <Delete/>
-                    </IconButton>
+                    <TextField sx={{flexGrow: 9}} value={list.name} onChange={ev => onListChanged({...list, name: ev.target.value})}
+                    disable={list.unremovable}/>
+                    {!list.unremovable && <div style={{flexGrow: 1, display: "flex"}}>
+                        <IconTile sx={{aspectRatio: "1/1", height: "100%"}} color="error" onClick={onListDelete.bind(null, list.id)} icon={<Delete/>}/>
+                    </div>}
                 </ListSubheader>
                 {/* FIXME: Make a nice header */}
                 {list.tasks.map(task =>

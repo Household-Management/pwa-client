@@ -1,6 +1,7 @@
 export default class TaskList {
     id;
     tasks;
+    unremovable;
     constructor(id, name, tasks) {
         this.id = id;
         this.name = name;
