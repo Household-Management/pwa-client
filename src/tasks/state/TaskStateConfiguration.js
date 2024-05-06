@@ -1,10 +1,16 @@
 import {createSlice} from "@reduxjs/toolkit";
+import TaskList from "../model/TaskList";
 let slice = undefined;
+// TODO: Timers for tasks in service-worker for offline notifications. https://redux.js.org/usage/side-effects-approaches
 export default function (initialState) {
+    const todoList = new TaskList("todo", "To-Do", []);
+    todoList.uneditable = true;
     slice = createSlice({
         name: "tasks",
         initialState: initialState ? initialState : {
-            taskLists: {},
+            taskLists: {
+                [todoList.id]: todoList
+            },
             selectedTask: null,
             selectedList: null
         },
