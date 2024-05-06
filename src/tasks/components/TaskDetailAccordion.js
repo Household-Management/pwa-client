@@ -2,15 +2,16 @@ import {ModelPropTypes} from "../model/Task";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import {Delete, ExpandMore, Edit} from '@mui/icons-material';
+import {Delete, ExpandMore, Edit, Done, CheckCircle} from '@mui/icons-material';
 import DayPicker from "../../time/components/DayPicker";
-import {Button, FormControl, Grid, IconButton, MenuItem, Select, Stack, TextField} from "@mui/material";
+import {Button, FormControl, Grid, IconButton, MenuItem, Paper, Select, Stack, styled, TextField} from "@mui/material";
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {LocalizationProvider, TimeClock, TimePicker} from "@mui/x-date-pickers";
 import PropTypes from "prop-types";
 import {Fragment, useState} from "react";
 import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
 import moment from "moment";
+import IconTile from "../../IconTile";
 
 const repeatLabels = {
     "NEVER": "Never",
@@ -19,6 +20,8 @@ const repeatLabels = {
     "MONTHLY": "Monthly"
 }
 
+// TODO: Highlight tasks due today.
+// TODO: Implement completion of tasks.
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
 export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle, onDelete}) {
@@ -70,7 +73,10 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
         }
     }
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
-    return <Accordion expanded={expanded || editable} onChange={(ev, ex) => onToggle(ex)} sx={sx}>
+    return <Accordion expanded={expanded || editable} onChange={(ev, ex) => {
+        setEditable(false);
+        onToggle(ex)
+    }} sx={sx}>
         <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover": {bgcolor: "#f5f5f5"}}}>
             <Summary task={task}
                      expanded={expanded}
@@ -112,14 +118,21 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                 {/*        </LocalizationProvider>*/}
                 {/*    </Stack>*/}
                 {/*</Grid>*/}
-                <Grid item xs={12}>
+                {!editable && <Grid item xs={12}>
                     <Button variant="contained">Complete</Button>
-
-                </Grid>
+                </Grid>}
             </Grid>
         </AccordionDetails>
     </Accordion>
 }
+
+// const IconActionButton = styled(IconButton)(({theme, ...props}) => {
+//     return {
+//         backgroundColor: theme.palette[props.color].main,
+//         color: theme.palette[props.color].contrastText,
+//         borderRadius: "50%",
+//     }
+// });
 
 function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged, toggleEditable}) {
     expanded = expanded || editable;
@@ -128,35 +141,37 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
     }
     if (expanded) {
         if (editable) {
-            return <Fragment>
-                <TextField value={task.title}
-                           label="Title"
-                           onChange={onPropertyChanged.bind(null, "title")}
-                    /*Keeps the accordion from collapsing when we click the input */
-                           onClick={ev => ev.stopPropagation()}/>
-                <IconButton onClick={ev => {
-                    toggleEditable(!editable);
-                    ev.stopPropagation()
-                }} color="primary">
-                    <Edit/>
-                </IconButton>
-                <IconButton onClick={ev => {
-                    onDelete(task.id);
-                    ev.stopPropagation()
-                }} color="error">
-                    <Delete/>
-                </IconButton>
-            </Fragment>
+            return <Grid container>
+                <Grid item>
+                    <TextField value={task.title}
+                               label="Title"
+                               onChange={onPropertyChanged.bind(null, "title")}
+                        /*Keeps the accordion from collapsing when we click the input */
+                               onClick={ev => ev.stopPropagation()}/>
+                </Grid>
+                <Grid item>
+                    <IconTile icon={<Done/>} onClick={ev => {
+                        toggleEditable(!editable);
+                        ev.stopPropagation()
+                    }} color="primary" size="large"/>
+                </Grid>
+                <Grid item>
+                    <IconTile style={{marginLeft: "32px", borderRadius: "50%"}} onClick={ev => {
+                        onDelete(task.id);
+                        ev.stopPropagation()
+                    }} color="error" size="large" icon={<Delete/>} />
+                </Grid>
+            </Grid>
         } else {
-            return <Fragment>
-                {task.title}
-                <IconButton onClick={ev => {
+            return <Grid container>
+                <div style={{display: "flex", alignItems: "center"}}>
+                    {task.title}
+                </div>
+                <IconTile onClick={ev => {
                     toggleEditable(!editable);
                     ev.stopPropagation()
-                }} color="primary">
-                    <Edit/>
-                </IconButton>
-            </Fragment>
+                }} color="primary" size="large" icon={<Edit/>} />
+            </Grid>
         }
     }
 }
