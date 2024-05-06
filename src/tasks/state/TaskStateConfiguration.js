@@ -12,7 +12,7 @@ export default function (initialState) {
                 [todoList.id]: todoList
             },
             selectedTask: null,
-            selectedList: null
+            selectedList: todoList.id
         },
         reducers: {
             SelectList: (state, action) => {
