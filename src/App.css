@@ -36,3 +36,44 @@
     transform: rotate(360deg);
   }
 }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ensure full height of the viewport */
+}
+
+.top-bar {
+  text-align: center;
+}
+
+.main-content {
+  flex-grow: 1; /* Allow the main content to expand */
+  overflow-y: auto; /* Enables scrolling if content exceeds available space */
+  padding: 5px;
+}
+
+.bottom-nav {
+  background: #222;
+  padding: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+#new-item {
+  display: flex;
+  gap: 1rem;
+}
+
+#new-item > div{
+  display: none;
+}
+
+@media (max-width: 600px) {
+  #new-item {
+    flex-direction: column;
+  }
+  #new-item > div {
+    display: flex;
+  }
+}
