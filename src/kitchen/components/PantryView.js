@@ -38,7 +38,7 @@ const PantryView = props => {
     const [locationName, setLocationName] = useState("");
 
     const handleAddItem = () => {
-        if (itemName && expirationDate) {
+        if (itemName) {
             const newItem = {
                 id: crypto.randomUUID(),
                 name: itemName,
@@ -71,7 +71,7 @@ const PantryView = props => {
                     </TableHead>
                     <TableBody>
                         {items.map((item) => {
-                            const expirationRemaining = moment(item.expiration).diff(moment(), "days");
+                            const expirationRemaining = item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999;
                             let backgroundColor = "inherit";
                             let expiration = (<strong>{item.expiration}</strong>);
                             if (expirationRemaining < 0) {
@@ -92,7 +92,7 @@ const PantryView = props => {
                                 <TableCell sx={{
                                     borderRight: "1px solid rgb(224, 224, 244)",
                                     textAlign: "center"
-                                }}>{expiration}</TableCell>
+                                }}>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => dispatch(actions.pantry.RemoveItem(item.id))}>
                                         <Delete/>
