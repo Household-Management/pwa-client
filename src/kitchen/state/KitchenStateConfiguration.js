@@ -28,6 +28,36 @@ export default function (initialState) {
                     return state;
                 }
             }
+        }),
+        groceryLists: createSlice({
+            name: "groceryLists",
+            initialState: initialState && initialState.groceryLists ? initialState.groceryLists : {
+                lists: []
+            },
+            reducers: {
+                AddList: (state, action) => {
+                    state.lists.push({ name: action.payload.name, items: [] });
+                    return state;
+                },
+                RemoveList: (state, action) => {
+                    state.lists = state.lists.filter(list => list.name !== action.payload);
+                    return state;
+                },
+                AddListItem: (state, action) => {
+                    const list = state.lists.find(list => list.name === action.payload.listName);
+                    if (list) {
+                        list.items.push({ name: action.payload.itemName, quantity: action.payload.quantity });
+                    }
+                    return state;
+                },
+                RemoveListItem: (state, action) => {
+                    const list = state.lists.find(list => list.name === action.payload.listName);
+                    if (list) {
+                        list.items = list.items.filter(item => item.name !== action.payload.itemName);
+                    }
+                    return state;
+                }
+            }
         })
     };
 
