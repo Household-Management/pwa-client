@@ -1,11 +1,12 @@
 import TaskListsBar from "./TaskListsBar";
-import {Fragment} from "react";
+import {Fragment, useEffect} from "react";
 
 import {connect} from "react-redux";
 import PropTypes from "prop-types";
 import {getActions} from "../state/TaskStateConfiguration";
 import TaskListDetail from "./TaskListDetail";
 import Task from "../model/Task";
+import {useHeader} from "../../layout/hooks/HeaderContext";
 
 /**
  * Top-level container for all user tasks ui elements.
@@ -14,17 +15,21 @@ import Task from "../model/Task";
 // TODO: Check for if a task is being edited when trying to open another one?
 // TODO: Handle deleting lists and tasks.
 export function TasksView({taskLists, selectedList, dispatch, ...props}) {
+    const { setHeaderContent } = useHeader()
+
+    useEffect(() => {
+        setHeaderContent(<TaskListsBar taskLists={taskLists}
+                                       onSelect={sel => dispatch(getActions().SelectList(sel))}
+                                       selectedList={selectedList}
+                                       onListCreated={() => {
+                                           const newList = {id: crypto.randomUUID(), name: "New List", tasks: []};
+                                           dispatch(getActions().CreateList(newList));
+                                           dispatch(getActions().SelectList(newList.id));
+                                       }}
+        />)
+    }, [setHeaderContent]);
 
     return <Fragment>
-        <TaskListsBar taskLists={taskLists}
-                      onSelect={sel => dispatch(getActions().SelectList(sel))}
-                      selectedList={selectedList}
-                      onListCreated={() => {
-                          const newList = {id: crypto.randomUUID(), name: "New List", tasks: []};
-                          dispatch(getActions().CreateList(newList));
-                          dispatch(getActions().SelectList(newList.id));
-                      }}
-        />
         {selectedList && taskLists[selectedList] &&
             <TaskListDetail list={taskLists[selectedList]}
                             selectedTask={props.selectedTask}

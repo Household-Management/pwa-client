@@ -5,20 +5,48 @@ import {
 } from "react-router-dom";
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {Provider} from 'react-redux'
-import {register as registerServiceWorker} from "./serviceWorkerRegistration";
 
 import React from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
 import TasksView from "./tasks/components/TasksView";
 import {TutorialStateConfiguration} from "./tutorials/state/TutorialStateConfiguration";
 import {Workbox} from "workbox-window";
+import Layout from "./layout/components/Layout";
+import {HeaderProvider} from "./layout/hooks/HeaderContext";
+import KitchenView from "./kitchen/components/KitchenView";
+import PantryView from "./kitchen/components/PantryView";
+import RecipesView from "./kitchen/components/RecipesView";
+import GroceryView from "./kitchen/components/GroceryView";
+import KitchenStateConfiguration from "./kitchen/state/KitchenStateConfiguration";
 
-const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <TasksView/>
-    }
-]);
+const router = createBrowserRouter(
+    [
+        {
+            path: "/",
+            element: (<Layout/>),
+            children: [{
+                path: "/tasks",
+                element: <TasksView/>
+            }, {
+                path: "/kitchen",
+                element: <KitchenView/>,
+                children: [
+                    {
+                        path: "pantry",
+                        element: <PantryView/>
+                    },
+                    {
+                        path: "recipes",
+                        element: <RecipesView/>
+                    },
+                    {
+                        path: "grocery",
+                        element: <GroceryView/>
+                    }
+                ]
+            }]
+        }
+    ]);
 
 
 // TODO: Create a default "to-do" task list
@@ -27,11 +55,12 @@ const router = createBrowserRouter([
 // TODO: Middleware for intercepting dangerous actions.
 const combinedReducer = combineReducers({
     tasks: TaskStateConfiguration().reducer,
-    tutorials: TutorialStateConfiguration().reducer
+    tutorials: TutorialStateConfiguration().reducer,
+    kitchen: KitchenStateConfiguration()
 });
 const store = configureStore({
     reducer: (state, action) => {
-        if(action.type == "LOAD_STATE" && action.data) {
+        if (action.type == "LOAD_STATE" && action.data) {
             return JSON.parse(action.data);
         } else {
             return combinedReducer(state, action);
@@ -72,15 +101,13 @@ store.subscribe(() => {
 // TODO: Implement bottom navigation.
 function App() {
     return (
-        <div className="App" style={{display: "flex", flexDirection: "column"}}>
+        <div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
+            <HeaderProvider>
             <Provider store={store}>
                 <RouterProvider router={router}/>
             </Provider>
-            {/*<Paper sx={{ display:"flex", flexGrow: 0, flexShrink: 0, justifyContent: "center", bottom: 0, left: 0, right: 0 }} elevation={3}>*/}
-            {/*    <BottomNavigation showLabels={true}>*/}
-            {/*        <BottomNavigationAction label="Todos & Chores" icon={<ListIcon/>}/>*/}
-            {/*    </BottomNavigation>*/}
-            {/*</Paper>*/}
+            </HeaderProvider>
+
         </div>
     );
 }
