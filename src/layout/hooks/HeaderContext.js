@@ -7,7 +7,7 @@ const HeaderContext = createContext();
 export const useHeader = () => useContext(HeaderContext);
 
 export const HeaderProvider = ({ children }) => {
-    const [headerContent, setHeaderContent] = useState(<h1>App Title</h1>);
+    const [headerContent, setHeaderContent] = useState(null);
 
     return (
         <HeaderContext.Provider value={{ headerContent, setHeaderContent }}>
