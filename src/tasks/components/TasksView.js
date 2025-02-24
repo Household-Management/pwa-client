@@ -27,7 +27,7 @@ export function TasksView({taskLists, selectedList, dispatch, ...props}) {
                                            dispatch(getActions().SelectList(newList.id));
                                        }}
         />)
-    }, [setHeaderContent]);
+    }, [taskLists, selectedList]);
 
     return <Fragment>
         {selectedList && taskLists[selectedList] &&
@@ -48,6 +48,9 @@ export function TasksView({taskLists, selectedList, dispatch, ...props}) {
                             }}
                             onTaskDelete={(taskId) => {
                                 dispatch(getActions().DeleteTask({fromList: selectedList, taskId}));
+                            }}
+                            onListChanged={(list) => {
+                                dispatch(getActions().UpdateList(list))
                             }}
             />}
     </Fragment>
