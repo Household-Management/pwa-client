@@ -1,41 +1,73 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { getGroceryLists } from '../store/selectors'; // Adjust the import based on the actual path
+import {useDispatch, useSelector} from 'react-redux';
+import {Accordion, AccordionSummary, AccordionDetails, Paper, Button, IconButton} from '@mui/material'
+import { actions } from '../state/KitchenStateConfiguration';
+import {ExpandMore, ExpandLess, Add, Delete} from "@mui/icons-material";
 
 const GroceryView = () => {
-    const groceryLists = useSelector(getGroceryLists);
-    const [selectedListId, setSelectedListId] = useState(groceryLists[0]?.id || null);
-
-    const selectedList = groceryLists.find(list => list.id === selectedListId);
-
+    const groceryLists = useSelector(state => state.kitchen.groceryLists.lists);
+    const dispatch = useDispatch();
+    var [newListName, setNewListName] = useState("");
+    const [expanded, setExpanded] = useState({});
     return (
         <div>
             <div style={{ display: 'flex', overflowX: 'auto', borderBottom: '1px solid #ccc' }}>
                 {groceryLists.map(list => (
-                    <div
-                        key={list.id}
-                        style={{
-                            padding: '10px 20px',
-                            cursor: 'pointer',
-                            backgroundColor: selectedListId === list.id ? '#ddd' : '#fff'
-                        }}
-                        onClick={() => setSelectedListId(list.id)}
-                    >
-                        {list.name}
-                    </div>
+                    <CustomAccordion list={list} expanded={expanded[list.id]} expandedSetter={(value) => {
+                        expanded[list.id] = value;
+                        setExpanded({...expanded})
+                    }}  />
                 ))}
             </div>
-            <div style={{ padding: '20px' }}>
-                {selectedList?.items.map((item, index) => (
-                    <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                        <input type="checkbox" checked={item.bought} readOnly />
-                        <span style={{ marginLeft: '10px' }}>{item.name}</span>
-                        <span style={{ marginLeft: 'auto' }}>Quantity: {item.quantity}</span>
-                    </div>
-                ))}
+            <div>
+                <input type="text" placeholder="New List Name" value={newListName} onChange={(ev) => setNewListName(ev.target.value)} />
+                <button onClick={() => {dispatch(actions.groceryLists.AddList({name: newListName})); setNewListName("");}}>Create New List</button>
             </div>
         </div>
     );
+}
+
+const CustomAccordion = ({list, expanded, expandedSetter}) => {
+    const dispatch = useDispatch();
+    const [newItemName, setNewItemName] = useState("");
+    const [newItemQuantity, setNewItemQuantity] = useState(1);
+
+    return (<Accordion sx={{flexGrow: 1}} key={list.id} expanded={expanded}
+                       onChange={() => expandedSetter(!expanded)}>
+        <AccordionSummary
+            className="grocery-list-summary"
+            sx={{justifyContent: "start-flex", flexGrow: 0}}
+        >{list.name}{expanded ? <ExpandLess/> : <ExpandMore/> }</AccordionSummary>
+        <AccordionDetails>
+            <Paper sx={{flexDirection: "row", display: "flex", width: "100%"}}>
+                <input style={{ flexGrow: 9 }} type="text" value={newItemName} placeholder="Name" onChange={ev => setNewItemName(ev.target.value)} />
+                <input style={{ flexGrow: 1 }} type="number" value={Math.max(1,newItemQuantity)} onChange={ev => setNewItemQuantity(Number.parseInt(ev.target.value))} />
+                <Button onClick={() => dispatch(actions.groceryLists.AddListItem({listId: list.id, itemName: newItemName, quantity: newItemQuantity}))}>
+                    <Add/>
+                </Button>
+            </Paper>
+            {list.items.map((item, index) => {
+                return (
+                    <Paper key={index}
+                           style={{display: 'flex', flexGrow: 1, alignItems: 'center', marginBottom: '10px', minHeight: '45px'}}>
+                        <input type="checkbox" checked={item.bought}
+                               onChange={() => {
+                                   dispatch(actions.groceryLists.ReplaceListItem({
+                                       listId: list.id,
+                                       item: {...item, bought: !item.bought}
+                                   }))
+                               }}/>
+                        <div style={{flexGrow: 1, textAlign: 'left'}}>
+                        {item.bought ? <s>{item.quantity} x {item.name}</s> :
+                            <span>{item.quantity} x {item.name}</span>}
+                        </div>
+                        <IconButton onClick={() => dispatch(actions.groceryLists.RemoveListItem({listId: list.id, itemId: item.id}))}>
+                            <Delete/>
+                        </IconButton>
+                    </Paper>
+                );
+            })}</AccordionDetails>
+    </Accordion>)
 }
 
 export default GroceryView;
