@@ -6,7 +6,6 @@ export default {
     render: (args) => {
         const [days, setDays] = useState(args.days);
         const onChange = (values) => {
-            debugger;
             setDays(values);
         }
         return <DayPicker onChange={onChange} readOnly={args.readOnly} days={days} dayNames={args.dayNames}/>
