@@ -1,7 +1,7 @@
 import {combineReducers, createSlice} from "@reduxjs/toolkit";
 
 let slice = undefined;
-
+// TODO: Add feature for saving locations of items at stores.
 export default function (initialState) {
     slice = {
         pantry: createSlice({
@@ -12,7 +12,7 @@ export default function (initialState) {
             },
             reducers: {
                 AddItem: (state, action) => {
-                    state.items.push(action.payload);
+                    state.items.push({...action.payload, id: crypto.randomUUID()});
                     return state;
                 },
                 RemoveItem: (state, action) => {
@@ -36,24 +36,36 @@ export default function (initialState) {
             },
             reducers: {
                 AddList: (state, action) => {
-                    state.lists.push({ name: action.payload.name, items: [] });
+                    state.lists.push({ id: crypto.randomUUID(), name: action.payload.name, items: [] });
                     return state;
                 },
                 RemoveList: (state, action) => {
-                    state.lists = state.lists.filter(list => list.name !== action.payload);
+                    state.lists = state.lists.filter(list => list.id !== action.payload);
                     return state;
                 },
                 AddListItem: (state, action) => {
-                    const list = state.lists.find(list => list.name === action.payload.listName);
-                    if (list) {
-                        list.items.push({ name: action.payload.itemName, quantity: action.payload.quantity });
+                    const list = state.lists.find(list => list.id === action.payload.listId);
+                    if (list && action.payload.itemName.trim() !== "") {
+                        list.items.push({ id: crypto.randomUUID(), name: action.payload.itemName.trim(), quantity: action.payload.quantity });
                     }
                     return state;
                 },
                 RemoveListItem: (state, action) => {
-                    const list = state.lists.find(list => list.name === action.payload.listName);
+                    const list = state.lists.find(list => list.id === action.payload.listId);
                     if (list) {
-                        list.items = list.items.filter(item => item.name !== action.payload.itemName);
+                        list.items = list.items.filter(item => item.id !== action.payload.itemId);
+                    }
+                    return state;
+                },
+                ReplaceListItem: (state, action) => {
+                    const list = state.lists.find(list => list.id === action.payload.listId && list.id !== undefined);
+                    if (list) {
+                        list.items = list.items.map(item => {
+                            if (item.id === action.payload.item.id) {
+                                return {...action.payload.item};
+                            }
+                            return item;
+                        });
                     }
                     return state;
                 }
