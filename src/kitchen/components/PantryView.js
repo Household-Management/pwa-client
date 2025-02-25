@@ -42,7 +42,8 @@ const PantryView = props => {
             const newItem = {
                 id: crypto.randomUUID(),
                 name: itemName,
-                expiration: expirationDate
+                expiration: expirationDate,
+                location: itemLocation
             };
             dispatch(actions.pantry.AddItem(newItem));
             setItemName("");

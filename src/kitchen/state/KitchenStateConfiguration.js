@@ -52,7 +52,7 @@ export default function (initialState) {
                 AddListItem: (state, action) => {
                     const list = state.lists.find(list => list.id === action.payload.listId);
                     if (list && action.payload.itemName.trim() !== "") {
-                        list.items.push({ id: crypto.randomUUID(), name: action.payload.itemName.trim(), quantity: action.payload.quantity });
+                        list.items.push({ id: crypto.randomUUID(), location:action.payload.location, name: action.payload.itemName.trim(), quantity: action.payload.quantity });
                     }
                     return state;
                 },
