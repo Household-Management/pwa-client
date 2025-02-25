@@ -32,7 +32,13 @@ export default function (initialState) {
         groceryLists: createSlice({
             name: "groceryLists",
             initialState: initialState && initialState.groceryLists ? initialState.groceryLists : {
-                lists: []
+                lists: [
+                    {
+                        id: "1",
+                        name: "Groceries",
+                        items: []
+                    }
+                ]
             },
             reducers: {
                 AddList: (state, action) => {

@@ -4,6 +4,7 @@ import {Accordion, AccordionSummary, AccordionDetails, Paper, Button, IconButton
 import {actions} from '../state/KitchenStateConfiguration';
 import {ExpandMore, ExpandLess, Add, Delete} from "@mui/icons-material";
 // FIXME: Too wide on mobile
+// TODO: Add item count in accordion summary.
 const GroceryView = () => {
     const groceryLists = useSelector(state => state.kitchen.groceryLists.lists);
     const dispatch = useDispatch();
@@ -19,7 +20,7 @@ const GroceryView = () => {
                     }}/>
                 ))}
             </div>
-            <div>
+            <div style={{display: "none"}}>
                 <input type="text" placeholder="New List Name" value={newListName}
                        onChange={(ev) => setNewListName(ev.target.value)}/>
                 <button onClick={() => {
@@ -44,6 +45,9 @@ const CustomAccordion = ({list, expanded, expandedSetter}) => {
             sx={{justifyContent: "start-flex", flexGrow: 0}}
         >{list.name}{expanded ? <ExpandLess/> : <ExpandMore/>}</AccordionSummary>
         <AccordionDetails>
+            <div>
+                Add Item
+            </div>
             <Paper sx={{flexDirection: "row", display: "flex", width: "100%"}}>
                 <div className="grocery-new-item-container">
                     <div className="grocery-new-item-container-inputs">
