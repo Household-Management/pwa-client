@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {Provider} from 'react-redux'
+import { redirect } from "react-router-dom";
 
 import React from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
@@ -18,13 +19,18 @@ import PantryView from "./kitchen/components/PantryView";
 import RecipesView from "./kitchen/components/RecipesView";
 import GroceryView from "./kitchen/components/GroceryView";
 import KitchenStateConfiguration from "./kitchen/state/KitchenStateConfiguration";
-
+// TODO: Extract the routes into a separate file.
 const router = createBrowserRouter(
     [
         {
             path: "/",
             element: (<Layout/>),
-            children: [{
+            children: [
+                {
+                    index: true,
+                    loader: async () => redirect("/tasks")
+                },
+                {
                 path: "/tasks",
                 element: <TasksView/>
             }, {
@@ -89,9 +95,10 @@ store.subscribe(() => {
     // TODO: Save is being triggered multiple times, move into saga to prevent multiple saves.
     console.log("Persisting state after store update");
     wb.active.then(_ => {
+        const state = store.getState()
         wb.messageSW({
             type: 'SAVE_STATE',
-            state: JSON.stringify(store.getState())
+            state: JSON.stringify(state)
         })
     });
 });
