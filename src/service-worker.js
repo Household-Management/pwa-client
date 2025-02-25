@@ -1,9 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
 import {clientsClaim} from 'workbox-core';
-import {ExpirationPlugin} from 'workbox-expiration';
-import {registerRoute} from 'workbox-routing';
-import {NetworkFirst, CacheFirst, StaleWhileRevalidate} from 'workbox-strategies';
 
 
 // eslint-disable-next-line no-undef
@@ -84,6 +81,7 @@ self.addEventListener('message', (event) => {
                 save(event.data.state);
                 break;
             case 'SHOW_NOTIFICATION':
+                // eslint-disable-next-line no-undef
                 registration.showNotification("Test Task", {
                     body: "Hello World",
                     requireInteraction: true,
