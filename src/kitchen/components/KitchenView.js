@@ -37,11 +37,7 @@ const KitchenView = () => {
     }, [setHeaderContent, selectedView]);
 
 
-    return (
-        <div className="content">
-            <Outlet/>
-        </div>
-    );
+    return (<Outlet/>);
 };
 
 export default KitchenView;

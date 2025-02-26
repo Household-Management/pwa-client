@@ -18,13 +18,15 @@ import {
     TableHead,
     TableRow,
     TextField, DialogContentText,
-    Typography
+    Typography, Box
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import Delete from "@mui/icons-material/Delete"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import moment from "moment";
 // TODO: Notifications of expiring items.
+// TODO: Implemenet assigning items to grocery list on expiration/usage.
 const PantryView = props => {
     const dispatch = useDispatch();
     const items = useSelector(state => state.kitchen.pantry.items);
@@ -33,7 +35,8 @@ const PantryView = props => {
     const [itemName, setItemName] = useState("");
     const [expirationDate, setExpirationDate] = useState("");
     const [itemLocation, setItemLocation] = useState("");
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [quantity, setQuantity] = useState(1);
 
     const [locationName, setLocationName] = useState("");
 
@@ -59,7 +62,7 @@ const PantryView = props => {
     }
 
     return (
-        <div className="pantry-container">
+        <div className="pantry-container" style={{height: "100%"}}>
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
@@ -126,37 +129,64 @@ const PantryView = props => {
                     <Button onClick={handleAddLocation}>Add</Button>
                 </DialogActions>
             </Dialog>
-            <div id="new-item" style={{padding: "2rem"}}>
-                <input
-                    type="text"
-                    value={itemName}
-                    onChange={(e) => setItemName(e.target.value)}
-                    placeholder="Item Name"
-                />
-                <div>Location</div>
-                <select
-                    onChange={(e) => {
-                        setItemLocation(e.target.value);
-                        if (e.target.value === "new") {
-                            setIsDialogOpen(true)
-                        }
-                    }}
-                >
-                    <option value="" disabled selected>Select Location</option>
-                    {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
-                    <option value="new">New...</option>
-                </select>
-                <div>Expires</div>
-                <input
-                    type="date"
-                    value={expirationDate}
-                    onChange={(e) => setExpirationDate(e.target.value)}
-                />
-                <button onClick={handleAddItem}>Add Item</button>
-            </div>
+            <Box style={{padding: "2rem"}}>
+                <Grid
+                    container
+                    spacing={4}>
+                    <Grid size={{xs: 12, md: 6, lg: 4}}>
+                        <div>New Item</div>
+                        <input
+                            style={{width: "100%"}}
+                            type="text"
+                            value={itemName}
+                            onChange={(e) => setItemName(e.target.value)}
+                            placeholder="Item Name"
+                        />
+                    </Grid>
+                    <Grid size={{xs: 12, md: 6, lg: 2}}>
+                        <div>Location</div>
+                        <select
+                            onChange={(e) => {
+                                setItemLocation(e.target.value);
+                                if (e.target.value === "new") {
+                                    setIsDialogOpen(true)
+                                }
+                            }}
+                            style={{width: "100%"}}
+                        >
+                            <option value="" disabled selected>Select Location</option>
+                            {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
+                            {/*<option value="new">New...</option>*/}
+                        </select>
+                    </Grid>
+                    <Grid size={{xs: 12, md: 6, lg: 2}}>
+                        <div>Quantity</div>
+                        <input
+                            type="number"
+                            value={quantity}
+                            style={{width: "100%"}}
+                            onChange={(e) => setQuantity(Number.parseInt(e.target.value))}
+                        />
+                    </Grid>
+                    <Grid size={{xs: 12, md: 6, lg: 2}}>
+                        <div>Expires</div>
+                        <input
+                            type="date"
+                            value={expirationDate}
+                            style={{width: "100%"}}
+                            onChange={(e) => setExpirationDate(e.target.value)}
+                        />
+
+                    </Grid>
+                    {/* TODO: Replace with material button */}
+                    <Grid size={{xs: 12, lg: 2}}>
+                        <button onClick={handleAddItem}>Add Item</button>
+                    </Grid>
+                </Grid>
+            </Box>
             <Accordion>
                 <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
+                    expandIcon={<ExpandMoreIcon/>}
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
@@ -167,19 +197,20 @@ const PantryView = props => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell sx={{ width: "80%" }}>Location</TableCell>
-                                    <TableCell>Delete</TableCell>
+                                    <TableCell sx={{width: "80%"}}><strong>Location</strong></TableCell>
+                                    {/*<TableCell>Delete</TableCell>*/}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {locations.map((location) => (
                                     <TableRow key={location}>
                                         <TableCell>{location}</TableCell>
-                                        <TableCell>
-                                            <IconButton onClick={() => dispatch(actions.pantry.RemoveLocation(location))}>
-                                                <Delete />
-                                            </IconButton>
-                                        </TableCell>
+                                        {/* TODO: Add back delete when create is implemented. */}
+                                        {/*<TableCell>*/}
+                                        {/*    <IconButton onClick={() => dispatch(actions.pantry.RemoveLocation(location))}>*/}
+                                        {/*        <Delete />*/}
+                                        {/*    </IconButton>*/}
+                                        {/*</TableCell>*/}
                                     </TableRow>
                                 ))}
                             </TableBody>
