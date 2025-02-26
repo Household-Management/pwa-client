@@ -89,12 +89,14 @@ self.addEventListener('message', (event) => {
 
                         if (numberTasksDue > 0)
                         {
+                            // eslint-disable-next-line no-undef
                             registration.showNotification("Tasks Due", {
                                 body: `${numberTasksDue} tasks due today.`,
                                 requireInteraction: false
                             });
                         }
                         if (expiringItems > 0) {
+                            // eslint-disable-next-line no-undef
                             registration.showNotification("Expiring Pantry Items", {
                                 body: `${expiringItems} items expiring soon.`,
                                 requireInteraction: false
