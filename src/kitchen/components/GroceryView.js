@@ -3,8 +3,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Accordion, AccordionSummary, AccordionDetails, Paper, Button, IconButton} from '@mui/material'
 import {actions} from '../state/KitchenStateConfiguration';
 import {ExpandMore, ExpandLess, Add, Delete} from "@mui/icons-material";
-// FIXME: Too wide on mobile
-// TODO: Add item count in accordion summary.
+
 const GroceryView = () => {
     const groceryLists = useSelector(state => state.kitchen.groceryLists.lists);
     const dispatch = useDispatch();
@@ -13,12 +12,12 @@ const GroceryView = () => {
     return (
         <div>
             <div style={{display: 'flex', overflowX: 'auto', borderBottom: '1px solid #ccc'}}>
-                {groceryLists.map(list => (
-                    <CustomAccordion list={list} expanded={expanded[list.id]} expandedSetter={(value) => {
+                {groceryLists.map(list => {
+                    return <CustomAccordion list={list} expanded={expanded[list.id]} expandedSetter={(value) => {
                         expanded[list.id] = value;
                         setExpanded({...expanded})
                     }}/>
-                ))}
+                })}
             </div>
             <div style={{display: "none"}}>
                 <input type="text" placeholder="New List Name" value={newListName}
@@ -38,12 +37,15 @@ const CustomAccordion = ({list, expanded, expandedSetter}) => {
     const [newItemName, setNewItemName] = useState("");
     const [newItemQuantity, setNewItemQuantity] = useState(1);
 
+    const boughtItemCount = list.items.filter(item => item.bought).length;
+    const totalItemCount = list.items.length;
+
     return (<Accordion sx={{flexGrow: 1}} key={list.id} expanded={expanded}
                        onChange={() => expandedSetter(!expanded)}>
         <AccordionSummary
             className="grocery-list-summary"
             sx={{justifyContent: "start-flex", flexGrow: 0}}
-        >{list.name}{expanded ? <ExpandLess/> : <ExpandMore/>}</AccordionSummary>
+        >{list.name} ({boughtItemCount}/{totalItemCount}){expanded ? <ExpandLess/> : <ExpandMore/>}</AccordionSummary>
         <AccordionDetails>
             <div>
                 Add Item
