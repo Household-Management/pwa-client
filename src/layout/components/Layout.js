@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useHeader } from "../hooks/HeaderContext";
-import BottomNavigator from "../../navigation/BottomNavigator";
+import BottomNavigator from "../../navigation/components/BottomNavigator";
 import React from "react";
 
 const Layout = () => {

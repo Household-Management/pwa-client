@@ -1,58 +1,18 @@
 import './App.css';
 import {
-    createBrowserRouter,
     RouterProvider,
 } from "react-router-dom";
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {Provider} from 'react-redux'
-import { redirect } from "react-router-dom";
 
 import React from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
-import TasksView from "./tasks/components/TasksView";
 import {TutorialStateConfiguration} from "./tutorials/state/TutorialStateConfiguration";
 import {Workbox} from "workbox-window";
-import Layout from "./layout/components/Layout";
 import {HeaderProvider} from "./layout/hooks/HeaderContext";
-import KitchenView from "./kitchen/components/KitchenView";
-import PantryView from "./kitchen/components/PantryView";
-import RecipesView from "./kitchen/components/RecipesView";
-import GroceryView from "./kitchen/components/GroceryView";
 import KitchenStateConfiguration from "./kitchen/state/KitchenStateConfiguration";
+import {router} from "./navigation/configuration/routing";
 // TODO: Extract the routes into a separate file.
-const router = createBrowserRouter(
-    [
-        {
-            path: "/",
-            element: (<Layout/>),
-            children: [
-                {
-                    index: true,
-                    loader: async () => redirect("/tasks")
-                },
-                {
-                path: "/tasks",
-                element: <TasksView/>
-            }, {
-                path: "/kitchen",
-                element: <KitchenView/>,
-                children: [
-                    {
-                        path: "pantry",
-                        element: <PantryView/>
-                    },
-                    {
-                        path: "recipes",
-                        element: <RecipesView/>
-                    },
-                    {
-                        path: "grocery",
-                        element: <GroceryView/>
-                    }
-                ]
-            }]
-        }
-    ]);
 
 
 // TODO: Create a default "to-do" task list
