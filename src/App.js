@@ -89,6 +89,12 @@ wb.active.then((x) => {
     });
 });
 
+Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+        console.log("Notifications granted");
+    }
+});
+
 wb.register();
 // TODO: On load, show notification of tasks that are due today.
 store.subscribe(() => {

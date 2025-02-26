@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
 import {clientsClaim} from 'workbox-core';
+import moment from "moment/moment";
 
 
 // eslint-disable-next-line no-undef
@@ -62,6 +63,8 @@ const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 //     ],
 //   })
 // );
+
+
 self.addEventListener('message', (event) => {
     console.log("message received", JSON.stringify(event.data));
     if (event.data)
@@ -73,6 +76,31 @@ self.addEventListener('message', (event) => {
                 console.log("Loading data");
                 loadData().then(data => {
                     event.ports[0].postMessage(data);
+                    if (Notification && Notification.permission === "granted") {
+                        data = JSON.parse(data);
+                        let numberTasksDue = 0;
+                        for(const list of Object.values(data?.tasks?.taskLists || {})) {
+                            numberTasksDue += list.tasks.length;
+                        }
+
+                        const expiringItems = (data?.kitchen?.pantry?.items || []).filter(item => {
+                            return item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999 <= 0;
+                        }).length;
+
+                        if (numberTasksDue > 0)
+                        {
+                            registration.showNotification("Tasks Due", {
+                                body: `${numberTasksDue} tasks due today.`,
+                                requireInteraction: false
+                            });
+                        }
+                        if (expiringItems > 0) {
+                            registration.showNotification("Expiring Pantry Items", {
+                                body: `${expiringItems} items expiring soon.`,
+                                requireInteraction: false
+                            });
+                        }
+                    }
                 })
 
                 break;
