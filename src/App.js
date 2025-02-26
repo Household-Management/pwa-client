@@ -105,7 +105,6 @@ store.subscribe(() => {
 
 // TODO: Implement notifications for tasks.
 // TODO: Implement settings page.
-// TODO: Implement bottom navigation.
 function App() {
     return (
         <div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
