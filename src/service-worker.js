@@ -75,35 +75,68 @@ self.addEventListener('message', (event) => {
             case 'LOAD_STATE':
                 console.log("Loading data");
                 loadData().then(data => {
+                    console.log("Loaded data")
                     event.ports[0].postMessage(data);
-                    if (Notification && Notification.permission === "granted") {
+                    if (true) {
                         data = JSON.parse(data);
                         let numberTasksDue = 0;
-                        for(const list of Object.values(data?.tasks?.taskLists || {})) {
+                        for (const list of Object.values(data?.tasks?.taskLists || {})) {
                             numberTasksDue += list.tasks.length;
                         }
 
+                        const expiredItems = (data?.kitchen?.pantry?.items || []).filter(item => {
+                            return (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999) <= 0;
+                        }).length;
                         const expiringItems = (data?.kitchen?.pantry?.items || []).filter(item => {
-                            return item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999 <= 0;
+                            var remainingTime = (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999);
+                            return remainingTime <= 3 && remainingTime > 0;
                         }).length;
 
-                        if (numberTasksDue > 0)
-                        {
-                            // eslint-disable-next-line no-undef
-                            registration.showNotification("Tasks Due", {
-                                body: `${numberTasksDue} tasks due today.`,
-                                requireInteraction: false
-                            });
-                        }
-                        if (expiringItems > 0) {
-                            // eslint-disable-next-line no-undef
-                            registration.showNotification("Expiring Pantry Items", {
-                                body: `${expiringItems} items expiring soon.`,
-                                requireInteraction: false
-                            });
-                        }
+                        console.log("Sending notifications")
+                        self.clients.matchAll({
+                            includeUncontrolled: true
+                        }).then((clients) => {
+                            console.log("Notifying " + clients.length + " clients");
+                            if (numberTasksDue > 0) {
+                                // eslint-disable-next-line no-undef
+                                clients.forEach(client => {
+                                    client.postMessage({
+                                        type: "ALERT",
+                                        payload: JSON.stringify({
+                                            message: `${numberTasksDue} task(s) due today.`,
+                                            type: "warning"
+                                        }),
+                                    })
+                                });
+                            }
+
+                            if (expiredItems > 0) {
+                                clients.forEach(client => {
+                                    client.postMessage({
+                                        type: "ALERT",
+                                        payload: JSON.stringify({
+                                            message: `${expiredItems} items(s) have expired!`,
+                                            type: "error"
+                                        }),
+                                    })
+                                });
+                            }
+
+                            if (expiringItems > 0) {
+                                // eslint-disable-next-line no-undef
+                                clients.forEach(client => {
+                                    client.postMessage({
+                                        type: "ALERT",
+                                        payload: JSON.stringify({
+                                            message: `${expiringItems} items(s) expiring soon.`,
+                                            type: "warning"
+                                        }),
+                                    });
+                                })
+                            }
+                        });
                     }
-                })
+                }, err => console.error(err));
 
                 break;
             case 'SAVE_STATE':
@@ -148,7 +181,17 @@ self.addEventListener('notificationclose', event => {
 function save(data) {
     console.log("Doing save")
     return dbOpen().then(db => {
+        console.log("Starting save transaction")
         const tx = db.transaction("state", "readwrite");
+        tx.oncomplete = (() => {
+            console.log("Save transaction done")
+        });
+        tx.onabort = (() => {
+            console.log("Save transaction aborted")
+        });
+        tx.onerror = (() => {
+            console.log("Save transaction error")
+        });
         const store = tx.objectStore("state");
         console.log("Putting into db");
         store.put({id: 1, state: data});
@@ -157,7 +200,17 @@ function save(data) {
 
 function loadData() {
     return dbOpen().then(async (db) => {
-        const tx = db.transaction("state", "readwrite");
+        console.log("Starting load transaction")
+        const tx = db.transaction("state", "readonly");
+        tx.oncomplete = (() => {
+            console.log("Load transaction done")
+        });
+        tx.onabort = (() => {
+           console.log("Load transaction aborted")
+        });
+        tx.onerror = (() => {
+           console.log("Load transaction error")
+        });
         console.log("Reading from db");
         const store = tx.objectStore("state");
         const out = await new Promise((resolve, reject) => {
@@ -169,25 +222,28 @@ function loadData() {
             req.onerror = ev => reject(ev);
         });
         return out;
+    }, (err) => {
+        console.error(err);
     });
 }
 
 function dbOpen() {
+    console.log("Opening db...")
     return new Promise((resolve, reject) => {
-        const req = indexedDB.open("state", 1);
-        req.onsuccess = ev => {
+
+        const connection = indexedDB.open("state", 1);
+        connection.onsuccess = ev => {
             console.log("Opened database");
             resolve(ev.target.result);
         }
-        req.onerror = ev => reject(ev);
+        connection.onerror = ev => reject(ev);
 
-        req.onupgradeneeded = ev => {
+        connection.onupgradeneeded = ev => {
             console.log("Upgrading database");
             const db = ev.target.result;
             const objectStore = db.createObjectStore("state", {keyPath: "id"});
 
             objectStore.transaction.oncomplete = ev => {
-
             }
         }
     });
