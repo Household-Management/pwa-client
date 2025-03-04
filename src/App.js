@@ -34,7 +34,7 @@ const store = configureStore({
 
 console.log("Loading state from window");
 const wb = new Workbox(`${process.env.PUBLIC_URL}/service-worker.js`);
-wb.active.then((x) => {
+wb.active.then(() => {
     wb.messageSW({
         type: "LOAD_STATE"
     }).then((data) => {
