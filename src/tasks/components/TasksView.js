@@ -1,7 +1,7 @@
 import TaskListsBar from "./TaskListsBar";
 import {Fragment, useEffect} from "react";
 
-import {connect} from "react-redux";
+import {useDispatch} from "react-redux";
 import PropTypes from "prop-types";
 import {getActions} from "../state/TaskStateConfiguration";
 import TaskListDetail from "./TaskListDetail";
@@ -14,8 +14,9 @@ import {useHeader} from "../../layout/hooks/HeaderContext";
  */
 // TODO: Check for if a task is being edited when trying to open another one?
 // TODO: Handle deleting lists and tasks.
-export function TasksView({taskLists, selectedList, dispatch, ...props}) {
+export function TasksView({taskLists, selectedList, ...props}) {
     const { setHeaderContent } = useHeader()
+    const dispatch = useDispatch();
 
     useEffect(() => {
         setHeaderContent(<TaskListsBar taskLists={taskLists}
@@ -60,7 +61,3 @@ TasksView.propTypes = {
     taskLists: PropTypes.object.isRequired,
     selectedList: PropTypes.string
 }
-
-export default connect((state, ownProps) => {
-    return state.tasks;
-})(TasksView);
