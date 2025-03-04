@@ -12,8 +12,6 @@ import {Workbox} from "workbox-window";
 import {HeaderProvider} from "./layout/hooks/HeaderContext";
 import KitchenStateConfiguration from "./kitchen/state/KitchenStateConfiguration";
 import {router} from "./navigation/configuration/routing";
-// TODO: Extract the routes into a separate file.
-
 
 // TODO: Create a default "to-do" task list
 // TODO: Implement remote persistence.
