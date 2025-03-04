@@ -144,7 +144,6 @@ self.addEventListener('notificationclose', event => {
 
 // Any other custom service worker logic can go here.
 // TODO: Background timers don't work offline in pwa right now!
-// TODO: Implement persistence in service worker
 
 function save(data) {
     console.log("Doing save")
