@@ -40,7 +40,6 @@ export default function Alerts({ queuedAlerts, sx }) {
                 }, time) // TODO: Constant instead of literal
             }}
             in={shouldBeVisible}
-            out={!shouldBeVisible}
             onExited={() => {
                 dispatch(getActions().Clear());
                 setLastAlert(null);
