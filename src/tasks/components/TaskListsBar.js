@@ -1,9 +1,15 @@
-import {Box, Button, Container, Dialog, DialogTitle, IconButton, Input, TextField} from "@mui/material";
+import {
+    Box,
+    IconButton, Stack, ToggleButton,
+    ToggleButtonGroup, Toolbar
+} from "@mui/material";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useState } from "react";
+import {useState} from "react";
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from "prop-types";
+import {Link, NavLink} from "react-router-dom";
+import {useParams} from "react-router-dom";
 
 /**
  * Component for displaying the summarized list of all users to-do lists.
@@ -14,25 +20,30 @@ import PropTypes from "prop-types";
 function TaskListsBar(props) {
     const lists = props.taskLists ? Object.keys(props.taskLists) : [];
     const displayedTab = Math.max(0, lists.findIndex(id => id === props.selectedList));
-    return <Box style={{width: "100%"}}>
-        <Box sx={{borderBottom: 1, borderColor: 'divider', display: "flex", flexDirection: "row"}}>
+    return <div style={{overflowX: "auto"}}>
+        <Stack sx={{width: "100%", "justify-content": "flex-start", boxSizing: "border-box"}}
+               direction="row">
             <IconButton variant="contained" color="primary" data-testId="new-list" onClick={props.onListCreated}>
                 <AddIcon/>
             </IconButton>
-            <Tabs value={displayedTab} variant="scrollable" style={{width: "100%"}}>
+            <ToggleButtonGroup>
                 {
                     lists.map(listId => TaskTab(props.taskLists[listId], props.onSelect.bind(null, listId)))
                 }
-            </Tabs>
-        </Box>
-    </Box>
+            </ToggleButtonGroup>
+        </Stack>
+    </div>
 
 }
 
 function TaskTab(list, onClick) {
-    return <Tab key={list.id} label={list.name || "New List"} onClick={onClick}>
-        {JSON.stringify(list)}
-    </Tab>
+    return <ToggleButton value={list.id}>
+        <NavLink to={`/tasks/${list.id}`} className="nav-link">
+            <Tab key={list.id} label={list.name || "New List"} onClick={onClick}>
+                {JSON.stringify(list)}
+            </Tab>
+        </NavLink>
+    </ToggleButton>
 }
 
 TaskListsBar.propTypes = {
