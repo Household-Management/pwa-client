@@ -15,14 +15,6 @@ export default function (initialState) {
             selectedList: todoList.id
         },
         reducers: {
-            SelectList: (state, action) => {
-                state.selectedList = action.payload;
-                return state;
-            },
-            SelectTask: (state, action) => {
-                state.selectedTask = action.payload;
-                return state;
-            },
             CreateList: (state, action) => {
                 state.taskLists[action.payload.id] = action.payload;
                 return state;
@@ -43,10 +35,13 @@ export default function (initialState) {
                 return state;
             },
             DeleteList: (state, action) => {
-                delete state.taskLists[action.payload];
                 if(action.payload === state.selectedList) {
-                    state.selectedList = Object.keys(state.taskLists)[0];
+                    const keys = Object.keys(state.taskLists);
+                    const index = keys.indexOf(action.payload);
+                    state.selectedList = Object.keys(state.taskLists)[Math.max(0, index - 1)];
                 }
+                delete state.taskLists[action.payload];
+
                 return state;
             },
             DeleteTask: (state, action) => {
