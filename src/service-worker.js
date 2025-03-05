@@ -85,11 +85,12 @@ self.addEventListener('message', (event) => {
                         }
 
                         const expiredItems = (data?.kitchen?.pantry?.items || []).filter(item => {
-                            return (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999) <= 0;
+                            const remainingTime = (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999);
+                            return remainingTime < 0;
                         }).length;
                         const expiringItems = (data?.kitchen?.pantry?.items || []).filter(item => {
-                            var remainingTime = (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999);
-                            return remainingTime <= 3 && remainingTime > 0;
+                            const remainingTime = (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999);
+                            return remainingTime <= 3 && remainingTime >= 0;
                         }).length;
 
                         console.log("Sending notifications")
@@ -115,7 +116,7 @@ self.addEventListener('message', (event) => {
                                     client.postMessage({
                                         type: "ALERT",
                                         payload: JSON.stringify({
-                                            message: `${expiredItems} items(s) have expired!`,
+                                            message: `${expiredItems} pantry items(s) have expired!`,
                                             type: "error"
                                         }),
                                     })
@@ -128,7 +129,7 @@ self.addEventListener('message', (event) => {
                                     client.postMessage({
                                         type: "ALERT",
                                         payload: JSON.stringify({
-                                            message: `${expiringItems} items(s) expiring soon.`,
+                                            message: `${expiringItems} pantry items(s) expiring soon.`,
                                             type: "warning"
                                         }),
                                     });
