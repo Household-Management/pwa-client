@@ -18,7 +18,7 @@ export const router = createBrowserRouter(
                     loader: async () => redirect("/tasks")
                 },
                 {
-                    path: "/tasks",
+                    path: "/tasks/:id",
                     element: <TasksView/>
                 }, {
                     path: "/kitchen",
