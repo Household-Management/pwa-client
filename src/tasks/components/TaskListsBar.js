@@ -17,6 +17,7 @@ import {useParams} from "react-router-dom";
  * @returns {JSX.Element}
  * @constructor
  */
+// FIXME: Alerts show beneath this header.
 function TaskListsBar(props) {
     const lists = props.taskLists ? Object.keys(props.taskLists) : [];
     const displayedTab = Math.max(0, lists.findIndex(id => id === props.selectedList));
@@ -26,7 +27,7 @@ function TaskListsBar(props) {
             <IconButton variant="contained" color="primary" data-testId="new-list" onClick={props.onListCreated}>
                 <AddIcon/>
             </IconButton>
-            <ToggleButtonGroup>
+            <ToggleButtonGroup value={props.selectedList} exclusive onChange={(e, value) => props.onSelect(value || props.selectedList)}>
                 {
                     lists.map(listId => TaskTab(props.taskLists[listId], props.onSelect.bind(null, listId)))
                 }
@@ -36,10 +37,10 @@ function TaskListsBar(props) {
 
 }
 
-function TaskTab(list, onClick) {
+function TaskTab(list) {
     return <ToggleButton value={list.id}>
         <NavLink to={`/tasks/${list.id}`} className="nav-link">
-            <Tab key={list.id} label={list.name || "New List"} onClick={onClick}>
+            <Tab key={list.id} label={list.name || "New List"}>
                 {JSON.stringify(list)}
             </Tab>
         </NavLink>
