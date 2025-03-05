@@ -18,8 +18,18 @@ export const router = createBrowserRouter(
                     loader: async () => redirect("/tasks")
                 },
                 {
-                    path: "/tasks/:id",
-                    element: <TasksView/>
+                    path: "/tasks",
+                    element: <TasksView/>,
+                    children: [
+                        {
+                            index: true,
+                            loader: async () => redirect("/tasks/todo")
+                        },
+                        {
+                            path: "/tasks/:id",
+                            element: <TasksView/>,
+                        }
+                    ]
                 }, {
                     path: "/kitchen",
                     element: <KitchenView/>,
