@@ -30,7 +30,7 @@ function TaskListsBar(props) {
 }
 
 function TaskTab(list, onClick) {
-    return <Tab key={list.id} label={list.name} onClick={onClick}>
+    return <Tab key={list.id} label={list.name || "New List"} onClick={onClick}>
         {JSON.stringify(list)}
     </Tab>
 }

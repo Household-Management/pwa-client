@@ -1,7 +1,7 @@
 import TaskListsBar from "./TaskListsBar";
 import {Fragment, useEffect} from "react";
 
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import PropTypes from "prop-types";
 import {getActions} from "../state/TaskStateConfiguration";
 import TaskListDetail from "./TaskListDetail";
@@ -14,16 +14,19 @@ import {useHeader} from "../../layout/hooks/HeaderContext";
  */
 // TODO: Check for if a task is being edited when trying to open another one?
 // TODO: Handle deleting lists and tasks.
-export function TasksView({taskLists, selectedList, ...props}) {
+export function TasksView() {
     const { setHeaderContent } = useHeader()
     const dispatch = useDispatch();
+    const taskLists = useSelector(state => state.tasks.taskLists);
+    const selectedList = useSelector(state => state.tasks.selectedList);
+    const selectedTask = useSelector(state => state.tasks.selectedTask);
 
     useEffect(() => {
         setHeaderContent(<TaskListsBar taskLists={taskLists}
                                        onSelect={sel => dispatch(getActions().SelectList(sel))}
                                        selectedList={selectedList}
                                        onListCreated={() => {
-                                           const newList = {id: crypto.randomUUID(), name: "New List", tasks: []};
+                                           const newList = {id: crypto.randomUUID(), name: "", tasks: []};
                                            dispatch(getActions().CreateList(newList));
                                            dispatch(getActions().SelectList(newList.id));
                                        }}
@@ -33,7 +36,7 @@ export function TasksView({taskLists, selectedList, ...props}) {
     return <Fragment>
         {selectedList && taskLists[selectedList] &&
             <TaskListDetail list={taskLists[selectedList]}
-                            selectedTask={props.selectedTask}
+                            selectedTask={selectedTask}
                             onTaskSelected={(task) => dispatch(getActions().SelectTask(task))}
                             onTaskCreated={() => {
                                 const task = new Task(crypto.randomUUID(), "New Task", "");
@@ -55,9 +58,4 @@ export function TasksView({taskLists, selectedList, ...props}) {
                             }}
             />}
     </Fragment>
-}
-
-TasksView.propTypes = {
-    taskLists: PropTypes.object.isRequired,
-    selectedList: PropTypes.string
 }
