@@ -5,12 +5,9 @@ import {getActions} from "../configuration/AlertsStateConfiguration";
 import Collapse from "@mui/material/Collapse";
 import * as React from "react";
 
-export default function Alerts() {
+export default function Alerts({ queuedAlerts, sx }) {
     const [shouldBeVisible, setShouldBeVisible] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
-    const queuedAlerts = useSelector(state => {
-        return state.alerts.queued;
-    });
     const [lastAlert, setLastAlert] = useState(null);
 
     useEffect(() => {
@@ -33,11 +30,14 @@ export default function Alerts() {
 
     return <React.Fragment>
         <Collapse
+            sx={{position: "absolute", maxWidth: sx?.maxWidth || "60%", minWidth: sx?.minWidth || "400px"}}
             onEnter={() => {
                 setIsVisible(true);
+                // Max 10 seconds
+                const time = Math.max(1000, Math.min(10 * 1000, (lastAlert.message.length * 200)))
                 setTimeout(() => {
                     setShouldBeVisible(false)
-                }, 250 + (lastAlert.message.length * 200)) // TODO: Constant instead of literal
+                }, time) // TODO: Constant instead of literal
             }}
             in={shouldBeVisible}
             out={!shouldBeVisible}
@@ -49,6 +49,9 @@ export default function Alerts() {
         >
             <Alert
                 severity={lastAlert?.type}
+                onClose={() => {
+                    setShouldBeVisible(false);
+                }}
             >
                 {lastAlert?.message}
             </Alert>
