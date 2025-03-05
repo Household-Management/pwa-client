@@ -81,7 +81,7 @@ const PantryView = props => {
                             if (expirationRemaining < 0) {
                                 expiration = (<strong style={{"color": "red"}}>{item.expiration}</strong>)
                                 backgroundColor = "rgba(255, 0, 0, 0.2)";
-                            } else if (expirationRemaining < 3) {
+                            } else if (expirationRemaining <= 3) {
                                 expiration = (<strong style={{"color": "orange"}}>{item.expiration}</strong>)
                                 backgroundColor = "rgba(255, 255, 0, 0.2)";
                             }
