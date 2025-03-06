@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "aws-amplify": "^6.13.3",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^6.4.5",
@@ -20,7 +21,6 @@
     "react-redux": "^9.2.0",
     "react-router": "^6.22.3",
     "react-router-dom": "^6.22.3",
-    "react-scripts": "5.0.1",
     "react-timer-hook": "^3.0.8",
     "redux-saga": "^1.3.0",
     "sort-by": "^1.2.0",
@@ -29,15 +29,18 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "npm run worker-build && react-scripts build",
+    "dev-env": "npm run start && npm run sandbox",
+    "start": "vite",
+    "build": "npm run worker-build && tcs && vite build",
+    "serve": "vite preview",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "storybook dev -p 6006",
     "storybook-https": "storybook dev -p 6006 --https --ssl-cert=./localhost.crt --ssl-key=./localhost.key",
     "build-storybook": "storybook build",
     "worker-build-manifest": "npx workbox-cli injectManifest ./workbox-config.js && node build-serviceworker.js",
-    "worker-build": "node build-serviceworker.js"
+    "worker-build": "node build-serviceworker.js",
+    "sandbox": "npx ampx sandbox"
   },
   "eslintConfig": {
     "extends": [
@@ -59,7 +62,15 @@
     ]
   },
   "devDependencies": {
+
+    "vite": "^6.2.0",
+    "vite-plugin-svgr": "^4.3.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "@aws-amplify/backend": "^1.14.1",
+    "@aws-amplify/backend-cli": "^1.4.11",
     "@chromatic-com/storybook": "^1.3.1",
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@storybook/addon-actions": "^8.0.8",
     "@storybook/addon-essentials": "^8.0.6",
     "@storybook/addon-interactions": "^8.0.6",
@@ -71,11 +82,22 @@
     "@storybook/react": "^8.0.6",
     "@storybook/react-webpack5": "^8.0.6",
     "@storybook/test": "^8.0.6",
+    "@vitejs/plugin-react": "^4.3.4",
+    "aws-cdk": "^2.1002.0",
+    "aws-cdk-lib": "^2.182.0",
+    "constructs": "^10.4.2",
+    "esbuild": "^0.25.0",
     "eslint-plugin-storybook": "^0.8.0",
     "lodash": "^4.17.21",
     "msw": "^2.2.14",
     "prop-types": "^15.8.1",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "tsx": "^4.19.3",
+    "vite-plugin-node-polyfills": "^0.23.0",
     "webpack": "^5.91.0"
+  },
+  "overrides": {
+    "typescript": "^5"
   },
   "msw": {
     "workerDirectory": [

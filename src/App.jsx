@@ -10,7 +10,7 @@ import React from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
 import {TutorialStateConfiguration} from "./tutorials/state/TutorialStateConfiguration";
 import {Workbox} from "workbox-window";
-import {HeaderProvider} from "./layout/hooks/HeaderContext";
+import {HeaderProvider} from "./layout/hooks/HeaderContext.jsx";
 import KitchenStateConfiguration from "./kitchen/state/KitchenStateConfiguration";
 import {router} from "./navigation/configuration/routing";
 import AlertsStateConfiguration from "./alerts/configuration/AlertsStateConfiguration";
@@ -37,7 +37,7 @@ const store = configureStore({
 });
 
 console.log("Loading state from window");
-const wb = new Workbox(`${process.env.PUBLIC_URL}/service-worker.js`);
+const wb = new Workbox(`/service-worker.js`);
 
 navigator.serviceWorker.addEventListener('message', (event) => {
     switch (event.data.type) {
