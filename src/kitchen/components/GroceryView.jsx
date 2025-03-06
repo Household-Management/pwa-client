@@ -5,7 +5,7 @@ import {actions} from '../state/KitchenStateConfiguration';
 import {ExpandMore, ExpandLess, Add, Delete} from "@mui/icons-material";
 
 const GroceryView = () => {
-    const groceryLists = useSelector(state => state.kitchen.groceryLists.lists);
+    const groceryLists = useSelector(state => state.kitchen.groceries.lists);
     const dispatch = useDispatch();
     var [newListName, setNewListName] = useState("");
     const [expanded, setExpanded] = useState({});
