@@ -1,28 +1,52 @@
 import {getCurrentUser} from "@aws-amplify/auth";
 import '@aws-amplify/ui-react/styles.css';
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {Hub} from "@aws-amplify/core";
 import SignUp from "./SignUp";
 import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import SignIn from "./SignIn";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 
+// FIXME: Sign in modal shows briefly on load, show a loader instead.
 export default function AppAuthenticator({children}) {
+    const wb = useContext(ServiceWorkerContext);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        wb.active.then(() => {
+            wb.messageSW({
+                type: 'AUTHENTICATE',
+                payload: {
+                    useExisting: true
+                }
+            }).then(data => {
+                dispatch({
+                    type: "AUTHENTICATED",
+                    data: data.payload
+                })
+            });
+
+            // wb.messageSW({
+            //     type: "LOAD_STATE"
+            // }).then((data) => {
+            //     console.log("Loaded from service worker.");
+            //     store.dispatch({
+            //         type: "LOAD_STATE", data
+            //     });
+            //     store.dispatch(getAlertActions().Alert({message: "State loaded", type: "info"}));
+            // }, err => {
+            //     console.error(err);
+            // });
+        });
+
+    }, [wb]);
+
     const user = useSelector(state => state.user);
     useEffect(() => {
-        Hub.listen("auth", ({payload: {event, data}}) => {
-            switch (event) {
-                case "signIn":
-                    console.log("User signed in");
-                    break;
-                case "signOut":
-                    console.log("User signed out");
-                    break;
-            }
-        });
     }, []);
     return <>
-        {user ? children : <Authentication/> }
+        {user ? children : <Authentication/>}
     </>
 }
 
