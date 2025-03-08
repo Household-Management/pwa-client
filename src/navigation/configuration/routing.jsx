@@ -6,6 +6,7 @@ import RecipesView from "../../kitchen/components/RecipesView";
 import GroceryView from "../../kitchen/components/GroceryView";
 import React from "react";
 import {TasksView} from "../../tasks/components/TasksView";
+import SettingsView from "../../settings/components/SettingsView";
 
 export const router = createBrowserRouter(
     [
@@ -30,7 +31,8 @@ export const router = createBrowserRouter(
                             element: <TasksView/>,
                         }
                     ]
-                }, {
+                },
+                {
                     path: "/kitchen",
                     element: <KitchenView/>,
                     children: [
@@ -47,6 +49,10 @@ export const router = createBrowserRouter(
                             element: <GroceryView/>
                         }
                     ]
+                },
+                {
+                    path: "/settings",
+                    element: <SettingsView/>
                 }]
         }
     ]);
