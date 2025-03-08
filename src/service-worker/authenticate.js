@@ -7,6 +7,7 @@ export default async function (event) {
         try {
             // It really sucks that Amplify throws to represent an unauthenticated user, but *shrug*.+
             const currentUser = await getCurrentUser();
+            console.log("Notifying window of successful authentication");
             event.ports[0].postMessage({
                 type: "AUTHENTICATED",
                 payload: currentUser
@@ -30,4 +31,11 @@ export default async function (event) {
         });
     }
 
+}
+
+export async function signOutUser(event) {
+    await signOut();
+    event.ports[0].postMessage({
+        type: "UNAUTHENTICATED"
+    });
 }
