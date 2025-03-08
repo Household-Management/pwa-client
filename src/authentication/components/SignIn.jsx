@@ -1,19 +1,30 @@
 import {Stack, TextField, Button} from "@mui/material";
-import {useState} from "react";
+import {useContext, useState} from "react";
 import {signIn} from "@aws-amplify/auth";
+import {Workbox} from "workbox-window";
+import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
+import {useDispatch} from "react-redux";
+
 
 export default function () {
+    const wb = useContext(ServiceWorkerContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const dispatch = useDispatch();
 
     async function submit() {
-        navigator.serviceWorker.controller.postMessage({
+        await wb.active;
+        const response = await wb.messageSW({
             type: "AUTHENTICATE",
             payload: {
                 username: email,
                 password: password
             }
         });
+        dispatch({
+            type: "AUTHENTICATED",
+            data: response.payload
+        })
     }
     return <>
         <Stack spacing={2}>
