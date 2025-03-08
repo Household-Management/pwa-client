@@ -14,7 +14,10 @@ import {HeaderProvider} from "./layout/hooks/HeaderContext.jsx";
 import KitchenStateConfiguration from "./kitchen/state/KitchenStateConfiguration";
 import {router} from "./navigation/configuration/routing";
 import AlertsStateConfiguration from "./alerts/configuration/AlertsStateConfiguration";
-import { getActions as getAlertActions} from "./alerts/configuration/AlertsStateConfiguration";
+import {getActions as getAlertActions} from "./alerts/configuration/AlertsStateConfiguration";
+import AppAuthenticator from "./authentication/components/AppAuthenticator";
+import {Amplify} from "aws-amplify";
+import outputs from "../amplify_outputs";
 
 // TODO: Create a default "to-do" task list
 // TODO: Implement remote persistence.
@@ -28,6 +31,11 @@ const combinedReducer = combineReducers({
 });
 const store = configureStore({
     reducer: (state, action) => {
+        if (action.type === "AUTHENTICATED") {
+            console.log("Authenticated")
+            return {...state, user: action.data}
+        }
+
         if (action.type == "LOAD_STATE" && action.data) {
             return {alerts: state.alerts, ...JSON.parse(action.data)};
         } else {
@@ -51,24 +59,30 @@ navigator.serviceWorker.addEventListener('message', (event) => {
 
 wb.active.then(() => {
     wb.messageSW({
-        type: "LOAD_STATE"
-    }).then((data) => {
-        console.log("Loaded from service worker.");
+        type: 'AUTHENTICATE',
+        payload: {
+            useExisting: true
+        }
+    }).then(data => {
         store.dispatch({
-            type: "LOAD_STATE",
-            data
-        });
-        store.dispatch(getAlertActions().Alert({message: "State loaded", type: "info"}));
-    }, err => {
-        console.error(err);
+            type: "AUTHENTICATED", data
+        })
     });
+
+    // wb.messageSW({
+    //     type: "LOAD_STATE"
+    // }).then((data) => {
+    //     console.log("Loaded from service worker.");
+    //     store.dispatch({
+    //         type: "LOAD_STATE", data
+    //     });
+    //     store.dispatch(getAlertActions().Alert({message: "State loaded", type: "info"}));
+    // }, err => {
+    //     console.error(err);
+    // });
 });
 
-// Notification.requestPermission().then(permission => {
-//     if (permission === "granted") {
-//         console.log("Notifications granted");
-//     }
-// });
+Amplify.configure(outputs);
 
 wb.register();
 // TODO: On load, show notification of tasks that are due today.
@@ -79,8 +93,7 @@ store.subscribe(() => {
         const state = store.getState()
         console.log("save", state.alerts.active)
         wb.messageSW({
-            type: 'SAVE_STATE',
-            state: JSON.stringify(_.omit(state, ["alerts"]))
+            type: 'SAVE_STATE', state: JSON.stringify(_.omit(state, ["alerts"]))
         })
     });
 });
@@ -88,17 +101,17 @@ store.subscribe(() => {
 // TODO: Implement notifications for tasks.
 // TODO: Implement settings page.
 function App() {
-    return (
-        <div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
-            <HeaderProvider>
-                <Provider store={store}>
+    return (<div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
+        <Provider store={store}>
+            <AppAuthenticator>
+                <HeaderProvider>
+
                     <RouterProvider router={router}/>
-                </Provider>
-            </HeaderProvider>
+                </HeaderProvider>
+            </AppAuthenticator>
+        </Provider>
+    </div>);
 
-        </div>
-    );
 }
-
 
 export default App;

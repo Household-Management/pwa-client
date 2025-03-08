@@ -1,8 +1,16 @@
 /* eslint-disable no-restricted-globals */
 
 import {clientsClaim} from 'workbox-core';
+import {getCurrentUser} from "aws-amplify/auth";
 import moment from "moment/moment";
 
+import {generateClient} from "aws-amplify/data"
+import {Amplify} from "aws-amplify";
+import outputs from "../amplify_outputs.json";
+
+import authenticate from "./service-worker/authenticate";
+
+Amplify.configure(outputs);
 
 // eslint-disable-next-line no-undef
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.3/workbox-sw.js');
@@ -65,15 +73,25 @@ const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 // );
 
 
-self.addEventListener('message', (event) => {
+const dataClient = generateClient();
+
+
+self.addEventListener('message', async (event) => {
     console.log("message received", JSON.stringify(event.data));
     if (event.data)
         switch (event.data.type) {
+            case 'AUTHENTICATE':
+                authenticate(event)
             case 'SKIP_WAITING':
                 self.skipWaiting();
                 break;
             case 'LOAD_STATE':
                 console.log("Loading data");
+                const currentUser = await getCurrentUser();
+                dataClient.models.Kitchen.get({
+                    owner: currentUser.userId
+                })
+                /*
                 loadData().then(data => {
                     console.log("Loaded data")
                     event.ports[0].postMessage(data);
@@ -138,7 +156,7 @@ self.addEventListener('message', (event) => {
                         });
                     }
                 }, err => console.error(err));
-
+*/
                 break;
             case 'SAVE_STATE':
                 console.log("Saving data");
