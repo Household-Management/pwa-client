@@ -30,7 +30,7 @@ export default function Alerts({ queuedAlerts, sx }) {
 
     return <React.Fragment>
         <Collapse
-            sx={{position: "absolute", maxWidth: sx?.maxWidth || "60%", minWidth: sx?.minWidth || "400px"}}
+            sx={{position: "absolute", maxWidth: sx?.maxWidth || "60%", minWidth: sx?.minWidth || "400px", zIndex: 100}}
             onEnter={() => {
                 setIsVisible(true);
                 // Max 10 seconds
