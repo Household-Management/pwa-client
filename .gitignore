@@ -39,3 +39,7 @@ yarn-error.log*
 
 # Amplify artifacts
 .amplify/
+
+# amplify
+amplify_outputs*
+amplifyconfiguration*
