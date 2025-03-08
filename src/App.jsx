@@ -6,7 +6,7 @@ import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {Provider} from 'react-redux'
 import * as _ from "underscore";
 
-import React from "react";
+import React, {useContext} from "react";
 import TaskStateConfiguration from "./tasks/state/TaskStateConfiguration";
 import {TutorialStateConfiguration} from "./tutorials/state/TutorialStateConfiguration";
 import {Workbox} from "workbox-window";
@@ -18,6 +18,7 @@ import {getActions as getAlertActions} from "./alerts/configuration/AlertsStateC
 import AppAuthenticator from "./authentication/components/AppAuthenticator";
 import {Amplify} from "aws-amplify";
 import outputs from "../amplify_outputs";
+import {ServiceWorkerContext} from "./service-worker/ServiceWorkerContext";
 
 // TODO: Create a default "to-do" task list
 // TODO: Implement remote persistence.
@@ -27,13 +28,47 @@ const combinedReducer = combineReducers({
     tasks: TaskStateConfiguration().reducer,
     tutorials: TutorialStateConfiguration().reducer,
     kitchen: KitchenStateConfiguration(),
-    alerts: AlertsStateConfiguration()
+    alerts: AlertsStateConfiguration(),
+    user: (state = null, action) => {
+        if (action.type === "UNAUTHENTICATED") {
+            return null;
+        } else if (action.type === "AUTHENTICATED") {
+            return action.data;
+        } else {
+            return state ? state : {
+                user: null,
+                welcomed: false
+            };
+        }
+    }
 });
 const store = configureStore({
     reducer: (state, action) => {
-        if (action.type === "AUTHENTICATED") {
-            console.log("Authenticated")
-            return {...state, user: action.data}
+        if (action.type === "UNAUTHENTICATED") {
+            return {...state, user: null};
+        } else if (action.type === "AUTHENTICATED") {
+            if (!state.user?.welcomed) {
+                return {
+                    ...state, user: {
+                        user: action.data,
+                        welcomed: true
+                    }, alerts: {
+                        active: state.alerts.active,
+                        queued: [...state.alerts.queued, {
+                            message: `Welcome ${action.data.signInDetails.loginId}`,
+                            type: "success"
+                        }]
+                    }
+                }
+            } else {
+                return {
+                    ...state, user: {
+                        user: action.data,
+                        welcomed: state.user.welcomed
+                    }
+                }
+            }
+
         }
 
         if (action.type == "LOAD_STATE" && action.data) {
@@ -45,7 +80,6 @@ const store = configureStore({
 });
 
 console.log("Loading state from window");
-const wb = new Workbox(`/service-worker.js`);
 
 navigator.serviceWorker.addEventListener('message', (event) => {
     switch (event.data.type) {
@@ -57,38 +91,13 @@ navigator.serviceWorker.addEventListener('message', (event) => {
     }
 });
 
-wb.active.then(() => {
-    wb.messageSW({
-        type: 'AUTHENTICATE',
-        payload: {
-            useExisting: true
-        }
-    }).then(data => {
-        store.dispatch({
-            type: "AUTHENTICATED", data
-        })
-    });
-
-    // wb.messageSW({
-    //     type: "LOAD_STATE"
-    // }).then((data) => {
-    //     console.log("Loaded from service worker.");
-    //     store.dispatch({
-    //         type: "LOAD_STATE", data
-    //     });
-    //     store.dispatch(getAlertActions().Alert({message: "State loaded", type: "info"}));
-    // }, err => {
-    //     console.error(err);
-    // });
-});
-
 Amplify.configure(outputs);
 
-wb.register();
 // TODO: On load, show notification of tasks that are due today.
 store.subscribe(() => {
     // TODO: Save is being triggered multiple times, move into saga to prevent multiple saves.
     console.log("Persisting state after store update");
+    const wb = ServiceWorkerContext.Provider._context._currentValue;
     wb.active.then(x => {
         const state = store.getState()
         console.log("save", state.alerts.active)
@@ -105,7 +114,6 @@ function App() {
         <Provider store={store}>
             <AppAuthenticator>
                 <HeaderProvider>
-
                     <RouterProvider router={router}/>
                 </HeaderProvider>
             </AppAuthenticator>
