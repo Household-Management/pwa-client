@@ -22,8 +22,7 @@ function TaskListsBar(props) {
     const lists = props.taskLists ? Object.keys(props.taskLists) : [];
     const displayedTab = Math.max(0, lists.findIndex(id => id === props.selectedList));
     return <div style={{overflowX: "auto"}}>
-        <Stack sx={{width: "100%", "justify-content": "flex-start", boxSizing: "border-box"}}
-               direction="row">
+        <Toolbar sx={{width: "100%", "justify-content": "flex-start", boxSizing: "border-box"}}>
             <IconButton variant="contained" color="primary" data-testId="new-list" onClick={props.onListCreated}>
                 <AddIcon/>
             </IconButton>
@@ -32,7 +31,7 @@ function TaskListsBar(props) {
                     lists.map(listId => TaskTab(props.taskLists[listId], props.onSelect.bind(null, listId)))
                 }
             </ToggleButtonGroup>
-        </Stack>
+        </Toolbar>
     </div>
 
 }
