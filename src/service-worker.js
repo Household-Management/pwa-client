@@ -1,14 +1,14 @@
 /* eslint-disable no-restricted-globals */
 
 import {clientsClaim} from 'workbox-core';
-import {getCurrentUser} from "aws-amplify/auth";
-import moment from "moment/moment";
 
 import {generateClient} from "aws-amplify/data"
 import {Amplify} from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 
-import authenticate from "./service-worker/authenticate";
+import authenticate, {signOutUser} from "./service-worker/authenticate";
+import {loadData, saveData} from "./service-worker/data";
+import {signOut} from "@aws-amplify/auth";
 
 Amplify.configure(outputs);
 
@@ -80,87 +80,22 @@ self.addEventListener('message', async (event) => {
     console.log("message received", JSON.stringify(event.data));
     if (event.data)
         switch (event.data.type) {
+            case 'SIGN_OUT':
+                signOutUser(event);
+                break;
             case 'AUTHENTICATE':
                 authenticate(event)
+                break;
             case 'SKIP_WAITING':
                 self.skipWaiting();
                 break;
             case 'LOAD_STATE':
+                loadData(event)
                 console.log("Loading data");
-                const currentUser = await getCurrentUser();
-                dataClient.models.Kitchen.get({
-                    owner: currentUser.userId
-                })
-                /*
-                loadData().then(data => {
-                    console.log("Loaded data")
-                    event.ports[0].postMessage(data);
-                    if (true) {
-                        data = JSON.parse(data);
-                        let numberTasksDue = 0;
-                        for (const list of Object.values(data?.tasks?.taskLists || {})) {
-                            numberTasksDue += list.tasks.length;
-                        }
-
-                        const expiredItems = (data?.kitchen?.pantry?.items || []).filter(item => {
-                            const remainingTime = (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999);
-                            return remainingTime < 0;
-                        }).length;
-                        const expiringItems = (data?.kitchen?.pantry?.items || []).filter(item => {
-                            const remainingTime = (item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999);
-                            return remainingTime <= 3 && remainingTime >= 0;
-                        }).length;
-
-                        console.log("Sending notifications")
-                        self.clients.matchAll({
-                            includeUncontrolled: true
-                        }).then((clients) => {
-                            console.log("Notifying " + clients.length + " clients");
-                            if (numberTasksDue > 0) {
-                                // eslint-disable-next-line no-undef
-                                clients.forEach(client => {
-                                    client.postMessage({
-                                        type: "ALERT",
-                                        payload: JSON.stringify({
-                                            message: `${numberTasksDue} task(s) due today.`,
-                                            type: "warning"
-                                        }),
-                                    })
-                                });
-                            }
-
-                            if (expiredItems > 0) {
-                                clients.forEach(client => {
-                                    client.postMessage({
-                                        type: "ALERT",
-                                        payload: JSON.stringify({
-                                            message: `${expiredItems} pantry items(s) have expired!`,
-                                            type: "error"
-                                        }),
-                                    })
-                                });
-                            }
-
-                            if (expiringItems > 0) {
-                                // eslint-disable-next-line no-undef
-                                clients.forEach(client => {
-                                    client.postMessage({
-                                        type: "ALERT",
-                                        payload: JSON.stringify({
-                                            message: `${expiringItems} pantry items(s) expiring soon.`,
-                                            type: "warning"
-                                        }),
-                                    });
-                                })
-                            }
-                        });
-                    }
-                }, err => console.error(err));
-*/
                 break;
             case 'SAVE_STATE':
                 console.log("Saving data");
-                save(event.data.state);
+                saveData(event);
                 break;
             case 'SHOW_NOTIFICATION':
                 // eslint-disable-next-line no-undef
@@ -196,75 +131,3 @@ self.addEventListener('notificationclose', event => {
 
 // Any other custom service worker logic can go here.
 // TODO: Background timers don't work offline in pwa right now!
-
-function save(data) {
-    console.log("Doing save")
-    return dbOpen().then(db => {
-        console.log("Starting save transaction")
-        const tx = db.transaction("state", "readwrite");
-        tx.oncomplete = (() => {
-            console.log("Save transaction done")
-        });
-        tx.onabort = (() => {
-            console.log("Save transaction aborted")
-        });
-        tx.onerror = (() => {
-            console.log("Save transaction error")
-        });
-        const store = tx.objectStore("state");
-        console.log("Putting into db");
-        store.put({id: 1, state: data});
-    }, err => console.error(err.message));
-}
-
-function loadData() {
-    return dbOpen().then(async (db) => {
-        console.log("Starting load transaction")
-        const tx = db.transaction("state", "readonly");
-        tx.oncomplete = (() => {
-            console.log("Load transaction done")
-        });
-        tx.onabort = (() => {
-           console.log("Load transaction aborted")
-        });
-        tx.onerror = (() => {
-           console.log("Load transaction error")
-        });
-        console.log("Reading from db");
-        const store = tx.objectStore("state");
-        const out = await new Promise((resolve, reject) => {
-            const req = store.get(1);
-            req.onsuccess = ev => {
-                console.log("Read data from db");
-                resolve(ev.target.result?.state);
-            }
-            req.onerror = ev => reject(ev);
-        });
-        return out;
-    }, (err) => {
-        console.error(err);
-    });
-}
-
-function dbOpen() {
-    console.log("Opening db...")
-    return new Promise((resolve, reject) => {
-
-        const connection = indexedDB.open("state", 1);
-        connection.onsuccess = ev => {
-            console.log("Opened database");
-            resolve(ev.target.result);
-        }
-        connection.onerror = ev => reject(ev);
-
-        connection.onupgradeneeded = ev => {
-            console.log("Upgrading database");
-            const db = ev.target.result;
-            const objectStore = db.createObjectStore("state", {keyPath: "id"});
-
-            objectStore.transaction.oncomplete = ev => {
-            }
-        }
-    });
-
-}
