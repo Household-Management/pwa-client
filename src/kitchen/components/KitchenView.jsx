@@ -9,7 +9,7 @@ const KitchenView = () => {
     // Set the dynamic header content
     useEffect(() => {
         setHeaderContent(
-            <Toolbar sx={{width: "100%", "justify-content": "center", boxSizing: "border-box"}}>
+            <Toolbar sx={{width: "100%", justifyContent: "center", boxSizing: "border-box"}}>
                 <ToggleButtonGroup
                     color="primary"
                     value={window.location.pathname}
