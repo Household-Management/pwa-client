@@ -82,7 +82,7 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
 }
 
 TaskListDetail.propTypes = {
-    list: PropTypes.array.isRequired,
+    list: PropTypes.object.isRequired,
     onTaskChanged: PropTypes.func.isRequired,
     onTaskSelected: PropTypes.func.isRequired,
     onListDelete: PropTypes.func.isRequired
