@@ -1,11 +1,9 @@
 import {
-    Box,
-    IconButton, Stack, ToggleButton,
-    ToggleButtonGroup, Toolbar
+    IconButton, Toolbar
 } from "@mui/material";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import {useState} from "react";
+import {forwardRef} from "react";
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from "prop-types";
 import {Link, NavLink} from "react-router-dom";
@@ -19,31 +17,29 @@ import {useParams} from "react-router-dom";
  */
 // FIXME: Alerts show beneath this header.
 function TaskListsBar(props) {
-    const lists = props.taskLists ? Object.keys(props.taskLists) : [];
-    const displayedTab = Math.max(0, lists.findIndex(id => id === props.selectedList));
     return <div style={{overflowX: "auto"}}>
-        <Toolbar sx={{width: "100%", "justify-content": "flex-start", boxSizing: "border-box"}}>
-            <IconButton variant="contained" color="primary" data-testId="new-list" onClick={props.onListCreated}>
+        <Toolbar sx={{width: "100%", justifyContent: "flex-start", boxSizing: "border-box"}}>
+            <IconButton variant="contained" color="primary" data-testid="new-list" onClick={props.onListCreated}>
                 <AddIcon/>
             </IconButton>
-            <ToggleButtonGroup value={props.selectedList} exclusive onChange={(e, value) => props.onSelect(value || props.selectedList)}>
+            <Tabs value={props.selectedList}
+                  variant="scrollable"
+                  onChange={(e, value) => props.onSelect(value || props.selectedList)}>
                 {
-                    lists.map(listId => TaskTab(props.taskLists[listId], props.onSelect.bind(null, listId)))
+                    Object.values(props.taskLists).map(list =>
+                        (<Tab value={list.id}
+                              key={list.id}
+                              label={list.name || "New List"}
+                              // component={forwardRef((props, ref) => <NavLink {...props} ref={ref} />)}
+                        >
+                            {/*<NavLink to={`/tasks/${list.id}`} className="nav-link"/>*/}
+                        </Tab>)
+                    )
                 }
-            </ToggleButtonGroup>
+            </Tabs>
         </Toolbar>
     </div>
 
-}
-
-function TaskTab(list) {
-    return <ToggleButton value={list.id}>
-        <NavLink to={`/tasks/${list.id}`} className="nav-link">
-            <Tab key={list.id} label={list.name || "New List"}>
-                {JSON.stringify(list)}
-            </Tab>
-        </NavLink>
-    </ToggleButton>
 }
 
 TaskListsBar.propTypes = {
