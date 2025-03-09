@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import rollupNodePolyFill from 'rollup-plugin-node-polyfills'
-import * as url from "node:url";
+import json from "@rollup/plugin-json";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,17 +8,7 @@ export default defineConfig({
     plugins: [
         react()
     ],
-    define: {
-        "node:url" : url
-    },
     build: {
-        rollupOptions: {
-            plugins: [rollupNodePolyFill()]
-        }
-    },
-    resolve: {
-        alias: {
-            './runtimeConfig': './runtimeConfig.browser'
-        }
+        sourcemap: true
     }
 })
