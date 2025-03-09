@@ -1,4 +1,5 @@
 import {Stack, Button} from "@mui/material";
+import LogoutIcon from '@mui/icons-material/Logout';
 import {useContext} from "react";
 import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 import {useDispatch} from "react-redux";
@@ -19,6 +20,9 @@ export default function () {
         });
     }
     return <Stack spacing={2}>
-        <Button onClick={logOut}>Log Out</Button>
+        <Button variant="contained" color="error" onClick={logOut}>
+            <LogoutIcon/>
+            Sign Out
+        </Button>
     </Stack>
 }
