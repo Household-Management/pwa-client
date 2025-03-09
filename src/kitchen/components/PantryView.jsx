@@ -153,8 +153,9 @@ const PantryView = props => {
                                 }
                             }}
                             style={{width: "100%"}}
+                            defaultValue={""}
                         >
-                            <option value="" disabled selected>Select Location</option>
+                            <option value="" disabled>Select Location</option>
                             {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
                             {/*<option value="new">New...</option>*/}
                         </select>
