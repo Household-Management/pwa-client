@@ -48,7 +48,7 @@ const CustomAccordion = ({list, expanded, expandedSetter}) => {
         >{list.name} ({boughtItemCount}/{totalItemCount}){expanded ? <ExpandLess/> : <ExpandMore/>}</AccordionSummary>
         <AccordionDetails>
             <div>
-                Add Item
+                Add Item {/* Todo: Center vertically*/}
             </div>
             <Paper sx={{flexDirection: "row", display: "flex", width: "100%"}}>
                 <div className="grocery-new-item-container">
