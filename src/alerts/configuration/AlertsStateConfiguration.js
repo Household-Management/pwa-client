@@ -1,39 +1,28 @@
 import {combineReducers, createSlice} from "@reduxjs/toolkit";
 
-let slice = undefined;
-export default function (initialState) {
-    slice = createSlice({
-        name: "alerts",
-        initialState: {
-            active: null,
-            queued: []
+let slice = createSlice({
+    name: "alerts",
+    initialState: {
+        active: null,
+        queued: []
+    },
+    reducers: {
+        Alert: (state, action) => {
+            state.queued.push(action.payload);
+
+            return state;
         },
-        reducers: {
-            Alert: (state, action) => {
-                state.queued.push(action.payload);
 
-                return state;
-            },
-
-            Clear: (state) => {
-                if(state.queued.length > 0) {
-                    state.queued.shift();
-                }
-                return state;
-            },
-        }
-    })
-
-    for(const key in slice.actions) {
-        actions[key] = slice.actions[key];
+        Clear: (state) => {
+            if (state.queued.length > 0) {
+                state.queued.shift();
+            }
+            return state;
+        },
     }
-    return slice.reducer;
+});
 
+export default slice.reducer;
 
-}
-
-export function getActions() {
-    return actions;
-}
-
-export const actions = {}
+export const Clear = payload => ({...slice.actions.Clear(payload), noSave: true});
+export const Alert = payload => ({...slice.actions.Alert(payload), noSave: true});

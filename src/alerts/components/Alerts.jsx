@@ -1,7 +1,7 @@
 import {useDispatch, useSelector} from "react-redux";
 import {Alert} from "@mui/material";
 import {useEffect, useState} from "react";
-import {getActions} from "../configuration/AlertsStateConfiguration";
+import {Clear} from "../configuration/AlertsStateConfiguration";
 import Collapse from "@mui/material/Collapse";
 import * as React from "react";
 
@@ -41,7 +41,7 @@ export default function Alerts({ queuedAlerts, sx }) {
             }}
             in={shouldBeVisible}
             onExited={() => {
-                dispatch(getActions().Clear());
+                dispatch(Clear());
                 setLastAlert(null);
                 setIsVisible(setShouldBeVisible(false));
             }}
