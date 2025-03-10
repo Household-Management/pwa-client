@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {
     Box,
-    Button, IconButton,
+    Button, CircularProgress, IconButton,
     InputAdornment,
     Modal, Slide,
     Stack,
@@ -10,7 +10,6 @@ import {
     ToggleButtonGroup,
     Typography
 } from "@mui/material";
-import SignIn from "./SignIn";
 import parsePhoneNumber from "libphonenumber-js";
 import {confirmSignUp, signIn, signUp} from "@aws-amplify/auth";
 import {MuiTelInput} from "mui-tel-input";
@@ -21,8 +20,6 @@ export default function () {
 }
 
 const allowedCountries = ["US"];
-
-
 
 function PhoneSignUp() {
     const [phone, setPhone] = useState("");
@@ -131,6 +128,7 @@ function EmailSignUp() {
         if (confirmCode.length === 6) {
             (async () => {
                 try {
+                    setInProgress(true);
                     const signUpConfirmation = await confirmSignUp({
                         username: email,
                         confirmationCode: confirmCode
@@ -233,6 +231,7 @@ function EmailSignUp() {
                                 label="Confirm Code"
                                 onChange={e => setConfirmCode(e.target.value)}
                             ></TextField>
+                            {inProgress && <CircularProgress /> } // TODO: Center horizontally.
                             <Button variant="contained" color="error" onClick={() => setNextStep(null)}>Cancel</Button>
                         </Stack>
                     </Box>
