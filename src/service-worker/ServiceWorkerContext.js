@@ -1,4 +1,4 @@
-import {createContext} from "React";
+import {createContext} from "react";
 import {Workbox} from "workbox-window";
 
 const wb = new Workbox(`/service-worker.js`);
