@@ -11,6 +11,7 @@ export default function () {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const dispatch = useDispatch();
+    const [error, setError] = useState(null);
 
     async function submit() {
         await wb.active;
@@ -21,19 +22,28 @@ export default function () {
                 password: password
             }
         });
-        dispatch({
-            type: "AUTHENTICATED",
-            data: response.payload
-        })
+        if (response.error) {
+            setError("There was an error signing in. Try again later.");
+        } else {
+            dispatch({
+                type: "AUTHENTICATED",
+                noSave: true,
+                data: response.payload
+            })
+        }
+
     }
+
     return <>
         <Stack spacing={2}>
+            {error ? <div>{error}</div> : null}
             <TextField label="Email" type="text" value={email} onChange={e => setEmail(e.target.value)}></TextField>
-            <TextField label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)}></TextField>
+            <TextField label="Password" type="password" value={password}
+                       onChange={e => setPassword(e.target.value)}></TextField>
             <Button label="Sign In"
                     variant="contained"
                     onClick={submit}
                     disabled={email?.length === 0 || password?.length === 0}>Sign In</Button>
         </Stack>
-        </>
+    </>
 }
