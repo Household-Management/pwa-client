@@ -84,7 +84,7 @@ export const store = configureStore({
             case "LOADED_STATE":
                 console.log("Setting loaded state");
                 if (action.data) {
-                    return {...state, ...JSON.parse(action.data)};
+                    return {...state, ...action.data};
                 }
             default:
                 return combinedReducer(state, action);
