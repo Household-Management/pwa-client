@@ -2,6 +2,7 @@ import moment from "moment";
 import PropTypes from "prop-types";
 
 export default class Task {
+    id
     title
     description
     scheduledTime

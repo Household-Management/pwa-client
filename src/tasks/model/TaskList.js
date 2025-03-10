@@ -1,6 +1,6 @@
 export default class TaskList {
     id;
-    tasks;
+    taskItems;
     unremovable;
     constructor(id, name, tasks) {
         this.id = id;
@@ -17,7 +17,7 @@ export default class TaskList {
                 throw "Multiple tasks with the id " + task.id + " found"
             }
         }
-        this.tasks = tasks;
+        this.taskItems = tasks;
     }
 }
 

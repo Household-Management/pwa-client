@@ -2,7 +2,14 @@ import TaskListsBar from "./TaskListsBar";
 import {Fragment, useEffect} from "react";
 
 import {useDispatch, useSelector} from "react-redux";
-import {getActions} from "../state/TaskStateConfiguration";
+import {
+    CreateList,
+    selectLists,
+    selectActiveTask,
+    CreateTask,
+    DeleteList,
+    UpdateTask, DeleteTask, UpdateList
+} from "../state/TaskStateConfiguration";
 import TaskListDetail from "./TaskListDetail";
 import Task from "../model/Task";
 import {useHeader} from "../../layout/hooks/HeaderContext";
@@ -17,18 +24,24 @@ import {useNavigate, useParams} from "react-router-dom";
 export function TasksView() {
     const { setHeaderContent } = useHeader()
     const dispatch = useDispatch();
-    const taskLists = useSelector(state => state.tasks.taskLists);
+    const taskLists = useSelector(selectLists);
     const { id } = useParams();
-    const selectedTask = useSelector(state => state.tasks.selectedTask);
+    const selectedTask = useSelector(selectActiveTask);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if(!taskLists[selectedTask]) {
+            navigate(`/tasks/todo`);
+        }
+    }, [selectedTask])
 
     useEffect(() => {
         setHeaderContent(<TaskListsBar taskLists={taskLists}
                                        onSelect={selected => navigate(`/tasks/${selected}`)}
                                        selectedList={id}
                                        onListCreated={() => {
-                                           const newList = {id: crypto.randomUUID(), name: "", tasks: []};
-                                           dispatch(getActions().CreateList(newList));
+                                           const newList = {id: crypto.randomUUID(), name: "", taskItems: []};
+                                           dispatch(CreateList(newList));
                                            navigate(`/tasks/${newList.id}`);
                                        }}
         />)
@@ -41,20 +54,20 @@ export function TasksView() {
                             onTaskSelected={(task) => navigate(`/tasks/${task.id}`)}
                             onTaskCreated={() => {
                                 const task = new Task(crypto.randomUUID(), "New Task", "");
-                                dispatch(getActions().CreateTask({
+                                dispatch(CreateTask({
                                     targetList: id,
                                     newTask: {...task}
                                 }));
                             }}
-                            onTaskChanged={(task) => dispatch(getActions().UpdateTask(task))}
+                            onTaskChanged={(task) => dispatch(UpdateTask(task))}
                             onListDelete={(listId) => {
-                                dispatch(getActions().DeleteList(listId));
+                                dispatch(DeleteList(listId));
                             }}
                             onTaskDelete={(taskId) => {
-                                dispatch(getActions().DeleteTask({fromList: id, taskId}));
+                                dispatch(DeleteTask({fromList: id, taskId}));
                             }}
                             onListChanged={(list) => {
-                                dispatch(getActions().UpdateList(list))
+                                dispatch(UpdateList(list))
                             }}
             />}
     </Fragment>

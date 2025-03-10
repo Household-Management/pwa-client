@@ -58,7 +58,7 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
                     </div>}
                 </ListSubheader>
                 {/* FIXME: Make a nice header */}
-                {list.tasks.map(task =>
+                {list.taskItems.map(task =>
                     <ListItem>
                         <TaskDetailAccordion task={task}
                                              onChange={onTaskChanged}
