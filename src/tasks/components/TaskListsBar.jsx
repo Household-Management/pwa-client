@@ -6,8 +6,7 @@ import Tab from '@mui/material/Tab';
 import {forwardRef} from "react";
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from "prop-types";
-import {Link, NavLink} from "react-router-dom";
-import {useParams} from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 
 /**
  * Component for displaying the summarized list of all users to-do lists.
@@ -15,8 +14,8 @@ import {useParams} from "react-router-dom";
  * @returns {JSX.Element}
  * @constructor
  */
-// FIXME: Alerts show beneath this header.
 function TaskListsBar(props) {
+    const navigate = useNavigate();
     return <div style={{overflowX: "auto"}}>
         <Toolbar sx={{width: "100%", justifyContent: "flex-start", boxSizing: "border-box"}}>
             <IconButton variant="contained" color="primary" data-testid="new-list" onClick={props.onListCreated}>
@@ -24,16 +23,15 @@ function TaskListsBar(props) {
             </IconButton>
             <Tabs value={props.selectedList}
                   variant="scrollable"
-                  onChange={(e, value) => props.onSelect(value || props.selectedList)}>
+                  onChange={(e, value) => {
+                      navigate(`/tasks/${value}`);
+                  }}>
                 {
                     Object.values(props.taskLists).map(list =>
                         (<Tab value={list.id}
                               key={list.id}
                               label={list.name || "New List"}
-                              // component={forwardRef((props, ref) => <NavLink {...props} ref={ref} />)}
-                        >
-                            {/*<NavLink to={`/tasks/${list.id}`} className="nav-link"/>*/}
-                        </Tab>)
+                        />)
                     )
                 }
             </Tabs>
