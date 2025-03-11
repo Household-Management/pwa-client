@@ -37,11 +37,6 @@ export const slice = createSlice({
             return state;
         },
         DeleteList: (state, action) => {
-            if(action.payload === state.selectedList) {
-                const keys = Object.keys(state.taskLists);
-                const index = keys.indexOf(action.payload);
-                state.selectedList = Object.keys(state.taskLists)[Math.max(0, index - 1)];
-            }
             delete state.taskLists[action.payload];
 
             return state;
