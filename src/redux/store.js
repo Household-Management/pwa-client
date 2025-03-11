@@ -47,6 +47,9 @@ function* welcomeUser() {
             )
         }
     })
+    yield takeLeading("UNAUTHENTICATED", function* (action) {
+        welcomed = false
+    });
 }
 
 function* loadOnAuthenticate() {
