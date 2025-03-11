@@ -4,17 +4,13 @@ import {getCurrentUser} from "aws-amplify/auth";
 export default async function (event) {
     const {data} = event;
     if (data.payload.useExisting) {
-        try {
-            // It really sucks that Amplify throws to represent an unauthenticated user, but *shrug*.+
-            const currentUser = await getCurrentUser();
-            console.log("Notifying window of successful authentication");
-            event.ports[0].postMessage({
-                type: "AUTHENTICATED",
-                payload: currentUser
-            })
-        } catch (e) {
-            console.error("No existing user", e);
-        }
+        // It really sucks that Amplify throws to represent an unauthenticated user, but *shrug*.+
+        const currentUser = await getCurrentUser();
+        console.log("Notifying window of successful authentication");
+        event.ports[0].postMessage({
+            type: "AUTHENTICATED",
+            payload: currentUser
+        })
     } else {
         await signOut()
         await signIn({
@@ -26,8 +22,6 @@ export default async function (event) {
         event.ports[0].postMessage({
             type: "AUTHENTICATED",
             payload: currentUser
-        }, err => {
-            console.error(err);
         });
     }
 
