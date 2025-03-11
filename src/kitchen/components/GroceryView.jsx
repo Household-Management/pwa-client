@@ -7,16 +7,19 @@ import {ExpandMore, ExpandLess, Add, Delete} from "@mui/icons-material";
 const GroceryView = () => {
     const groceryLists = useSelector(state => state.kitchen.groceries.lists);
     const dispatch = useDispatch();
-    var [newListName, setNewListName] = useState("");
+    const [newListName, setNewListName] = useState("");
     const [expanded, setExpanded] = useState({});
     return (
         <div>
             <div style={{display: 'flex', overflowX: 'auto', borderBottom: '1px solid #ccc'}}>
                 {groceryLists.map(list => {
-                    return <CustomAccordion list={list} expanded={expanded[list.id]} expandedSetter={(value) => {
-                        expanded[list.id] = value;
-                        setExpanded({...expanded})
-                    }}/>
+                    return <CustomAccordion key={list.id}
+                                            list={list}
+                                            expanded={expanded[list.id]}
+                                            expandedSetter={(value) => {
+                                                expanded[list.id] = value;
+                                                setExpanded({...expanded})
+                                            }}/>
                 })}
             </div>
             <div style={{display: "none"}}>
@@ -59,15 +62,15 @@ const CustomAccordion = ({list, expanded, expandedSetter}) => {
                                onChange={ev => setNewItemQuantity(Number.parseInt(ev.target.value))}/>
                     </div>
                     <div className="grocery-new-item-container-buttons">
-                    <Button onClick={() => dispatch(actions.groceryLists.AddListItem({
-                        listId: list.id,
-                        itemName: newItemName,
-                        quantity: newItemQuantity
-                    }))}
-                            variant="contained"
-                    >
-                        <Add/>
-                    </Button>
+                        <Button onClick={() => dispatch(actions.groceryLists.AddListItem({
+                            listId: list.id,
+                            itemName: newItemName,
+                            quantity: newItemQuantity
+                        }))}
+                                variant="contained"
+                        >
+                            <Add/>
+                        </Button>
                     </div>
                 </div>
             </Paper>
