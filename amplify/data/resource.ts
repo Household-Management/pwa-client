@@ -7,43 +7,74 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
+    Household: a.model({
+        id: a.id().required(),
+        kitchen: a.hasOne("Kitchen", "id"),
+        householdTasks: a.hasOne("HouseholdTasks", "id"),
+        members: a.string().array(),
+    }),
+    HouseholdTasks: a.model({
+        id: a.id().required(),
+        taskLists: a.hasMany("TaskList", "id"),
+        household: a.belongsTo("Household", "id"),
+    }),
+    TaskList: a.model({
+        id: a.id().required(),
+        taskItems: a.hasMany("Task", "id"),
+        listTasks: a.belongsTo("HouseholdTasks", "id"),
+    }),
+    Task: a.model({
+        id: a.id().required(),
+        title: a.string(),
+        scheduledTime: a.string(),
+        repeats: a.hasOne("TaskRepeat", "id"),
+        description: a.string(),
+        list: a.belongsTo("TaskList", "id"),
+    }),
+    TaskRepeat: a.model({
+        id: a.id().required(),
+        repeatType: a.string(),
+        repeatOn: a.boolean().array(),
+        task: a.belongsTo("Task", "id"),
+    }),
     Kitchen: a.model({
-        id: a.id(),
+        id: a.id().required(),
         groceries: a.hasOne("Groceries", "id"),
         pantry: a.hasOne("Pantry", "id"),
+        household: a.belongsTo("Household", "id"),
     }),
     Groceries: a.model({
-        id: a.id(),
+        id: a.id().required(),
         lists: a.hasMany("GroceryList", "id"),
         kitchen: a.belongsTo("Kitchen", "id"),
     }),
     GroceryList: a.model({
-        id: a.id(),
+        id: a.id().required(),
         items: a.hasMany("GroceryItem", "id"),
         groceries: a.belongsTo("Groceries", "id"),
     }).authorization(allow => allow.owner().to(["read", "create", "update"])),
     GroceryItem: a.model({
-        id: a.id(),
+        id: a.id().required(),
         name: a.string(),
         quantity: a.integer(),
         unit: a.string(),
         list: a.belongsTo("GroceryList", "id"),
     }).authorization(allow => allow.owner().to(["read", "create", "update"])),
     Pantry: a.model({
-        id: a.id(),
+        id: a.id().required(),
         locations: a.string().array(),
         items: a.hasMany("PantryItem", "id"),
         kitchen: a.belongsTo("Kitchen", "id"),
     }),
     PantryItem: a.model({
-        id: a.id(),
+        id: a.id().required(),
         name: a.string(),
         quantity: a.integer(),
         location: a.string(),
         expiration: a.date(),
         pantry: a.belongsTo("Pantry", "id"),
     }).authorization(allow => allow.owner().to(["read", "create", "update"])),
-}).authorization(allow => allow.owner().to(["read"]));
+}).authorization(allow => allow.owner().to(["read", "create", "update"]));
 
 export type Schema = ClientSchema<typeof schema>;
 
