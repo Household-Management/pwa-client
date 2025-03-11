@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {Accordion, AccordionSummary, AccordionDetails, Paper, Button, IconButton} from '@mui/material'
-import {actions} from '../state/KitchenStateConfiguration';
+import { AddGroceryList, AddGroceryListItem } from '../state/GroceriesStateConfiguration';
 import {ExpandMore, ExpandLess, Add, Delete} from "@mui/icons-material";
 
 const GroceryView = () => {
@@ -26,7 +26,7 @@ const GroceryView = () => {
                 <input type="text" placeholder="New List Name" value={newListName}
                        onChange={(ev) => setNewListName(ev.target.value)}/>
                 <button onClick={() => {
-                    dispatch(actions.groceryLists.AddList({name: newListName}));
+                    dispatch(AddGroceryList({name: newListName}));
                     setNewListName("");
                 }}>Create New List
                 </button>
@@ -62,7 +62,7 @@ const CustomAccordion = ({list, expanded, expandedSetter}) => {
                                onChange={ev => setNewItemQuantity(Number.parseInt(ev.target.value))}/>
                     </div>
                     <div className="grocery-new-item-container-buttons">
-                        <Button onClick={() => dispatch(actions.groceryLists.AddListItem({
+                        <Button onClick={() => dispatch(AddGroceryListItem({
                             listId: list.id,
                             itemName: newItemName,
                             quantity: newItemQuantity

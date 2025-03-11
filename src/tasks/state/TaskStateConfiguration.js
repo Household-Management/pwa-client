@@ -1,17 +1,20 @@
 import {createSlice} from "@reduxjs/toolkit";
 import TaskList from "../model/TaskList";
+
+const initialState = {
+    taskLists: {
+        ["todo"]: (() => {
+            const todoList = new TaskList("todo", "To-Do", []);
+            todoList.unremovable = true;
+            return todoList;
+        })()
+    },
+    selectedTask: null
+}
+
 export const slice = createSlice({
     name: "householdTasks",
-    initialState: {
-        taskLists: {
-            ["todo"]: (() => {
-                const todoList = new TaskList("todo", "To-Do", []);
-                todoList.unremovable = true;
-                return todoList;
-            })()
-        },
-        selectedTask: null
-    },
+    initialState,
     selectors: {
         selectLists: state => state.taskLists,
         selectActiveTask: state => state.selectedTask
@@ -49,6 +52,13 @@ export const slice = createSlice({
             }
             return state;
         }
+    },
+    extraReducers: builder => {
+        builder.addMatcher(action => {
+            return action.type === "LOADED_STATE";
+        }, (state, action) => {
+            return action.payload.tasks || initialState;
+        })
     }
 });
 

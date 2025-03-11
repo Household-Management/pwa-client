@@ -31,7 +31,7 @@ export default function AppAuthenticator({children}) {
                 setAuthenticationNeeded(false);
                 dispatch({
                     type: "AUTHENTICATED",
-                    data: response.payload,
+                    payload: response.payload,
                     noSave: true
                 });
             });

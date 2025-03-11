@@ -1,5 +1,4 @@
 import {useSelector, useDispatch} from "react-redux";
-import {actions} from "../state/KitchenStateConfiguration";
 import {useState} from "react";
 import {
     Accordion,
@@ -48,14 +47,14 @@ const PantryView = props => {
                 expiration: expirationDate,
                 location: itemLocation
             };
-            dispatch(actions.pantry.AddItem(newItem));
+            dispatch(AddItem(newItem));
             setItemName("");
             setExpirationDate("");
         }
     };
     const handleAddLocation = () => {
         if (locationName) {
-            dispatch(actions.pantry.AddLocation(locationName));
+            dispatch(AddLocation(locationName));
             setLocationName("");
             setIsDialogOpen(false)
         }
@@ -98,7 +97,7 @@ const PantryView = props => {
                                     textAlign: "center"
                                 }}>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={() => dispatch(actions.pantry.RemoveItem(item.id))}>
+                                    <IconButton onClick={() => dispatch(RemovePantryItem(item.id))}>
                                         <Delete/>
                                     </IconButton>
                                 </TableCell>

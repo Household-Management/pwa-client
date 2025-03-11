@@ -1,12 +1,14 @@
-import {combineReducers, configureStore} from "@reduxjs/toolkit";
+import {combineReducers, combineSlices, configureStore} from "@reduxjs/toolkit";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
 import {TutorialStateConfiguration} from "../tutorials/state/TutorialStateConfiguration";
-import KitchenStateConfiguration from "../kitchen/state/KitchenStateConfiguration";
 import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsStateConfiguration";
 import {ServiceWorkerContext} from "../service-worker/ServiceWorkerContext";
 import {put, takeLeading, select, call, spawn, debounce, takeLatest} from "redux-saga/effects";
 import * as _ from "lodash";
 import createSagaMiddleware from "redux-saga";
+import PantryStateConfiguration from "../kitchen/pantry/state/PantryStateConfiguration";
+import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesStateConfiguration";
+import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
 
 // TODO: Create a default "to-do" task list
 // TODO: Implement remote persistence.
@@ -15,7 +17,11 @@ import createSagaMiddleware from "redux-saga";
 const combinedReducer = combineReducers({
     householdTasks: TaskStateConfiguration,
     tutorials: TutorialStateConfiguration().reducer,
-    kitchen: KitchenStateConfiguration(),
+    kitchen: combineSlices({
+        pantry: PantryStateConfiguration,
+        groceries: GroceriesStateConfiguration,
+        recipes: RecipesStateConfiguration
+    }),
     alerts: AlertsStateConfiguration,
     user: (state = null, action) => {
         if (action.type === "UNAUTHENTICATED") {
@@ -24,7 +30,7 @@ const combinedReducer = combineReducers({
                 welcomed: false
             };
         } else if (action.type === "AUTHENTICATED") {
-            return {...state, user: action.data};
+            return {...state, user: action.payload};
         } else {
             return state ? state : {
                 user: null,
@@ -60,7 +66,7 @@ function* loadOnAuthenticate() {
         }));
         yield put({
             type: "LOADED_STATE",
-            data: loaded.data,
+            payload: loaded.payload,
             noSave: true
         });
     })
@@ -84,11 +90,6 @@ function* persistOnChange() {
 export const store = configureStore({
     reducer: (state, action) => {
         switch (action.type) {
-            case "LOADED_STATE":
-                console.log("Setting loaded state");
-                if (action.data) {
-                    return {...state, ...action.data};
-                }
             default:
                 return combinedReducer(state, action);
         }

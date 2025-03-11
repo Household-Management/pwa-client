@@ -28,7 +28,7 @@ export default function () {
             dispatch({
                 type: "AUTHENTICATED",
                 noSave: true,
-                data: response.payload
+                payload: response.payload
             })
         }
 
