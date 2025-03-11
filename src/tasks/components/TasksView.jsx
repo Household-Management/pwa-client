@@ -14,6 +14,7 @@ import TaskListDetail from "./TaskListDetail";
 import Task from "../model/Task";
 import {useHeader} from "../../layout/hooks/HeaderContext";
 import {useNavigate, useParams} from "react-router-dom";
+import _ from "lodash";
 
 /**
  * Top-level container for all user tasks ui elements.
@@ -62,6 +63,10 @@ export function TasksView() {
                             onTaskChanged={(task) => dispatch(UpdateTask(task))}
                             onListDelete={(listId) => {
                                 dispatch(DeleteList(listId));
+                                let lists = Object.keys(taskLists)
+                                let index = Math.max(0, lists.indexOf(listId) - 1);
+
+                                navigate(`/tasks/${lists[index]}`);
                             }}
                             onTaskDelete={(taskId) => {
                                 dispatch(DeleteTask({fromList: id, taskId}));
