@@ -20,7 +20,7 @@ export const slice = createSlice({
         builder.addMatcher(action => {
             return action.type === "LOADED_STATE";
         }, (state, action) => {
-            return action.payload.recipes || initialState;
+            return action.payload?.kitchen?.recipes || initialState;
         })
     }
 });
