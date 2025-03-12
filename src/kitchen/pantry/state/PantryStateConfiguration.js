@@ -28,7 +28,7 @@ const slice =  createSlice({
         builder.addMatcher(action => {
             return action.type === "LOADED_STATE";
         }, (state, action) => {
-            return action.payload.pantry || initialState;
+            return action?.payload?.pantry || initialState;
         })
     }
 });
