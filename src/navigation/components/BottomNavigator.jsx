@@ -5,6 +5,8 @@ import KitchenIcon from "@mui/icons-material/Kitchen";
 import SettingsIcon from "@mui/icons-material/Settings";
 import React, {useState} from "react";
 
+// FIXME: If loading when a top-level route is not selected, no button will be selected.
+
 export default function BottomNavigator(props) {
     const [tab, setTab] = useState(routes.findIndex(({path}) => window.location.pathname.startsWith(path)));
     return <Paper id="blahblah" sx={{ display:"flex", position: "relative", flexGrow: 0, flexShrink: 1, justifyContent: "center", bottom: "10px" }} elevation={3}>
@@ -25,7 +27,7 @@ const routes = [
     {
         label: "Pantry and Recipes",
         icon: <KitchenIcon/>,
-        path: "/kitchen/pantry"
+        path: "/kitchen"
     },
     {
         label: "Settings",

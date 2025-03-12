@@ -37,15 +37,19 @@ export const router = createBrowserRouter(
                     element: <KitchenView/>,
                     children: [
                         {
-                            path: "pantry",
+                            index: true,
+                            loader: async () => redirect("/kitchen/pantry")
+                        },
+                        {
+                            path: "/kitchen/pantry",
                             element: <PantryView/>
                         },
                         {
-                            path: "recipes",
+                            path: "/kitchen/recipes",
                             element: <RecipesView/>
                         },
                         {
-                            path: "grocery",
+                            path: "/kitchen/grocery",
                             element: <GroceryView/>
                         }
                     ]
