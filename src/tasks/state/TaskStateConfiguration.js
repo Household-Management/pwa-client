@@ -57,7 +57,7 @@ export const slice = createSlice({
         builder.addMatcher(action => {
             return action.type === "LOADED_STATE";
         }, (state, action) => {
-            return action.payload.tasks || initialState;
+            return action?.payload?.tasks || initialState;
         })
     }
 });
