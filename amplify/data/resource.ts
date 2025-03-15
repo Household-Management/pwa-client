@@ -1,16 +1,12 @@
 import {type ClientSchema, a, defineData} from '@aws-amplify/backend';
+import {SchemaModelGenerator} from "../../src/tasks/model/Task"
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
     Household: a.model({
         id: a.id().required(),
         kitchen: a.hasOne("Kitchen", "id"),
         householdTasks: a.hasOne("HouseholdTasks", "id"),
+        recipes: a.hasOne("HouseholdRecipes", "id"),
         members: a.string().array(),
     }),
     HouseholdTasks: a.model({
@@ -74,6 +70,31 @@ const schema = a.schema({
         expiration: a.date(),
         pantry: a.belongsTo("Pantry", "id"),
     }).authorization(allow => allow.owner().to(["read", "create", "update"])),
+    HouseholdRecipes: a.model({
+        id: a.id().required(),
+        recipes: a.hasMany("Recipe", "id"),
+        household: a.belongsTo("Household", "id"),
+    }),
+    Recipe: a.model({
+        id: a.id().required(),
+        title: a.string(),
+        description: a.string(),
+        ingredients: a.hasMany("RecipeIngredient", "id"),
+        instructions: a.string().array(),
+        belongsTo: a.belongsTo("HouseholdRecipes", "id"),
+    }),
+    RecipeIngredient: a.model({
+        id: a.id().required(),
+        recipe: a.belongsTo("Recipe", "id"),
+        ingredient: a.belongsTo("Ingredient", "id"),
+        quantity: a.integer(),
+        unit: a.string()
+    }),
+    Ingredient: a.model({
+        id: a.id().required(),
+        name: a.string(),
+        recipes: a.hasMany("RecipeIngredient", "id")
+    })
 }).authorization(allow => allow.owner().to(["read", "create", "update"]));
 
 export type Schema = ClientSchema<typeof schema>;
