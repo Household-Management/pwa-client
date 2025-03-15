@@ -8,6 +8,8 @@
 # generated
 /public/service-worker.js
 /public/workbox-injected-service-worker.js
+/public/mockServiceWorker.js
+/public/service-worker.js.map
 
 # testing
 /coverage
