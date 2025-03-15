@@ -12,6 +12,7 @@ export default defineConfig({
         react(),
         VitePWA({
             injectManifest: {
+                injectionPoint: undefined,
                 globDirectory: './dist',
                 globPatterns: ['**/*.{js,css,html,png,svg}'],
             },
