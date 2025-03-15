@@ -1,14 +1,15 @@
 /* eslint-disable no-restricted-globals */
 
 import {clientsClaim} from 'workbox-core';
+import {registerRoute} from 'workbox-routing';
+import { StaleWhileRevalidate } from "workbox-strategies";
 
-import {generateClient} from "aws-amplify/data"
 import {Amplify} from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 
 import authenticate, {signOutUser} from "./service-worker/authenticate";
-import {loadData, saveData} from "./service-worker/data";
-import {signOut} from "@aws-amplify/auth";
+import {getData, putData} from "./service-worker/data/data";
+import {precacheAndRoute} from "workbox-precaching";
 
 Amplify.configure(outputs);
 
@@ -73,44 +74,52 @@ const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 // );
 
 
-const dataClient = generateClient();
-
-
 self.addEventListener('message', async (event) => {
-    console.log("message received", JSON.stringify(event.data));
-    if (event.data)
-        switch (event.data.type) {
-            case 'SIGN_OUT':
-                signOutUser(event);
-                break;
-            case 'AUTHENTICATE':
-                authenticate(event)
-                break;
-            case 'SKIP_WAITING':
-                self.skipWaiting();
-                break;
-            case 'LOAD_STATE':
-                loadData(event)
-                console.log("Loading data");
-                break;
-            case 'SAVE_STATE':
-                console.log("Saving data");
-                saveData(event);
-                break;
-            case 'SHOW_NOTIFICATION':
-                // eslint-disable-next-line no-undef
-                registration.showNotification("Test Task", {
-                    body: "Hello World",
-                    requireInteraction: true,
-                    actions: [
-                        {action: "complete", title: "Complete"},
-                        {action: "snooze", title: "Snooze"},
-                        {action: "cancel", title: "Cancel"}
-                    ],
-                    tag: "Hello World"
-                });
-                break;
-        }
+    try {
+        console.log("message received", event.type);
+        if (event.data)
+            switch (event.data.type) {
+                case 'SIGN_OUT':
+                    await signOutUser(event);
+                    break;
+                case 'AUTHENTICATE':
+                    await authenticate(event)
+                    break;
+                case 'SKIP_WAITING':
+                    self.skipWaiting();
+                    break;
+                case 'LOAD_STATE':
+                    console.log("Loading data");
+                    const data = await getData(event)
+                    if (event.ports.length > 0) {
+                        event.ports[0].postMessage({
+                            type: "LOADED_STATE",
+                            payload: data
+                        });
+                    }
+                    break;
+                case 'SAVE_STATE':
+                    console.log("Saving data");
+                    await putData(event);
+                    break;
+                case 'SHOW_NOTIFICATION':
+                    // eslint-disable-next-line no-undef
+                    // TODO: Move into other script
+                    registration.showNotification("Test Task", {
+                        body: "Hello World",
+                        requireInteraction: true,
+                        actions: [
+                            {action: "complete", title: "Complete"},
+                            {action: "snooze", title: "Snooze"},
+                            {action: "cancel", title: "Cancel"}
+                        ],
+                        tag: "Hello World"
+                    });
+                    break;
+            }
+    } catch (e) {
+        event.ports[0].postMessage({error: e});
+    }
 });
 
 self.addEventListener('activate', (event) => {
