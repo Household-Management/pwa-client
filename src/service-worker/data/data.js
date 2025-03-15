@@ -1,5 +1,4 @@
 import {getCurrentUser} from "aws-amplify/auth";
-import {fetchData, pushData} from "./remote";
 import {loadData, saveData} from "./local";
 
 export async function getData(event) {
