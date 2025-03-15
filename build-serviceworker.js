@@ -1,4 +1,5 @@
-const { build } = require("esbuild");
+const {build} = require("esbuild");
+const {injectManifest} = require("workbox-build");
 
 build({
     entryPoints: ["src/service-worker.js"],
@@ -7,4 +8,6 @@ build({
     define: {
         "process.env.PUBLIC_URL": `""`
     }
-})
+}).then(async () => {
+    await injectManifest({...workboxConfig});
+});
