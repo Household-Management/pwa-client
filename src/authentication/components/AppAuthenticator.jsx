@@ -6,6 +6,8 @@ import SignIn from "./SignIn";
 import {useDispatch, useSelector} from "react-redux";
 import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 
+// TODO: Add role guard elements
+// TODO: When login fails while offline, tell the user that they need to be online to login.
 export default function AppAuthenticator({children}) {
     const wb = useContext(ServiceWorkerContext);
     const dispatch = useDispatch();
