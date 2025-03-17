@@ -23,7 +23,14 @@ export default function () {
             }
         });
         if (response.error) {
-            setError("There was an error signing in. Try again later.");
+            switch(response.error.name) {
+                case "NotAuthorizedException":
+                    setError(response.error.message);
+                    break;
+                default:
+                    setError("There was an error signing in. Try again later.");
+                    break;
+            }
         } else {
             dispatch({
                 type: "AUTHENTICATED",
