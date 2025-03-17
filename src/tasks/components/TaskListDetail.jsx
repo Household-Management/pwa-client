@@ -9,6 +9,7 @@ import {Fragment, useEffect, useRef, useState} from "react";
 import TaskDetailAccordion from "./TaskDetailAccordion";
 import PropTypes from "prop-types";
 import Fab from "@mui/material/Fab";
+import {useParams} from "react-router-dom";
 
 /**
  * Component for displaying the detailed view of a TaskList model instance.
@@ -19,17 +20,9 @@ import Fab from "@mui/material/Fab";
 // TODO: Edit name of list
 export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListChanged, onListDelete, onTaskDelete, selectedTask}) {
     const [editing, setEditing] = useState(false);
-    const [selectedList, setSelectedList] = useState(list.id);
+    const { taskId: selectedTaskId } = useParams();
 
     const textFieldRef = useRef(null);
-
-    useEffect(() => {
-        setSelectedList(list.id);
-    }, [list]);
-
-    useEffect(() => {
-        setEditing(false);
-    }, [selectedList]);
 
     useEffect(() => {
         if(editing && textFieldRef.current) {
@@ -65,7 +58,7 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
                                              onDelete={onTaskDelete}
                                              onToggle={selected => selected ? onTaskSelected(task.id) : onTaskSelected(null)}
                                              sx={{width: "100%"}}
-                                             expanded={selectedTask === task.id}
+                                             expanded={selectedTaskId === task.id}
                         />
                     </ListItem>
                 )}

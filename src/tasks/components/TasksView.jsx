@@ -23,15 +23,15 @@ import _ from "lodash";
 // TODO: Check for if a task is being edited when trying to open another one?
 // TODO: Handle deleting lists and tasks.
 export default function TasksView() {
-    const { setHeaderContent } = useHeader()
+    const {setHeaderContent} = useHeader()
     const dispatch = useDispatch();
     const taskLists = useSelector(selectLists);
-    const { id } = useParams();
+    const {id: selectedListId} = useParams();
     const selectedTask = useSelector(selectActiveTask);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(!taskLists[selectedTask]) {
+        if (!taskLists[selectedTask]) {
             navigate(`/tasks/todo`);
         }
     }, [selectedTask])
@@ -39,20 +39,26 @@ export default function TasksView() {
     useEffect(() => {
         setHeaderContent(<TaskListsBar taskLists={taskLists}
                                        onSelect={selected => navigate(`/tasks/${selected}`)}
-                                       selectedList={id}
+                                       selectedList={selectedListId}
                                        onListCreated={() => {
                                            const newList = {id: crypto.randomUUID(), name: "", taskItems: []};
                                            dispatch(CreateList(newList));
                                            navigate(`/tasks/${newList.id}`);
                                        }}
         />)
-    }, [taskLists, id]);
+    }, [taskLists, selectedListId]);
 
     return <Fragment>
-        {id && taskLists[id] &&
-            <TaskListDetail list={taskLists[id]}
+        {selectedListId && taskLists[selectedListId] &&
+            <TaskListDetail list={taskLists[selectedListId]}
                             selectedTask={selectedTask}
-                            onTaskSelected={(task) => navigate(`/tasks/${task.id}`)}
+                            onTaskSelected={(taskId) => {
+                                if (taskId) {
+                                    navigate(`/tasks/${selectedListId}/task/${taskId}`)
+                                } else {
+                                    navigate(`/tasks/${selectedListId}`);
+                                }
+                            }}
                             onTaskCreated={() => {
                                 const task = new Task(crypto.randomUUID(), "New Task", "");
                                 dispatch(CreateTask({
@@ -69,7 +75,7 @@ export default function TasksView() {
                                 navigate(`/tasks/${lists[index]}`);
                             }}
                             onTaskDelete={(taskId) => {
-                                dispatch(DeleteTask({fromList: id, taskId}));
+                                dispatch(DeleteTask({fromList: selectedListId, taskId}));
                             }}
                             onListChanged={(list) => {
                                 dispatch(UpdateList(list))
