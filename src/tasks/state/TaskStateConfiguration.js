@@ -25,7 +25,7 @@ export const slice = createSlice({
             return state;
         },
         CreateTask: (state, action) => {
-            state.taskLists[action.payload.targetList].tasks.push({...action.payload.newTask});
+            state.taskLists[action.payload.targetList].taskItems.push({...action.payload.newTask});
             return state;
         },
         UpdateList: (state, action) => {
@@ -35,7 +35,7 @@ export const slice = createSlice({
         UpdateTask: (state, action) => {
             const task = action.payload;
             const list = state.taskLists[state.selectedList];
-            const taskIndex = list.tasks.findIndex(t => t.id === task.id);
+            const taskIndex = list.taskItems.findIndex(t => t.id === task.id);
             list.tasks[taskIndex] = task;
             return state;
         },
@@ -57,7 +57,8 @@ export const slice = createSlice({
         builder.addMatcher(action => {
             return action.type === "LOADED_STATE";
         }, (state, action) => {
-            return action?.payload?.tasks || initialState;
+            const result = action?.payload?.householdTasks || initialState;
+            return result;
         })
     }
 });
