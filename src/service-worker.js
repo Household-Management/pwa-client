@@ -118,7 +118,7 @@ self.addEventListener('message', async (event) => {
                     break;
             }
     } catch (e) {
-        event.ports[0].postMessage({error: e});
+        event.ports[0].postMessage({error: extractErrorInfo(e)});
     }
 });
 
@@ -140,3 +140,16 @@ self.addEventListener('notificationclose', event => {
 
 // Any other custom service worker logic can go here.
 // TODO: Background timers don't work offline in pwa right now!
+
+function extractErrorInfo(error) {
+    if(!error) {
+        return {
+            message: "Unknown error"
+        }
+    }
+    return {
+        name: error.name,
+        message: error.message,
+        underlying: error
+    }
+}
