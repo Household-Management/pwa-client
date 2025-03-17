@@ -22,7 +22,7 @@ import _ from "lodash";
  */
 // TODO: Check for if a task is being edited when trying to open another one?
 // TODO: Handle deleting lists and tasks.
-export function TasksView() {
+export default function TasksView() {
     const { setHeaderContent } = useHeader()
     const dispatch = useDispatch();
     const taskLists = useSelector(selectLists);

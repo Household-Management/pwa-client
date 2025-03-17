@@ -5,7 +5,7 @@ import PantryView from "../../kitchen/pantry/components/PantryView";
 import RecipesView from "../../kitchen/recipes/components/RecipesView";
 import GroceryView from "../../kitchen/groceries/components/GroceryView";
 import React from "react";
-import {TasksView} from "../../tasks/components/TasksView";
+import TasksView from "../../tasks/components/TasksView";
 import SettingsView from "../../settings/components/SettingsView";
 
 export const router = createBrowserRouter(
@@ -57,6 +57,10 @@ export const router = createBrowserRouter(
                 {
                     path: "/settings",
                     element: <SettingsView/>
-                }]
+                },
+                {
+                    path: "/sign-in",
+                }
+            ]
         }
     ]);
