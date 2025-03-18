@@ -31,12 +31,6 @@ export default function TasksView() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!taskLists[selectedTask]) {
-            navigate(`/tasks/todo`);
-        }
-    }, [selectedTask])
-
-    useEffect(() => {
         setHeaderContent(<TaskListsBar taskLists={taskLists}
                                        onSelect={selected => navigate(`/tasks/${selected}`)}
                                        selectedList={selectedListId}
@@ -62,9 +56,10 @@ export default function TasksView() {
                             onTaskCreated={() => {
                                 const task = new Task(crypto.randomUUID(), "New Task", "");
                                 dispatch(CreateTask({
-                                    targetList: id,
+                                    targetList: selectedListId,
                                     newTask: {...task}
                                 }));
+                                navigate(`/tasks/${selectedListId}/task/${task.id}`);
                             }}
                             onTaskChanged={(task) => dispatch(UpdateTask(task))}
                             onListDelete={(listId) => {
