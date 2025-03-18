@@ -16,6 +16,7 @@ const schema = a.schema({
     }),
     TaskList: a.model({
         id: a.id().required(),
+        name: a.string(),
         taskItems: a.hasMany("Task", "id"),
         listTasks: a.belongsTo("HouseholdTasks", "id"),
     }),
@@ -48,14 +49,14 @@ const schema = a.schema({
         id: a.id().required(),
         items: a.hasMany("GroceryItem", "id"),
         groceries: a.belongsTo("Groceries", "id"),
-    }).authorization(allow => allow.owner().to(["read", "create", "update"])),
+    }),
     GroceryItem: a.model({
         id: a.id().required(),
         name: a.string(),
         quantity: a.integer(),
         unit: a.string(),
         list: a.belongsTo("GroceryList", "id"),
-    }).authorization(allow => allow.owner().to(["read", "create", "update"])),
+    }),
     Pantry: a.model({
         id: a.id().required(),
         locations: a.string().array(),
@@ -69,7 +70,7 @@ const schema = a.schema({
         location: a.string(),
         expiration: a.date(),
         pantry: a.belongsTo("Pantry", "id"),
-    }).authorization(allow => allow.owner().to(["read", "create", "update"])),
+    }),
     HouseholdRecipes: a.model({
         id: a.id().required(),
         recipes: a.hasMany("Recipe", "id"),
@@ -102,7 +103,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
     schema,
     authorizationModes: {
-        defaultAuthorizationMode: 'iam',
+        defaultAuthorizationMode: 'userPool',
     },
 });
 
