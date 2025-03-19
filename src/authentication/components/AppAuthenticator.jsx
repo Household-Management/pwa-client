@@ -5,40 +5,46 @@ import {Box, CircularProgress, Modal, Stack, ToggleButton, ToggleButtonGroup} fr
 import SignIn from "./SignIn";
 import {useDispatch, useSelector} from "react-redux";
 import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
+import {useLocation} from "react-router";
+import {useNavigate} from "react-router-dom";
+import {getCurrentUser} from "aws-amplify/auth";
 
 // TODO: Add role guard elements
 // TODO: When login fails while offline, tell the user that they need to be online to login.
 export default function AppAuthenticator({children}) {
     const wb = useContext(ServiceWorkerContext);
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const [authenticationNeeded, setAuthenticationNeeded] = useState(false);
     const user = useSelector(state => state.user.user);
+    const location = useLocation();
 
     useEffect(() => {
-        if (user) {
-            setAuthenticationNeeded(false)
-        }
         if (!user && !authenticationNeeded) {
             wb.active.then(async () => {
-                const response = await wb.messageSW({
-                    type: 'AUTHENTICATE',
-                    payload: {
-                        useExisting: true
+                try {
+                    const currentUser = await getCurrentUser();
+
+                    if (currentUser) {
+                        dispatch({
+                            type: "AUTHENTICATED",
+                            payload: response.payload,
+                            noSave: true
+                        });
                     }
-                });
-                if (response.error) {
-                    setAuthenticationNeeded(true);
-                    throw new Error("Error in service worker: " + response.error.message);
+                } catch (e) {
+                    setAuthenticationNeeded(true)
                 }
-                setAuthenticationNeeded(false);
-                dispatch({
-                    type: "AUTHENTICATED",
-                    payload: response.payload,
-                    noSave: true
-                });
             });
         }
-    }, [user, authenticationNeeded]);
+    }, [user]);
+    useEffect(() => {
+        if(!user && location.pathname !== "/sign-in") {
+            navigate("/sign-in");
+        } else if(user) {
+            navigate("/")
+        }
+    }, [user, location]);
     return <>
         {user ? children : (authenticationNeeded ? <Authentication/> : (
             <Box sx={{width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>
@@ -66,11 +72,12 @@ function Authentication() {
         <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
             <Box sx={modalStyle}>
                 <Stack sx={{flexGrow: 1, justifyContent: "center", alignContent: "center"}} spacing={3}>
-                    <ToggleButtonGroup sx={{justifyContent: "center", alignContent: "center"}} exclusive={true} value={tab} onChange={(e, v) => setTab(v)}>
-                    <Stack direction="row"  spacing={1}>
+                    <ToggleButtonGroup sx={{justifyContent: "center", alignContent: "center"}} exclusive={true}
+                                       value={tab} onChange={(e, v) => setTab(v)}>
+                        <Stack direction="row" spacing={1}>
                             <ToggleButton value={0}>Sign In</ToggleButton>
                             <ToggleButton value={1}>Sign Up</ToggleButton>
-                    </Stack>
+                        </Stack>
                     </ToggleButtonGroup>
                     <div>
                         {tab === 0 && <SignIn/>}

@@ -18,11 +18,9 @@ Amplify.configure(outputs);
 function App() {
     return (<div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
         <Provider store={store}>
-            <AppAuthenticator>
                 <HeaderProvider>
                     <RouterProvider router={router}/>
                 </HeaderProvider>
-            </AppAuthenticator>
         </Provider>
     </div>);
 

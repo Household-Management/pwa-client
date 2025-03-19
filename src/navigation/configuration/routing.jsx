@@ -1,4 +1,4 @@
-import {createBrowserRouter, redirect} from "react-router-dom";
+import {createBrowserRouter, Navigate, redirect} from "react-router-dom";
 import Layout from "../../layout/components/Layout";
 import KitchenView from "../../kitchen/kitchen/components/KitchenView";
 import PantryView from "../../kitchen/pantry/components/PantryView";
@@ -7,6 +7,15 @@ import GroceryView from "../../kitchen/groceries/components/GroceryView";
 import React from "react";
 import TasksView from "../../tasks/components/TasksView";
 import SettingsView from "../../settings/components/SettingsView";
+import HouseholdSelectorWrapper from "../components/HouseholdSelectorWrapper";
+import Guarded from "../../authentication/components/Guarded";
+import AppAuthenticator from "../../authentication/components/AppAuthenticator";
+
+function secured(component, roles) {
+    return <Guarded requiredRoles={roles} deniedComponent={<Navigate to="/sign-in"/>}>
+        {component}
+    </Guarded>
+}
 
 export const router = createBrowserRouter(
     [
@@ -20,7 +29,7 @@ export const router = createBrowserRouter(
                 },
                 {
                     path: "/tasks",
-                    element: <TasksView/>,
+                    element: secured(<TasksView/>, []),
                     children: [
                         {
                             index: true,
@@ -28,7 +37,7 @@ export const router = createBrowserRouter(
                         },
                         {
                             path: ":id",
-                            element: <TasksView/>,
+                            element: secured(<TasksView/>, []),
                             children: [
                                 {
                                     path: "task/:taskId",
@@ -39,7 +48,7 @@ export const router = createBrowserRouter(
                 },
                 {
                     path: "/kitchen",
-                    element: <KitchenView/>,
+                    element: secured(<KitchenView/> ,[]),
                     children: [
                         {
                             index: true,
@@ -47,24 +56,29 @@ export const router = createBrowserRouter(
                         },
                         {
                             path: "/kitchen/pantry",
-                            element: <PantryView/>
+                            element: secured(<PantryView/>, [])
                         },
                         {
                             path: "/kitchen/recipes",
-                            element: <RecipesView/>
+                            element: secured(<RecipesView/>, [])
                         },
                         {
                             path: "/kitchen/grocery",
-                            element: <GroceryView/>
+                            element: secured(<GroceryView/>, [])
                         }
                     ]
                 },
                 {
                     path: "/settings",
-                    element: <SettingsView/>
+                    element: secured(<SettingsView/>, [])
                 },
                 {
                     path: "/sign-in",
+                    element: <AppAuthenticator/>
+                },
+                {
+                    path: "/home-select",
+                    element: <HouseholdSelectorWrapper/>
                 }
             ]
         }
