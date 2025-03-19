@@ -1,9 +1,10 @@
 import {Stack, TextField, Button} from "@mui/material";
 import {useContext, useState} from "react";
-import {signIn} from "@aws-amplify/auth";
+import {signIn, signOut} from "@aws-amplify/auth";
 import {Workbox} from "workbox-window";
 import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 import {useDispatch} from "react-redux";
+import {getCurrentUser} from "aws-amplify/auth";
 
 
 export default function () {
@@ -15,13 +16,22 @@ export default function () {
 
     async function submit() {
         await wb.active;
-        const response = await wb.messageSW({
-            type: "AUTHENTICATE",
-            payload: {
-                username: email,
-                password: password
-            }
+        await signOut();
+        await signIn({
+            username: email,
+            password: password
         });
+        const user = await getCurrentUser();
+        const response = {
+            payload: user
+        };
+        // const response = await wb.messageSW({
+        //     type: "AUTHENTICATE",
+        //     payload: {
+        //         username: email,
+        //         password: password
+        //     }
+        // });
         if (response.error) {
             switch(response.error.name) {
                 case "NotAuthorizedException":
