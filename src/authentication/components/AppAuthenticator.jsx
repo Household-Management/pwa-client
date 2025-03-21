@@ -41,8 +41,6 @@ export default function AppAuthenticator({children}) {
     useEffect(() => {
         if(!user && location.pathname !== "/sign-in") {
             navigate("/sign-in");
-        } else if(user) {
-            navigate("/")
         }
     }, [user, location]);
     return <>
