@@ -2,13 +2,18 @@ import {combineReducers, combineSlices, configureStore} from "@reduxjs/toolkit";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
 import {TutorialStateConfiguration} from "../tutorials/state/TutorialStateConfiguration";
 import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsStateConfiguration";
-import {ServiceWorkerContext} from "../service-worker/ServiceWorkerContext";
-import {put, takeLeading, select, call, spawn, debounce, takeLatest} from "redux-saga/effects";
-import * as _ from "lodash";
+import {put, takeLeading, select, call, spawn, debounce, take, takeEvery} from "redux-saga/effects";
 import createSagaMiddleware from "redux-saga";
 import PantryStateConfiguration from "../kitchen/pantry/state/PantryStateConfiguration";
-import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesStateConfiguration";
+import GroceriesStateConfiguration, {Persisters} from "../kitchen/groceries/state/GroceriesStateConfiguration";
 import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
+
+import { AddGroceryList, Persisters as GroceryPersisters } from "../kitchen/groceries/state/GroceriesStateConfiguration";
+import { CreateList, Persisters as TaskPersisters} from "../tasks/state/TaskStateConfiguration"
+
+import { generateClient } from "aws-amplify/data";
+
+const client = generateClient();
 
 // TODO: Create a default "to-do" task list
 // TODO: Implement remote persistence.
@@ -60,31 +65,36 @@ function* welcomeUser() {
 
 function* loadOnAuthenticate() {
     yield takeLeading("AUTHENTICATED", function* (action) {
-        const sw = yield call(() => ServiceWorkerContext.Provider._context._currentValue);
-        const loaded = yield call(() => sw.messageSW({
-            type: "LOAD_STATE"
-        }));
-        yield put({
-            type: "LOADED_STATE",
-            payload: loaded.payload,
-            noSave: true
-        });
+        // const loaded = yield call(async () => {
+        //     return await client.models.Household.get();
+        // })
+        // const sw = yield call(() => ServiceWorkerContext.Provider._context._currentValue);
+        // const loaded = yield call(() => sw.messageSW({
+        //     type: "LOAD_STATE"
+        // }));
+        // yield put({
+        //     type: "LOADED_STATE",
+        //     payload: loaded.payload,
+        //     noSave: true
+        // });
     })
 }
 
 function* persistOnChange() {
-    yield debounce(500, action => !action.noSave, function* (action) {
-        yield call(async () => {
-            // FIXME: This is a hack to get the service worker context.
-            const wb = ServiceWorkerContext.Provider._context._currentValue;
-            const state = store.getState()
-            return await wb.messageSW({
-                type: 'SAVE_STATE',
-                noSave: true,
-                state: JSON.stringify(_.omit(state, ["alerts", "user", "tutorials"])) // TODO: Save tutorials attached to users, not households.
-            })
-        })
+    yield spawn(function* () {
+        yield takeEvery(AddGroceryList.type, function* (action) {
+            yield call(() => GroceryPersisters[AddGroceryList.type](client, action.payload));
+        });
     })
+    yield spawn(function* () {
+        yield takeEvery(CreateList.type, function* (action) {
+            yield call(() => TaskPersisters[CreateList.type](client, action.payload));
+        });
+    });
+}
+
+function* loadOnSelectHousehold() {
+
 }
 
 export const store = configureStore({
@@ -102,6 +112,7 @@ export const store = configureStore({
 saga.run(function*() {
     yield spawn(welcomeUser)
     yield spawn(loadOnAuthenticate)
+    yield spawn(loadOnSelectHousehold)
     yield spawn(persistOnChange)
 });
 

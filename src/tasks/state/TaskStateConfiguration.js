@@ -68,3 +68,9 @@ export default slice.reducer;
 export const { CreateList, CreateTask, UpdateList, UpdateTask, DeleteList, DeleteTask } = slice.actions;
 
 export const { selectLists, selectActiveTask} = slice.selectors;
+
+export const Persisters = {
+    [slice.actions.CreateList.type]: (client, payload) => {
+        client.models.TaskList.create(payload);
+    }
+}

@@ -71,4 +71,10 @@ export const {
     ReplaceGroceryListItem
 } = slice.actions;
 
+export const Persisters = {
+    [slice.actions.AddGroceryList.type]: function* (client, payload) {
+        client.models.GroceryList.create(payload);
+    },
+}
+
 export default slice.reducer;
