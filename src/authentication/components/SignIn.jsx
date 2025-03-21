@@ -1,10 +1,11 @@
 import {Stack, TextField, Button} from "@mui/material";
-import {useContext, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {signIn, signOut} from "@aws-amplify/auth";
 import {Workbox} from "workbox-window";
 import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 import {useDispatch} from "react-redux";
 import {getCurrentUser} from "aws-amplify/auth";
+import {useNavigate} from "react-router-dom";
 
 
 export default function () {
@@ -13,6 +14,20 @@ export default function () {
     const [password, setPassword] = useState("");
     const dispatch = useDispatch();
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        getCurrentUser().then(user => {
+            dispatch({
+                type: "AUTHENTICATED",
+                payload: user
+
+            });
+            navigate("/household-select")
+        }, () => {
+
+        });
+    }, []);
 
     async function submit() {
         await wb.active;
@@ -25,15 +40,8 @@ export default function () {
         const response = {
             payload: user
         };
-        // const response = await wb.messageSW({
-        //     type: "AUTHENTICATE",
-        //     payload: {
-        //         username: email,
-        //         password: password
-        //     }
-        // });
         if (response.error) {
-            switch(response.error.name) {
+            switch (response.error.name) {
                 case "NotAuthorizedException":
                     setError(response.error.message);
                     break;
@@ -46,7 +54,8 @@ export default function () {
                 type: "AUTHENTICATED",
                 noSave: true,
                 payload: response.payload
-            })
+            });
+            navigate("/household-select")
         }
 
     }
