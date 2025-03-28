@@ -231,7 +231,7 @@ function EmailSignUp() {
                                 label="Confirm Code"
                                 onChange={e => setConfirmCode(e.target.value)}
                             ></TextField>
-                            {inProgress && <CircularProgress /> } // TODO: Center horizontally.
+                            {inProgress && <CircularProgress /> } {/* TODO: Center horizontally. */}
                             <Button variant="contained" color="error" onClick={() => setNextStep(null)}>Cancel</Button>
                         </Stack>
                     </Box>
