@@ -9,7 +9,6 @@ import {useLocation} from "react-router";
 import {useNavigate} from "react-router-dom";
 import {getCurrentUser} from "aws-amplify/auth";
 
-// TODO: Add role guard elements
 // TODO: When login fails while offline, tell the user that they need to be online to login.
 export default function AppAuthenticator({children}) {
     const wb = useContext(ServiceWorkerContext);
