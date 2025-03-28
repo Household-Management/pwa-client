@@ -1,6 +1,6 @@
 import {combineReducers, combineSlices, configureStore} from "@reduxjs/toolkit";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
-import {TutorialStateConfiguration} from "../tutorials/state/TutorialStateConfiguration";
+import TutorialStateConfiguration from "../tutorials/state/TutorialStateConfiguration";
 import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsStateConfiguration";
 import {put, takeLeading, select, call, spawn, debounce, take, takeEvery} from "redux-saga/effects";
 import createSagaMiddleware from "redux-saga";
@@ -20,12 +20,14 @@ const client = generateClient();
 // TODO: Implement user tutorials.
 // TODO: Middleware for intercepting dangerous actions.
 const combinedReducer = combineReducers({
-    householdTasks: TaskStateConfiguration,
-    tutorials: TutorialStateConfiguration().reducer,
-    kitchen: combineSlices({
-        pantry: PantryStateConfiguration,
-        groceries: GroceriesStateConfiguration,
-        recipes: RecipesStateConfiguration
+    household: combineSlices({
+        householdTasks: TaskStateConfiguration.reducer,
+        tutorials: TutorialStateConfiguration.reducer,
+        kitchen: combineSlices({
+            pantry: PantryStateConfiguration,
+            groceries: GroceriesStateConfiguration,
+            recipes: RecipesStateConfiguration
+        }),
     }),
     alerts: AlertsStateConfiguration,
     user: (state = null, action) => {
@@ -83,12 +85,14 @@ function* loadOnAuthenticate() {
 function* persistOnChange() {
     yield spawn(function* () {
         yield takeEvery(AddGroceryList.type, function* (action) {
-            yield call(() => GroceryPersisters[AddGroceryList.type](client, action.payload));
+            const household = yield select(state => state.household);
+            yield call(() => GroceryPersisters[AddGroceryList.type](client, {...action.payload, householdId: household.id}));
         });
     })
     yield spawn(function* () {
         yield takeEvery(CreateList.type, function* (action) {
-            yield call(() => TaskPersisters[CreateList.type](client, action.payload));
+            const household = yield select(state => state.household);
+            yield call(() => TaskPersisters[CreateList.type](client, {...action.payload, householdId: household.id}));
         });
     });
 }

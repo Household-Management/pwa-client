@@ -15,6 +15,7 @@ import { useNavigate} from "react-router-dom";
  * @constructor
  */
 function TaskListsBar(props) {
+    // FIXME: Have todo list use a normal id, instead of trying to use the "todo" special name
     const navigate = useNavigate();
     return <div style={{overflowX: "auto"}}>
         <Toolbar sx={{width: "100%", justifyContent: "flex-start", boxSizing: "border-box"}}>
@@ -23,11 +24,14 @@ function TaskListsBar(props) {
             </IconButton>
             <Tabs value={props.selectedList}
                   variant="scrollable"
+                  onClick={() => {
+
+                  }}
                   onChange={(e, value) => {
                       navigate(`/tasks/${value}`);
                   }}>
                 {
-                    Object.values(props.taskLists).map(list =>
+                    props.taskLists.map(list =>
                         (<Tab value={list.id}
                               key={list.id}
                               label={list.name || "New List"}
@@ -41,7 +45,7 @@ function TaskListsBar(props) {
 }
 
 TaskListsBar.propTypes = {
-    taskLists: PropTypes.object.isRequired,
+    taskLists: PropTypes.array.isRequired,
     selectedList: PropTypes.string.isRequired,
     onListCreated: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired

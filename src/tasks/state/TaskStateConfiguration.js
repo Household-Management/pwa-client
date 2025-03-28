@@ -12,16 +12,17 @@ const initialState = {
     selectedTask: null
 }
 
-export const slice = createSlice({
+const slice = createSlice({
     name: "householdTasks",
+    reducerPath: "household",
     initialState,
     selectors: {
-        selectLists: state => state.taskLists,
-        selectActiveTask: state => state.selectedTask
+        selectLists: state => state.householdTasks.taskLists,
+        selectActiveTask: state => state.householdTasks.selectedTask
     },
     reducers: {
         CreateList: (state, action) => {
-            state.taskLists[action.payload.id] = action.payload;
+            state.taskLists.push(action.payload);
             return state;
         },
         CreateTask: (state, action) => {
@@ -58,12 +59,18 @@ export const slice = createSlice({
             return action.type === "LOADED_STATE";
         }, (state, action) => {
             const result = action?.payload?.householdTasks || initialState;
+            result.taskLists = result.taskLists.map(t => {
+                if(!t.taskItems) {
+                    t.taskItems = []
+                };
+                return t;
+            })
             return result;
         })
     }
 });
 
-export default slice.reducer;
+export default slice;
 
 export const { CreateList, CreateTask, UpdateList, UpdateTask, DeleteList, DeleteTask } = slice.actions;
 
