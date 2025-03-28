@@ -27,14 +27,17 @@ export default function TasksView() {
     const dispatch = useDispatch();
     const taskLists = useSelector(selectLists);
     const {id: selectedListId} = useParams();
+    const realSelectedListId = selectedListId === "todo" ? taskLists[0].id : selectedListId;
     const selectedTask = useSelector(selectActiveTask);
     const navigate = useNavigate();
 
     useEffect(() => {
+
         setHeaderContent(<TaskListsBar taskLists={taskLists}
                                        onSelect={selected => navigate(`/tasks/${selected}`)}
-                                       selectedList={selectedListId}
+                                       selectedList={realSelectedListId}
                                        onListCreated={() => {
+                                           // TODO: Persist to backend also
                                            const newList = {id: crypto.randomUUID(), name: "", taskItems: []};
                                            dispatch(CreateList(newList));
                                            navigate(`/tasks/${newList.id}`);
@@ -43,14 +46,14 @@ export default function TasksView() {
     }, [taskLists, selectedListId]);
 
     return <Fragment>
-        {selectedListId && taskLists[selectedListId] &&
-            <TaskListDetail list={taskLists[selectedListId]}
+        {selectedListId && taskLists.find(_ => _.id === realSelectedListId) &&
+            <TaskListDetail list={taskLists.find(_ => _.id === realSelectedListId)}
                             selectedTask={selectedTask}
                             onTaskSelected={(taskId) => {
                                 if (taskId) {
-                                    navigate(`/tasks/${selectedListId}/task/${taskId}`)
+                                    navigate(`/tasks/${realSelectedListId}/task/${taskId}`)
                                 } else {
-                                    navigate(`/tasks/${selectedListId}`);
+                                    navigate(`/tasks/${realSelectedListId}`);
                                 }
                             }}
                             onTaskCreated={() => {
@@ -59,7 +62,7 @@ export default function TasksView() {
                                     targetList: selectedListId,
                                     newTask: {...task}
                                 }));
-                                navigate(`/tasks/${selectedListId}/task/${task.id}`);
+                                navigate(`/tasks/${realSelectedListId}/task/${task.id}`);
                             }}
                             onTaskChanged={(task) => dispatch(UpdateTask(task))}
                             onListDelete={(listId) => {
@@ -70,7 +73,7 @@ export default function TasksView() {
                                 navigate(`/tasks/${lists[index]}`);
                             }}
                             onTaskDelete={(taskId) => {
-                                dispatch(DeleteTask({fromList: selectedListId, taskId}));
+                                dispatch(DeleteTask({fromList: realSelectedListId, taskId}));
                             }}
                             onListChanged={(list) => {
                                 dispatch(UpdateList(list))
