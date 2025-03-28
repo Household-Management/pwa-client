@@ -1,6 +1,7 @@
-import {type ClientSchema, a, defineData} from '@aws-amplify/backend';
+import {type ClientSchema, a, defineData, defineFunction} from '@aws-amplify/backend';
+import {inviteFunction, joinFunction} from "../functions/resource";
 
-function defaultOperations(allow) {
+function defaultOperations(allow: any): any[] {
     return [
         allow.ownersDefinedIn("owners").to(["read", "update", "create"]),
     ]
@@ -9,8 +10,8 @@ function defaultOperations(allow) {
 function ownedModel(modelDef) {
     return {
         ...modelDef,
-        membersGroup: a.string().required(), // Name for group members of the household
-        adminGroup: a.string().required(), // Name for admins of the household
+        membersGroup: a.string().array(), // Name for group members of the household
+        adminGroup: a.string().array(), // Name for admins of the household
     }
 }
 
@@ -27,6 +28,7 @@ const tasksModels = {
         householdTasksId: a.id(),
         householdTasks: a.belongsTo("HouseholdTasks", "householdTasksId"),
         taskItems: a.hasMany("Task", "taskListId"),
+        unremovable: a.boolean()
     }),
     Task: a.model({
         id: a.id().required(),
@@ -44,10 +46,6 @@ const tasksModels = {
         owningTaskId: a.id(),
         task: a.belongsTo("Task", "owningTaskId"),
     }),
-}
-
-function oneToOneRelationship(from, to, via) {
-
 }
 
 const kitchenModels = {
@@ -129,19 +127,45 @@ const recipeModels = {
 }
 
 // TODO: Don't want client to be able to create new households, have a backend
-//  function for it that checks if a user already has one.
+//  function for it that checks if a user already has one. Then make read-only stuff truly read only.
 const schema = a.schema({
     Household: a.model(ownedModel({
         id: a.id().required(),
         name: a.string().required(),
         kitchen: a.hasOne("Kitchen", "householdId"),
         householdTasks: a.hasOne("HouseholdTasks", "householdId"),
-        recipes: a.hasOne("HouseholdRecipes", "householdId")
-    })),
+        recipes: a.hasOne("HouseholdRecipes", "householdId"),
+        pendingInvites: a.hasMany("HouseholdInvite", "householdId"),
+    })).authorization(allow => [
+        allow.ownersDefinedIn("membersGroup").to(["read"])
+    ]),
+    // TODO URGENT: Need to implement authorization for this to be allowed
+    InviteToHousehold: a.mutation().arguments({
+        householdId: a.id().required()
+    }).returns(a.string())
+        .authorization(customAllow => [customAllow.authenticated("userPools")])
+        .handler(a.handler.function(inviteFunction)),
+    JoinHousehold: a.mutation().arguments({
+        inviteCode: a.string().required(),
+        joinerId: a.id().required()
+    }).authorization(customAllow => [customAllow.authenticated("userPools")])
+        .handler(a.handler.function(joinFunction))
+        .returns(a.id()),
+    // TODO: Rate limit for code generation, 1 / 5 minutes
+    // FIXME: Make sure that duplicate invites can't be created
+    HouseholdInvite: a.model({
+        inviteCode: a.string().required(),
+        householdId: a.id().required(),
+        household: a.belongsTo("Household", "householdId"),
+        expiration: a.datetime(),
+    }).identifier(["inviteCode"]),
     ...tasksModels,
     ...kitchenModels,
     ...recipeModels
-}).authorization(defaultOperations);
+}).authorization(allow =>[
+    //@ts-ignore,
+    allow.resource(inviteFunction)
+].concat(defaultOperations(allow)));
 
 export type Schema = ClientSchema<typeof schema>;
 

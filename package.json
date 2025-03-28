@@ -13,7 +13,9 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "aws-amplify": "^6.13.3",
+    "aws-amplify": "^6.14.0",
+    "aws-sdk": "^2.1692.0",
+    "jsonwebtoken": "^9.0.2",
     "libphonenumber": "^0.0.10",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.4",
@@ -45,9 +47,10 @@
     "storybook": "storybook dev -p 6006",
     "storybook-https": "storybook dev -p 6006 --https --ssl-cert=./localhost.crt --ssl-key=./localhost.key",
     "build-storybook": "storybook build",
-    "model" : "npx ampx generate graphql-client-code --model-target javascript --format modelgen --statement-max-depth 5",
+    "model": "npx ampx generate graphql-client-code --model-target javascript --format modelgen --statement-max-depth 5",
     "worker-build": "node build-serviceworker.js",
-    "sandbox": "npx ampx sandbox"
+    "sandbox": "npx ampx sandbox",
+    "cy:open": "npx cypress open"
   },
   "eslintConfig": {
     "extends": [

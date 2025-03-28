@@ -1,37 +1,48 @@
-import {Stack, Button} from "@mui/material";
-import LogoutIcon from '@mui/icons-material/Logout';
-import {useContext, useEffect} from "react";
-import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
+import {Stack, Button, Dialog, DialogTitle, DialogContent, DialogActions} from "@mui/material";
+import {useContext, useEffect, useState} from "react";
 import {useDispatch} from "react-redux";
 import {useHeader} from "../../layout/hooks/HeaderContext";
-import {signOut} from "@aws-amplify/auth";
 import {useCookies} from "react-cookie";
+import {DataClientContext} from "../../graphql/DataClient";
+import LogOutButton from "../../authentication/components/LogOutButton";
+import InviteMember from "./InviteMember";
 
-export default function () {
-    const wb = useContext(ServiceWorkerContext);
+export default function SettingsView() {
+    const dataClient = useContext(DataClientContext);
     const dispatch = useDispatch();
-    const { setHeaderContent} = useHeader()
+    const {setHeaderContent} = useHeader();
     const [cookies, setCookie] = useCookies();
+    const [open, setOpen] = useState(false);
+
     useEffect(() => {
-        setHeaderContent(null)
+        setHeaderContent(null);
     }, []);
-    function logOut() {
-        wb.active.then(async () => {
-            await signOut();
-            setCookie('household', null);
-            // const response = await wb.messageSW({
-            //     type: "SIGN_OUT"
-            // });
-            // console.log("Received sign out response");
-            dispatch({
-                type: "UNAUTHENTICATED"
-            });
-        });
+
+    function handleOpen() {
+        setOpen(true);
     }
-    return <Stack spacing={2}>
-        <Button variant="contained" color="error" onClick={logOut}>
-            <LogoutIcon/>
-            Sign Out
-        </Button>
-    </Stack>
+
+    function handleClose() {
+        setOpen(false);
+    }
+
+    return (
+        <Stack spacing={10}>
+            <LogOutButton/>
+            <Button variant="outlined" color="primary" onClick={handleOpen}>
+                Invite Someone to your Household
+            </Button>
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Invite Member</DialogTitle>
+                <DialogContent>
+                    <InviteMember householdId={cookies.household} />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Stack>
+    );
 }

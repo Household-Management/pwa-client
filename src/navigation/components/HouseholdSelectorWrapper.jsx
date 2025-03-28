@@ -25,7 +25,7 @@ export default function HouseholdSelectorWrapper() {
                     // Stub API call
                     const response = await dataClient.models.Household.list({
                         filter: {
-                            adminGroup: {
+                            membersGroup: {
                                 contains: user.userId
                             }
                         },
