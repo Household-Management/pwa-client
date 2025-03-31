@@ -63,10 +63,11 @@ export default function () {
     return <>
         <Stack spacing={2}>
             {error ? <div>{error}</div> : null}
-            <TextField label="Email" type="text" value={email} onChange={e => setEmail(e.target.value)}></TextField>
-            <TextField label="Password" type="password" value={password}
+            <TextField id="login-email" label="Email" type="text" value={email} onChange={e => setEmail(e.target.value)}></TextField>
+            <TextField id="login-password" label="Password" type="password" value={password}
                        onChange={e => setPassword(e.target.value)}></TextField>
-            <Button label="Sign In"
+            <Button id="login-submit"
+                label="Sign In"
                     variant="contained"
                     onClick={submit}
                     disabled={email?.length === 0 || password?.length === 0}>Sign In</Button>
