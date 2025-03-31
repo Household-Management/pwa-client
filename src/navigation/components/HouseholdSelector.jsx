@@ -24,6 +24,8 @@ export default function HouseholdSelector({open, onClose, onClick, households, l
     const user = useSelector(state => state.user.user);
 
     const createHousehold = () => {
+        console.log("Creating new household...");
+        // TODO: Replace after implementation of Issue #11
         getCurrentUser().then(async user => {
             const createdHousehold = await dataClient.models.Household.create({
                 name: `${user.signInDetails.loginId}'s Household`,
@@ -32,16 +34,24 @@ export default function HouseholdSelector({open, onClose, onClick, households, l
             });
 
             const createdHouseholdTasks = await dataClient.models.HouseholdTasks.create({
-                householdId: createdHousehold.data.id
+                householdId: createdHousehold.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
             });
             await dataClient.models.TaskList.create({
-                householdTasksId: createdHouseholdTasks.data.id
+                householdTasksId: createdHouseholdTasks.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
             });
             await dataClient.models.Kitchen.create({
-                householdId: createdHousehold.data.id
+                householdId: createdHousehold.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
             });
             await dataClient.models.HouseholdRecipes.create({
-                householdId: createdHousehold.data.id
+                householdId: createdHousehold.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
             });
             onClick(createdHousehold.data);
         })
