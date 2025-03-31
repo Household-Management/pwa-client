@@ -5,13 +5,13 @@ import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsSta
 import {put, takeLeading, select, call, spawn, debounce, take, takeEvery} from "redux-saga/effects";
 import createSagaMiddleware from "redux-saga";
 import PantryStateConfiguration from "../kitchen/pantry/state/PantryStateConfiguration";
-import GroceriesStateConfiguration, {Persisters} from "../kitchen/groceries/state/GroceriesStateConfiguration";
+import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesStateConfiguration";
 import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
 
-import { AddGroceryList, Persisters as GroceryPersisters } from "../kitchen/groceries/state/GroceriesStateConfiguration";
-import { CreateList, Persisters as TaskPersisters} from "../tasks/state/TaskStateConfiguration"
+import {AddGroceryList } from "../kitchen/groceries/state/GroceriesStateConfiguration";
+import {CreateList, Persisters as TaskPersisters} from "../tasks/state/TaskStateConfiguration"
 
-import { generateClient } from "aws-amplify/data";
+import {generateClient} from "aws-amplify/data";
 
 const client = generateClient();
 
@@ -21,6 +21,14 @@ const client = generateClient();
 // TODO: Middleware for intercepting dangerous actions.
 const combinedReducer = combineReducers({
     household: combineSlices({
+        id: (state, action) => {
+
+            if(action.type === "LOADED_STATE") {
+                return action.payload.id;
+            }
+
+            return state ? state : null;
+        },
         householdTasks: TaskStateConfiguration.reducer,
         tutorials: TutorialStateConfiguration.reducer,
         kitchen: combineSlices({
@@ -84,17 +92,14 @@ function* loadOnAuthenticate() {
 
 function* persistOnChange() {
     yield spawn(function* () {
-        yield takeEvery(AddGroceryList.type, function* (action) {
-            const household = yield select(state => state.household);
-            yield call(() => GroceryPersisters[AddGroceryList.type](client, {...action.payload, householdId: household.id}));
+        yield takeEvery((action) => {
+            return action?.meta?.persister;
+        }, function* (action) {
+            const state = yield select(state => state)
+            const persistenceFunction = action.meta.persister;
+            persistenceFunction(client, state, action);
         });
     })
-    yield spawn(function* () {
-        yield takeEvery(CreateList.type, function* (action) {
-            const household = yield select(state => state.household);
-            yield call(() => TaskPersisters[CreateList.type](client, {...action.payload, householdId: household.id}));
-        });
-    });
 }
 
 function* loadOnSelectHousehold() {
@@ -113,7 +118,7 @@ export const store = configureStore({
     }
 });
 
-saga.run(function*() {
+saga.run(function* () {
     yield spawn(welcomeUser)
     yield spawn(loadOnAuthenticate)
     yield spawn(loadOnSelectHousehold)
