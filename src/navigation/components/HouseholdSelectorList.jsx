@@ -11,9 +11,9 @@ import {
 } from '@mui/material';
 import PropTypes from "prop-types";
 
-export default function HouseholdSelectorList({user, open, households, loading, onJoinHousehold, onSelectHousehold, onCreateHousehold}) {
+export default function HouseholdSelectorList({user, households, loading, onJoinHousehold, onSelectHousehold, onCreateHousehold}) {
     return <Fragment>
-        <Modal open={open}>
+        <Modal open={true}>
             <Box sx={{width: 400, bgcolor: 'background.paper', p: 4, margin: 'auto', marginTop: '10%'}}>
                 {loading ? <div style={{flex: 1}}>
                         <Typography sx={{textAlign: "center"}}>
