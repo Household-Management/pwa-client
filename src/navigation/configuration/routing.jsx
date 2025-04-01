@@ -77,6 +77,10 @@ export const router = createBrowserRouter(
                     element: <AppAuthenticator/>
                 },
                 {
+                    path: "/sign-up",
+                    element: <AppAuthenticator/>
+                },
+                {
                     path: "/household-select",
                     element: secured(<HouseholdSelectorWrapper/>, [])
                 }
