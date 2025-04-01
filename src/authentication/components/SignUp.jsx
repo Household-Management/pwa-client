@@ -6,92 +6,17 @@ import {
     Modal, Slide,
     Stack,
     TextField,
-    ToggleButton,
-    ToggleButtonGroup,
     Typography
 } from "@mui/material";
 import parsePhoneNumber from "libphonenumber-js";
-import {confirmSignUp, signIn, signUp} from "@aws-amplify/auth";
+import {confirmSignUp, signIn, signOut, signUp} from "@aws-amplify/auth";
 import {MuiTelInput} from "mui-tel-input";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {useNavigate} from "react-router-dom";
 
 export default function () {
     return <EmailSignUp/>
 }
-
-const allowedCountries = ["US"];
-
-function PhoneSignUp() {
-    const [phone, setPhone] = useState("");
-    const [userName] = useState(crypto.randomUUID());
-    const [error, setError] = useState("Invalid Phone Number");
-    const [waitingConfirmation, setWaitingConfirmation] = useState(false);
-
-    function handleChange(value) {
-        const stripped = value.replace(/\D/g, "");
-        const parsed = parsePhoneNumber(value, "US");
-        if (!parsed?.isPossible()) {
-            setError("Invalid phone number");
-        } else {
-            setError(null)
-        }
-        setPhone(value);
-    }
-
-    async function submit() {
-        const parsed = parsePhoneNumber(phone, "US");
-        const normalized = phone.replace(/\s/g, "")
-        if (parsed.isPossible()) {
-            const {nextStep: signUpNextStep} = await signUp({
-                username: normalized,
-                options: {
-                    userAttributes: {
-                        phone_number: normalized
-                    }
-                }
-            })
-
-            if (signUpNextStep.signUpStep === 'DONE') {
-                console.log("Signed up.")
-            } else if (signUpNextStep.signUpStep === 'CONFIRM_SIGN_UP') {
-                console.log(`Medium: ${signUpNextStep.codeDeliveryDetails.deliveryMedium}`);
-            }
-        } else {
-            console.error("Invalid phone number");
-        }
-    }
-
-    return <div>
-        <Stack>
-            <div style={{justifyContent: "center"}}>Phone Sign Up</div>
-            <MuiTelInput value={phone} onChange={handleChange} onlyCountries={["US"]} forceCallingCode={true}
-                         error={!!error}/>
-            <Button disabled={!!error} onClick={submit}>Sign Up</Button>
-            {waitingConfirmation && <PhoneConfirmation userName={userName}/>}
-        </Stack>
-    </div>
-}
-
-function PhoneConfirmation(username) {
-    const [confirmationCode, setConfirmationCode] = useState("");
-    useEffect(async () => {
-        if (confirmationCode.length === 6) {
-            const {nextStep: confirmSignUpNextStep} = await confirmSignUp({
-                username,
-                confirmationCode
-            });
-
-            if (confirmSignUpNextStep.signUpStep === 'DONE') {
-                console.log("Signed up");
-            }
-        }
-    }, [confirmationCode]);
-    return <div>
-        Enter the code sent to your phone.
-        <TextField value={confirmationCode} onChange={e => setConfirmationCode(e.target.value)}/>
-    </div>
-}
-
 const modalStyle = {
     flexShrink: 1,
     display: "flex",
@@ -115,6 +40,7 @@ function EmailSignUp() {
     const [confirmCode, setConfirmCode] = useState("");
     const [nextStep, setNextStep] = useState(null);
     const [inProgress, setInProgress] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (password.length > 0 && password.length < 12) {
@@ -128,6 +54,7 @@ function EmailSignUp() {
         if (confirmCode.length === 6) {
             (async () => {
                 try {
+                    await signOut();
                     setInProgress(true);
                     const signUpConfirmation = await confirmSignUp({
                         username: email,
@@ -137,10 +64,14 @@ function EmailSignUp() {
                         await signIn({
                             username: email,
                             password
-                        })
+                        });
+                        navigate("/household-select");
                     }
                     setNextStep(signUpConfirmation.signUpStep);
                 } catch (e) {
+                    setNextStep(null);
+                    setInProgress(false);
+                    setConfirmCode("");
                     setError(e.message);
                 }
             })()
