@@ -1,4 +1,4 @@
-import {Stack, TextField, Button} from "@mui/material";
+import {Stack, TextField, Button, Typography} from "@mui/material";
 import {useContext, useEffect, useState} from "react";
 import {signIn, signOut} from "@aws-amplify/auth";
 import {Workbox} from "workbox-window";
@@ -30,44 +30,44 @@ export default function () {
     }, []);
 
     async function submit() {
-        await wb.active;
-        await signOut();
-        await signIn({
-            username: email,
-            password: password
-        });
-        const user = await getCurrentUser();
-        const response = {
-            payload: user
-        };
-        if (response.error) {
-            switch (response.error.name) {
-                case "NotAuthorizedException":
-                    setError(response.error.message);
-                    break;
-                default:
-                    setError("There was an error signing in. Try again later.");
-                    break;
-            }
-        } else {
+        try {
+            await wb.active;
+            await signOut();
+            await signIn({
+                username: email,
+                password: password
+            });
+            const user = await getCurrentUser();
+            const response = {
+                payload: user
+            };
             dispatch({
                 type: "AUTHENTICATED",
                 noSave: true,
                 payload: response.payload
             });
             navigate("/household-select")
+        } catch (e) {
+            switch (e.name) {
+                case "NotAuthorizedException":
+                    setError(e.message);
+                    break;
+                default:
+                    setError("There was an error signing in. Try again later.");
+                    break;
+            }
         }
-
     }
 
     return <>
         <Stack spacing={2}>
-            {error ? <div>{error}</div> : null}
-            <TextField id="login-email" label="Email" type="text" value={email} onChange={e => setEmail(e.target.value)}></TextField>
+            {error ? <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography> : null}
+            <TextField id="login-email" label="Email" type="text" value={email}
+                       onChange={e => setEmail(e.target.value)}></TextField>
             <TextField id="login-password" label="Password" type="password" value={password}
                        onChange={e => setPassword(e.target.value)}></TextField>
             <Button id="login-submit"
-                label="Sign In"
+                    label="Sign In"
                     variant="contained"
                     onClick={submit}
                     disabled={email?.length === 0 || password?.length === 0}>Sign In</Button>
