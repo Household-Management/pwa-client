@@ -38,7 +38,7 @@ export default function AppAuthenticator({children}) {
         }
     }, [user]);
     useEffect(() => {
-        if(!user && location.pathname !== "/sign-in") {
+        if(!user && location.pathname !== "/sign-in" && location.pathname !== "/sign-up") {
             navigate("/sign-in");
         }
     }, [user, location]);
@@ -64,21 +64,23 @@ const modalStyle = {
 }
 
 function Authentication() {
-    const [tab, setTab] = useState(0);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const tab = location.pathname === "/sign-in" ? "/sign-in" : "/sign-up";
     return <Modal open={true}>
         <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
             <Box sx={modalStyle}>
                 <Stack sx={{flexGrow: 1, justifyContent: "center", alignContent: "center"}} spacing={3}>
                     <ToggleButtonGroup sx={{justifyContent: "center", alignContent: "center"}} exclusive={true}
-                                       value={tab} onChange={(e, v) => setTab(v)}>
+                                       value={tab} onChange={(e, v) => navigate(v)}>
                         <Stack direction="row" spacing={1}>
-                            <ToggleButton value={0}>Sign In</ToggleButton>
-                            <ToggleButton value={1}>Sign Up</ToggleButton>
+                            <ToggleButton value="/sign-in">Sign In</ToggleButton>
+                            <ToggleButton value="/sign-up">Sign Up</ToggleButton>
                         </Stack>
                     </ToggleButtonGroup>
                     <div>
-                        {tab === 0 && <SignIn/>}
-                        {tab === 1 && <SignUp/>}
+                        {tab === "/sign-in" && <SignIn/>}
+                        {tab === "/sign-up" && <SignUp/>}
                     </div>
                 </Stack>
             </Box>
