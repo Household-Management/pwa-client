@@ -1,8 +1,8 @@
-import HouseholdSelector from './HouseholdSelector';
+import HouseholdSelectorList from './HouseholdSelectorList';
 import { fn } from "@storybook/test";
 
 const meta = {
-  component: HouseholdSelector,
+  component: props => <HouseholdSelectorList {...props} open={true} />,
 };
 
 export default meta;
@@ -20,9 +20,15 @@ export const Default = {
         name: "Joe's Household",
       }
     ],
-    open: true,
-    onClick: fn(),
-    loading: false
+    user: {
+      signInDetails: {
+        loginId: "someone@email.com"
+      }
+    },
+    loading: false,
+    onJoinHousehold: fn(),
+    onSelectHousehold: fn(),
+    onCreateHousehold: fn()
   }
 };
 

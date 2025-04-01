@@ -1,12 +1,17 @@
-import React, {useContext, useEffect, useState} from "react";
-import HouseholdSelector from "./HouseholdSelector";
+import React, {Fragment, useContext, useEffect, useState} from "react";
+import HouseholdSelectorList from "./HouseholdSelectorList";
 import {getCurrentUser} from "aws-amplify/auth";
 import {DataClientContext} from "../../graphql/DataClient";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {useCookies} from "react-cookie";
-
-//TODO: After selecting a household, save that selection and use it automatically next time.
+import {Box, Button, Modal, Stack, TextField, Typography} from "@mui/material";
+import LogOutButton from "../../authentication/components/LogOutButton";
+import HouseholdJoinModal from "./HouseholdJoinModal";
+// TODO: After selecting a household, show a spinner while it loads
+/**
+ * Functionality wrapper around the household selection components.
+ */
 export default function HouseholdSelectorWrapper() {
     const [loading, setLoading] = useState(true);
     const [households, setHouseholds] = useState(null);
@@ -15,6 +20,8 @@ export default function HouseholdSelectorWrapper() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [cookies, setCookie] = useCookies(['household']);
+    const [inviteModalOpen, setInviteModalOpen] = useState(false);
+    const user = useSelector(state => state.user.user);
 
     useEffect(() => {
         if (!households) {
@@ -58,6 +65,41 @@ export default function HouseholdSelectorWrapper() {
         }
     }, [households]);
 
+    const createHousehold = () => {
+        console.log("Creating new household...");
+        // TODO: Replace after implementation of Issue #11
+        getCurrentUser().then(async user => {
+            const createdHousehold = await dataClient.models.Household.create({
+                name: `${user.signInDetails.loginId}'s Household`,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
+            });
+
+            const createdHouseholdTasks = await dataClient.models.HouseholdTasks.create({
+                householdId: createdHousehold.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
+            });
+            await dataClient.models.TaskList.create({
+                householdTasksId: createdHouseholdTasks.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
+            });
+            await dataClient.models.Kitchen.create({
+                householdId: createdHousehold.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
+            });
+            await dataClient.models.HouseholdRecipes.create({
+                householdId: createdHousehold.data.id,
+                membersGroup: [user.userId],
+                adminGroup: [user.userId]
+            });
+            setLocalloading(false);
+            onClick(createdHousehold.data);
+        })
+    };
+
     async function selectHousehold(household) {
         const selected = await dataClient.models.Household.get(household,
             {
@@ -82,12 +124,39 @@ export default function HouseholdSelectorWrapper() {
         }
     }
 
-    return <HouseholdSelector
-        open={true}
-        loading={loading}
-        households={households}
-        onClick={selectHousehold}
-    />;
+    async function handleInviteCodeSubmit(inviteCode) {
+        const user = await getCurrentUser();
+
+        const response = await dataClient.mutations.JoinHousehold({
+            inviteCode,
+            joinerId: user.userId
+        });
+        if (response.errors) {
+            setErrorMessage('Failed to join household. Please check the invite code and try again.');
+        } else {
+            // TODO: After successfully joining a household, we need to refresh the page to reflect the new household
+            setInviteCodeModalOpen(false);
+            setErrorMessage('');
+        }
+    }
+
+    return <Fragment>
+        <HouseholdSelectorList
+            user={user}
+            loading={loading}
+            households={households}
+            onClick={selectHousehold}
+            onCreateHousehold={createHousehold}
+            onSelectHousehold={selectHousehold}
+            onJoinHousehold={setInviteModalOpen.bind(null, true)}
+        />
+        <LogOutButton label={"Log into a different account"}/>
+        <HouseholdJoinModal
+            open={inviteModalOpen}
+            onCancel={() => setInviteModalOpen(false)}
+            onSubmit={handleInviteCodeSubmit}
+        />
+    </Fragment>
 }
 
 async function resolve(data) {
