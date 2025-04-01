@@ -31,7 +31,3 @@ export const Default = {
     onCreateHousehold: fn()
   }
 };
-
-export const Loading = {
-
-}
