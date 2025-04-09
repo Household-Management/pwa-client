@@ -29,6 +29,20 @@ const combinedReducer = combineReducers({
 
             return state ? state : null;
         },
+        adminGroup: (state, action) => {
+            if(action.type === "LOADED_STATE") {
+                return action.payload.adminGroup;
+            }
+
+            return state ? state : null;
+        },
+        membersGroup: (state, action) => {
+            if(action.type === "LOADED_STATE") {
+                return action.payload.membersGroup;
+            }
+
+            return state ? state : null;
+        },
         householdTasks: TaskStateConfiguration.reducer,
         tutorials: TutorialStateConfiguration.reducer,
         kitchen: combineSlices({
@@ -73,23 +87,6 @@ function* welcomeUser() {
     });
 }
 
-function* loadOnAuthenticate() {
-    yield takeLeading("AUTHENTICATED", function* (action) {
-        // const loaded = yield call(async () => {
-        //     return await client.models.Household.get();
-        // })
-        // const sw = yield call(() => ServiceWorkerContext.Provider._context._currentValue);
-        // const loaded = yield call(() => sw.messageSW({
-        //     type: "LOAD_STATE"
-        // }));
-        // yield put({
-        //     type: "LOADED_STATE",
-        //     payload: loaded.payload,
-        //     noSave: true
-        // });
-    })
-}
-
 function* persistOnChange() {
     yield spawn(function* () {
         yield takeEvery((action) => {
@@ -100,10 +97,6 @@ function* persistOnChange() {
             persistenceFunction(client, state, action);
         });
     })
-}
-
-function* loadOnSelectHousehold() {
-
 }
 
 export const store = configureStore({
@@ -120,8 +113,8 @@ export const store = configureStore({
 
 saga.run(function* () {
     yield spawn(welcomeUser)
-    yield spawn(loadOnAuthenticate)
-    yield spawn(loadOnSelectHousehold)
+    // yield spawn(loadOnAuthenticate)
+    // yield spawn(loadOnSelectHousehold)
     yield spawn(persistOnChange)
 });
 
