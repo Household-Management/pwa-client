@@ -31,7 +31,7 @@ export default function HouseholdSelectorList({user, households, loading, onJoin
                         </Typography>
                         <Stack spacing={4} direction="column">
                             <List>
-                                {households && households.map((household) => (
+                                {households.map((household) => (
                                     <ListItem button variant="contained" key={household.id}
                                               onClick={() => onSelectHousehold(household)}>
                                         <ListItemText primary={household.name}/>

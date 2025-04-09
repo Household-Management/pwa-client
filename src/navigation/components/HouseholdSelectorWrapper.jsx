@@ -14,7 +14,8 @@ import HouseholdJoinModal from "./HouseholdJoinModal";
  */
 export default function HouseholdSelectorWrapper() {
     const [loading, setLoading] = useState(true);
-    const [households, setHouseholds] = useState(null);
+    const [householdsLoaded, setHouseholdsLoaded] = useState(false);
+    const [households, setHouseholds] = useState([]);
     const [error, setError] = useState(null);
     const dataClient = useContext(DataClientContext);
     const dispatch = useDispatch();
@@ -24,12 +25,12 @@ export default function HouseholdSelectorWrapper() {
     const user = useSelector(state => state.user.user);
 
     useEffect(() => {
-        if (!households) {
+        if (!householdsLoaded) {
             async function fetchHouseholds() {
                 try {
+                    setHouseholdsLoaded(true);
                     setCookie('household', null);
                     const user = await getCurrentUser();
-                    // Stub API call
                     const response = await dataClient.models.Household.list({
                         filter: {
                             membersGroup: {
@@ -63,7 +64,7 @@ export default function HouseholdSelectorWrapper() {
                 fetchHouseholds();
             }
         }
-    }, [households]);
+    }, [householdsLoaded]);
 
     const createHousehold = () => {
         console.log("Creating new household...");
