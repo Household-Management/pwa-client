@@ -68,6 +68,7 @@ export default function HouseholdSelectorWrapper() {
 
     const createHousehold = () => {
         console.log("Creating new household...");
+        setLoading(true);
         // TODO: Replace after implementation of Issue #11
         getCurrentUser().then(async user => {
             const createdHousehold = await dataClient.models.Household.create({
@@ -96,8 +97,8 @@ export default function HouseholdSelectorWrapper() {
                 membersGroup: [user.userId],
                 adminGroup: [user.userId]
             });
-            setLocalloading(false);
-            onClick(createdHousehold.data);
+            setLoading(false);
+            await selectHousehold(createdHousehold.data);
         })
     };
 
