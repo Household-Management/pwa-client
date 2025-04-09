@@ -34,6 +34,8 @@ const slice = createSlice({
                             const household = state.household;
                             client.models.TaskList.create({
                                 ...action.payload,
+                                adminGroup: household.adminGroup,
+                                membersGroup: household.membersGroup,
                                 householdTasksId: household.householdTasks.id
                             })
                         }
@@ -43,18 +45,38 @@ const slice = createSlice({
         },
         CreateTask: {
             reducer: (state, action) => {
-                state.taskLists[action.payload.targetList].taskItems.push({...action.payload.newTask});
+                for(const list of state.taskLists) {
+
+                    if (list.id === action.payload.targetList) {
+                        list.taskItems.push({...action.payload.newTask});
+                        return state;
+                    }
+                }
                 return state;
             },
             prepare: (payload) => {
                 return {
                     payload,
                     meta: {
-                        persister: (client, state, action) => {
-                            client.models.Task.create({
-                                ...action.payload,
+                        persister: async (client, state, action) => {
+                            const household = state.household;
+                            const task = await client.models.Task.create({
+                                id: action.payload.newTask.id,
+                                title: action.payload.newTask.title,
+                                adminGroup: household.adminGroup,
+                                membersGroup: household.membersGroup,
                                 taskListId: action.payload.targetList
-                            })
+                            });
+                            if(task.errors) {
+                               throw new Error(task.errors);
+                            }
+
+                            await client.models.TaskRepeat.create({
+                                ...action.payload.newTask.repeats,
+                                owningTaskId: task.data.id,
+                                adminGroup: household.adminGroup,
+                                membersGroup: household.membersGroup,
+                            });
                         }
                     }
                 };
@@ -62,7 +84,12 @@ const slice = createSlice({
         },
         UpdateList: {
             reducer: (state, action) => {
-                state.taskLists[action.payload.id] = action.payload;
+                for(const list in state.taskLists) {
+                    if (state.taskLists[list].id === action.payload.id) {
+                        state.taskLists[list] = action.payload;
+                        return state;
+                    }
+                }
                 return state;
             },
             prepare: payload => {
