@@ -17,7 +17,7 @@ export default function DayPicker({days, dayNames, readOnly, onChange}) {
     const changeCallback = (i, event) => {
         if (readOnly) return;
         const changed = [...days];
-        changed[i] = !(event.target.value === "true");
+        changed[i] = event.target.value === "true" ? 0 : 1;
         if (onChange) {
             onChange(changed);
         }
@@ -38,8 +38,9 @@ export default function DayPicker({days, dayNames, readOnly, onChange}) {
                         return <TableRow>
                             {group.map((day, i) => {
                                 const index = g * 7 + i;
+                                const dayName = dayNames && dayNames.length > index ? dayNames[index] : (index + 1).toString();
                                 return <TableCell sx={{padding: 0, width: "50px", height: "50px"}}>
-                                    {dayToggle(dayNames && dayNames.length > index ? dayNames[index] : (index + 1).toString(), day, changeCallback.bind(null, index), readOnly)}
+                                    {dayToggle(dayName, day, changeCallback.bind(null, index), readOnly)}
                                 </TableCell>
                             })}
                         </TableRow>
@@ -54,11 +55,12 @@ DayPicker.propTypes = {
     days: PropTypes.arrayOf(PropTypes.bool).isRequired,
     dayNames: PropTypes.arrayOf(PropTypes.string),
     readOnly: PropTypes.bool,
-    onChange: PropTypes.func
+    onChange: PropTypes.func.isRequired
 }
 
 function dayToggle(day, value, onChange, readonly) {
-    return <ToggleButton key={day} value={value === true} selected={value === true}
+    return <ToggleButton key={day} value={value === 1} selected={value === 1}
+                         color="primary"
                          disabled={readonly}
                          onChange={onChange}
                          sx={{

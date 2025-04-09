@@ -17,14 +17,14 @@ export default {
 
 export const DayOfWeekPickerStory = {
     args: {
-        days: [false, false, false, true, false, false, false],
+        days: [0, 0, 0, 1, 0, 0, 0],
         dayNames: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     }
 }
 
 export const ReadOnlyDayOfWeekPickerStory = {
     args: {
-        days: [false, false, false, true, false, false, false],
+        days: [0, 0, 0, 1, 0, 0, 0],
         dayNames: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         readOnly: true
     }
@@ -34,18 +34,18 @@ export const DayOfMonthStory = {
     render: args => {
         // Does it matter in test code?
         const monthDays = {
-            0: Array(31).fill(false),
-            1: Array(28).fill(false),
-            2: Array(31).fill(false),
-            3: Array(30).fill(false),
-            4: Array(31).fill(false),
-            5: Array(30).fill(false),
-            6: Array(31).fill(false),
-            7: Array(31).fill(false),
-            8: Array(30).fill(false),
-            9: Array(31).fill(false),
-            10: Array(30).fill(false),
-            11: Array(31).fill(false)
+            0: Array(31).fill(0),
+            1: Array(28).fill(0),
+            2: Array(31).fill(0),
+            3: Array(30).fill(0),
+            4: Array(31).fill(0),
+            5: Array(30).fill(0),
+            6: Array(31).fill(0),
+            7: Array(31).fill(0),
+            8: Array(30).fill(0),
+            9: Array(31).fill(0),
+            10: Array(30).fill(0),
+            11: Array(31).fill(0)
         }
         const [days, setDays] = useState(monthDays[0]);
         console.log(monthDays)

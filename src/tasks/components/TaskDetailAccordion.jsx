@@ -37,33 +37,22 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
             console.warn("No onChange handler provided, this change event will have no effect.");
         }
     }
-    const onTimeChanged = (property, value) => {
-        const changed = {...task};
-        changed[property] = value;
-        if (onChange) {
-            onChange(changed);
-        } else {
-            console.warn("No onChange handler provided, this change event will have no effect.");
-        }
-    }
+
     const onRepeatChanged = (ev) => {
         const value = ev.target.value;
         const changed = {...task}
         switch (value) {
             case "NEVER":
-                changed.repeats = { // FIXME: Move into same as Daily, Weekly, Monthly
-                    repeatType: "NEVER",
-                    repeatOn: []
-                };
+                changed.repeats = "NEVER"
                 break;
             case "DAILY":
-                changed.repeats = RepeatDaily();
+                changed.repeats = "DAILY";
                 break;
             case "WEEKLY":
-                changed.repeats = RepeatWeekly(Array(7).fill(false));
+                changed.repeats = "WEEKLY-0000000";
                 break;
             case "MONTHLY":
-                changed.repeats = RepeatMonthly(Array(31).fill(false));
+                changed.repeats = "MONTHLY-" + Array(31).fill(0).join("");
                 break;
         }
         if (onChange) {
@@ -72,6 +61,8 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
             console.warn("No onChange handler provided, this change event will have no effect.");
         }
     }
+
+    const taskRepeat = getRepeats(task.repeats);
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
     return <Accordion expanded={expanded || editable} onChange={(ev, ex) => {
         setEditable(false);
@@ -95,29 +86,34 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                 </Grid>
                 <Grid item>
                     {editable && <Stack>
-                        {<FormControl size="small"><Select value={task.repeats.repeatType}
-                                                           onChange={onRepeatChanged}
-                                                           label="Repeat">
+                        {<FormControl size="small">
+                            <Select value={taskRepeat.repeatsType}
+                                    onChange={onRepeatChanged}
+                                    label="Repeat"
+                                    variant="outlined"
+                            >
                             <MenuItem value={"NEVER"}>Never</MenuItem>
                             <MenuItem value={"DAILY"}>Daily</MenuItem>
                             <MenuItem value={"WEEKLY"}>Weekly</MenuItem>
                             <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
-                        </Select></FormControl>} {/* TODO: Implement switching repeat type */}
+                        </Select>
+                        </FormControl>} {/* TODO: Implement switching repeat type */}
                         {/* FIXME: DayPicker doesn't show days of week*/}
-                        {task.repeats && <DayPicker days={task.repeats.repeatOn}/>}
+                        {taskRepeat.repeatsOn && <DayPicker days={taskRepeat.repeatsOn} onChange={value => {
+                            const changed = {...task};
+                            changed.repeats = taskRepeat.repeatsType + "-" + value.map(v => v ? "1" : "0").join("");
+                            if (onChange) {
+                                onChange(changed);
+                            } else {
+                                console.warn("No onChange handler provided, this change event will have no effect.");
+                            }
+                        }
+                        } />}
                     </Stack>}
                     {!editable &&
-                        <TextField label="Repeat" value={repeatLabels[task.repeats.repeatType]} disabled={true}/>}
+                        <TextField label="Repeat" value={repeatLabels[taskRepeat.repeatsType]} disabled={true}/>}
                 </Grid>
                 {/*TODO: Implement scheduling tasks at time */}
-                {/*<Grid item>*/}
-                {/*    <Stack>*/}
-                {/*        Scheduled For*/}
-                {/*        <LocalizationProvider dateAdapter={AdapterMoment}>*/}
-                {/*            <TimePicker value={moment(task.scheduledTime)} onChange={onTimeChanged.bind(null, "scheduledTime")}></TimePicker>*/}
-                {/*        </LocalizationProvider>*/}
-                {/*    </Stack>*/}
-                {/*</Grid>*/}
                 {!editable && <Grid item xs={12}>
                     <Button variant="contained">Complete</Button>
                 </Grid>}
@@ -125,14 +121,6 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
         </AccordionDetails>
     </Accordion>
 }
-
-// const IconActionButton = styled(IconButton)(({theme, ...props}) => {
-//     return {
-//         backgroundColor: theme.palette[props.color].main,
-//         color: theme.palette[props.color].contrastText,
-//         borderRadius: "50%",
-//     }
-// });
 
 function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged, toggleEditable}) {
     expanded = expanded || editable;
@@ -173,6 +161,18 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
                 }} color="primary" size="large" icon={<Edit/>} />
             </Grid>
         }
+    }
+}
+
+function getRepeats(repeatValue) {
+    const tokens = repeatValue.split("-");
+    switch (tokens[0]) {
+        case "NEVER":
+        case "DAILY":
+            return {"repeatsType" : tokens[0] };
+        case "WEEKLY":
+        case "MONTHLY":
+            return {"repeatsType" : tokens[0], repeatsOn: tokens[1].split("").map(t => Number.parseInt(t))}
     }
 }
 
