@@ -35,19 +35,11 @@ const tasksModels = {
         id: a.id().required(),
         title: a.string(),
         scheduledTime: a.string(),
-        repeats: a.hasOne("TaskRepeat", "owningTaskId"),
+        repeats: a.string().required(),
         description: a.string(),
         taskListId: a.id(),
         list: a.belongsTo("TaskList", "taskListId"),
-    })),
-    TaskRepeat: a.model(ownedModel({
-        id: a.id().required(),
-        repeatType: a.string(),
-        repeatOn: a.boolean().array(),
-        owningTaskId: a.id(),
-        task: a.belongsTo("Task", "owningTaskId"),
-    })),
-}
+    })),}
 
 const kitchenModels = {
     Kitchen: a.model(ownedModel({

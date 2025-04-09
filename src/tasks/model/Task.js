@@ -35,28 +35,19 @@ export const ModelPropTypes = PropTypes.shape({
 });
 
 export function RepeatDaily() {
-    return {
-        repeatType: "DAILY",
-        repeatOn: []
-    }
+    return "DAILY"
 }
 
 export function RepeatWeekly(repeatDays) {
     if(!repeatDays || repeatDays.length !== 7) {
         throw "Repeat days must be an array of 7 booleans, one for each day of the week."
     }
-    return {
-        repeatType: "WEEKLY",
-        repeatOn: repeatDays
-    }
+    return "WEEKLY-" + repeatDays.map(x => x ? 1 : 0).join("");
 }
 
 export function RepeatMonthly(repeatDays) {
     if(!repeatDays || repeatDays.length > 31 || repeatDays.length < 28) {
         throw "Repeat days must be an array of no more than 31 and no less than 28 booleans, one for each day of the month."
     }
-    return {
-        repeatType: "MONTHLY",
-        repeatOn: repeatDays
-    }
+    return "MONTHLY-" + repeatDays.map(x => x ? 1 : 0).join("");
 }
