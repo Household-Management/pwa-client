@@ -107,10 +107,17 @@ const slice = createSlice({
         },
         UpdateTask: {
             reducer: (state, action) => {
-                const task = action.payload;
-                const list = state.taskLists[state.selectedList];
-                const taskIndex = list.taskItems.findIndex(t => t.id === task.id);
-                list.tasks[taskIndex] = task;
+                for(const list in state.taskLists) {
+                    const taskList = state.taskLists[list];
+                    if(taskList.id === action.payload.selectedListId) {
+                        for(const item in taskList.taskItems) {
+                            const taskItem = taskList.taskItems[item];
+                            if(taskItem.id === action.payload.task.id) {
+                                taskList.taskItems[item] = action.payload.task;
+                            }
+                        }
+                    }
+                }
                 return state;
             },
             prepare: payload => {
@@ -118,9 +125,9 @@ const slice = createSlice({
                     payload,
                     meta: {
                         persister: (client, state, action) => {
-                            client.models.Task.update({
-                                ...action.payload
-                            });
+                            // client.models.Task.update({
+                            //     ...action.payload.task
+                            // });
                         }
                     }
                 }

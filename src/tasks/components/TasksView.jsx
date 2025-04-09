@@ -64,7 +64,7 @@ export default function TasksView() {
                                 }));
                                 navigate(`/tasks/${realSelectedListId}/task/${task.id}`);
                             }}
-                            onTaskChanged={(task) => dispatch(UpdateTask(task))}
+                            onTaskChanged={(task) => dispatch(UpdateTask({selectedListId, task}))}
                             onListDelete={(listId) => {
                                 dispatch(DeleteList(listId));
                                 let lists = Object.keys(taskLists)
