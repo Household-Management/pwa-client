@@ -1,4 +1,4 @@
-import {Stack, TextField, Button, Typography} from "@mui/material";
+import {Stack, TextField, Button, Typography, LinearProgress} from "@mui/material";
 import {useContext, useEffect, useState} from "react";
 import {signIn, signOut} from "@aws-amplify/auth";
 import {Workbox} from "workbox-window";
@@ -15,6 +15,7 @@ export default function () {
     const dispatch = useDispatch();
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         getCurrentUser().then(user => {
@@ -31,6 +32,7 @@ export default function () {
 
     async function submit() {
         try {
+            setLoading(true);
             await wb.active;
             await signOut();
             await signIn({
@@ -41,6 +43,7 @@ export default function () {
             const response = {
                 payload: user
             };
+            setLoading(false);
             dispatch({
                 type: "AUTHENTICATED",
                 noSave: true,
@@ -48,6 +51,7 @@ export default function () {
             });
             navigate("/household-select")
         } catch (e) {
+            setLoading(false);
             switch (e.name) {
                 case "NotAuthorizedException":
                     setError(e.message);
@@ -62,6 +66,7 @@ export default function () {
     return <>
         <Stack spacing={2}>
             {error ? <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography> : null}
+            {loading ? <LinearProgress/> : null}
             <TextField id="login-email" label="Email" type="text" value={email}
                        onChange={e => setEmail(e.target.value)}></TextField>
             <TextField id="login-password" label="Password" type="password" value={password}
