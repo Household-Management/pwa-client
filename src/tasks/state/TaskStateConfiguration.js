@@ -61,8 +61,7 @@ const slice = createSlice({
                         persister: async (client, state, action) => {
                             const household = state.household;
                             const task = await client.models.Task.create({
-                                id: action.payload.newTask.id,
-                                title: action.payload.newTask.title,
+                                ...action.payload.newTask,
                                 adminGroup: household.adminGroup,
                                 membersGroup: household.membersGroup,
                                 taskListId: action.payload.targetList
@@ -70,13 +69,6 @@ const slice = createSlice({
                             if(task.errors) {
                                throw new Error(task.errors);
                             }
-
-                            await client.models.TaskRepeat.create({
-                                ...action.payload.newTask.repeats,
-                                owningTaskId: task.data.id,
-                                adminGroup: household.adminGroup,
-                                membersGroup: household.membersGroup,
-                            });
                         }
                     }
                 };
@@ -125,9 +117,9 @@ const slice = createSlice({
                     payload,
                     meta: {
                         persister: (client, state, action) => {
-                            // client.models.Task.update({
-                            //     ...action.payload.task
-                            // });
+                            client.models.Task.update({
+                                ...action.payload.task
+                            });
                         }
                     }
                 }
