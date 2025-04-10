@@ -4,7 +4,7 @@ import {
     ListItemButton, ListSubheader,
     Paper, TextField,
 } from "@mui/material";
-import {AddCircleOutline, Delete, Edit} from "@mui/icons-material";
+import {AddCircleOutline, Delete, Done, Edit} from "@mui/icons-material";
 import {Fragment, useEffect, useRef, useState} from "react";
 import TaskDetailAccordion from "./TaskDetailAccordion";
 import PropTypes from "prop-types";
@@ -43,7 +43,7 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
                     />
                     {!list.unremovable && <div style={{flexGrow: 1, display: "flex", justifyContent: "space-around"}}>
                         <Fab color="primary" onClick={() => setEditing(!editing)}>
-                            <Edit/>
+                            {editing ? <Done/> : <Edit/>}
                         </Fab>
                         <Fab color="error" onClick={onListDelete.bind(null, list.id)} >
                             <Delete/>
