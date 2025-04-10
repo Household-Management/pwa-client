@@ -145,41 +145,30 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
         return (<div style={{flexGrow: 1}}>{task.title}</div>);
     }
     if (expanded) {
-        if (editable) {
-            return <Grid container>
-                <Grid item sx={{flexGrow: 1}}>
-                    <TextField value={task.title}
-                               sx={{width: "100%"}}
-                               label="Title"
-                               onChange={e => {
-                                   onPropertyChanged("title", e);
-                               }}
-                               onClick={ev => ev.stopPropagation()}/>
-                </Grid>
-                <Grid item>
-                    <IconTile icon={<Done/>} onClick={ev => {
-                        toggleEditable(!editable);
-                        ev.stopPropagation()
-                    }} color="primary" size="large"/>
-                </Grid>
-                <Grid item>
-                    <IconTile style={{marginLeft: "32px", borderRadius: "50%"}} onClick={ev => {
-                        onDelete(task.id);
-                        ev.stopPropagation()
-                    }} color="error" size="large" icon={<Delete/>} />
-                </Grid>
+        return <Grid container>
+            <Grid item sx={{flexGrow: 1}}>
+                <TextField value={task.title}
+                           sx={{width: "100%"}}
+                           label="Title"
+                           onChange={e => {
+                               onPropertyChanged("title", e);
+                           }}
+                           disabled={!editable}
+                           onClick={ev => ev.stopPropagation()}/>
             </Grid>
-        } else {
-            return <Grid container>
-                <div style={{flexGrow: 1}}>
-                    {task.title}
-                </div>
-                <IconTile onClick={ev => {
+            <Grid item>
+                <IconTile icon={editable ? <Done/> : <Edit/>} onClick={ev => {
                     toggleEditable(!editable);
                     ev.stopPropagation()
-                }} color="primary" size="large" icon={<Edit/>} />
+                }} color="primary" size="large"/>
             </Grid>
-        }
+            <Grid item>
+                <IconTile style={{marginLeft: "32px", borderRadius: "50%"}} onClick={ev => {
+                    onDelete(task.id);
+                    ev.stopPropagation()
+                }} color="error" size="large" icon={<Delete/>}/>
+            </Grid>
+        </Grid>
     }
 }
 
