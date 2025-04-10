@@ -24,6 +24,7 @@ const repeatLabels = {
 // TODO: Implement completion of tasks.
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
+// TODO: When name changes, wait until the user stops typing for 1 second before updating the model.
 export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle, onDelete}) {
 
     const [editable, setEditable] = useState(false);
@@ -114,9 +115,6 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                         <TextField label="Repeat" value={repeatLabels[taskRepeat.repeatsType]} disabled={true}/>}
                 </Grid>
                 {/*TODO: Implement scheduling tasks at time */}
-                {!editable && <Grid item xs={12}>
-                    <Button variant="contained">Complete</Button>
-                </Grid>}
             </Grid>
         </AccordionDetails>
     </Accordion>
@@ -125,16 +123,19 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
 function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged, toggleEditable}) {
     expanded = expanded || editable;
     if (!expanded) {
-        return task.title;
+        return (<div style={{flexGrow: 1}}>{task.title}</div>);
     }
     if (expanded) {
         if (editable) {
             return <Grid container>
-                <Grid item>
+                <Grid item sx={{flexGrow: 1}}>
                     <TextField value={task.title}
+                               sx={{width: "100%"}}
                                label="Title"
-                               onChange={onPropertyChanged.bind(null, "title")}
-                        /*Keeps the accordion from collapsing when we click the input */
+                               onChange={e => {
+                                   e.stopPropagation();
+                                   onPropertyChanged("title");
+                               }}
                                onClick={ev => ev.stopPropagation()}/>
                 </Grid>
                 <Grid item>
@@ -152,7 +153,7 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
             </Grid>
         } else {
             return <Grid container>
-                <div style={{display: "flex", alignItems: "center"}}>
+                <div style={{flexGrow: 1}}>
                     {task.title}
                 </div>
                 <IconTile onClick={ev => {
