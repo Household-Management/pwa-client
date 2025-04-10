@@ -9,7 +9,7 @@ export default {
         const [selectedTask, setSelectedTask] = useState(args.selectedTask);
         const onTaskChanged = task => {
             console.log("Task changed: ", task);
-            const index = list.tasks.findIndex(t => t.id === task.id);
+            const index = list.taskItems.findIndex(t => t.id === task.id);
             list.tasks[index] = task;
             setList({...list});
             args.onTaskChanged({...list})
@@ -52,7 +52,7 @@ export const TaskListDetailStory = {
         list: {
             id: "1",
             name: "List 1",
-            tasks: [
+            taskItems: [
                 new Task("1", "Task 1", "Description 1"),
                 new Task("2", "Task 2", "Description 2"),
                 new Task("3", "Task 3", "Description 3")

@@ -137,7 +137,7 @@ const slice = createSlice({
                     meta: {
                         persister: (client, state, action) => {
                             client.models.TaskList.delete({
-                                id: action.payload
+                                id: action.payload.taskId
                             });
                         }
                     }
@@ -146,8 +146,8 @@ const slice = createSlice({
         },
         DeleteTask: {
             reducer: (state, action) => {
-                const list = state.taskLists[action.payload.fromList];
-                list.tasks = list.tasks.filter(t => t.id !== action.payload.taskId);
+                const list = state.taskLists.find(list => list.id === action.payload.fromList);
+                list.taskItems = list.taskItems.filter(t => t.id !== action.payload.taskId);
                 if (action.payload.taskId === state.selectedTask) {
                     state.selectedTask = null;
                 }
@@ -159,7 +159,7 @@ const slice = createSlice({
                     meta: {
                         persister: (client, state, action) => {
                             client.models.Task.delete({
-                                id: action.payload
+                                id: action.payload.taskId
                             });
                         }
                     }
