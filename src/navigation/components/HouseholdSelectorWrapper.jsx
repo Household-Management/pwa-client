@@ -105,7 +105,7 @@ export default function HouseholdSelectorWrapper() {
     async function selectHousehold(household) {
         const selected = await dataClient.models.Household.get(household,
             {
-                selectionSet: ["id", "name", "membersGroup", "adminGroup", "householdTasks.*", "householdTasks.taskLists.*", "kitchen.*", "recipes.*"],
+                selectionSet: ["id", "name", "membersGroup", "adminGroup", "householdTasks.*", "householdTasks.taskLists.*", "kitchen.*", "recipes.*", "householdTasks.taskLists.taskItems.*"],
 
             });
         if (selected.errors) {
