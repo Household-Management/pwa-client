@@ -69,7 +69,14 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
         setEditable(false);
         onToggle(ex)
     }} sx={sx}>
-        <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover": {bgcolor: "#f5f5f5"}}}>
+        <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover": {bgcolor: "#f5f5f5"}}} onKeyUpCapture={e => {
+            switch(e.code) {
+                case "Enter":
+                case "Space":
+                    e.preventDefault();
+                    break;
+            }
+        }}>
             <Summary task={task}
                      expanded={expanded}
                      editable={editable}
@@ -133,8 +140,7 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
                                sx={{width: "100%"}}
                                label="Title"
                                onChange={e => {
-                                   e.stopPropagation();
-                                   onPropertyChanged("title");
+                                   onPropertyChanged("title", e);
                                }}
                                onClick={ev => ev.stopPropagation()}/>
                 </Grid>
