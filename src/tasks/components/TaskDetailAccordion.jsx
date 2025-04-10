@@ -4,7 +4,19 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import {Delete, ExpandMore, Edit, Done, CheckCircle} from '@mui/icons-material';
 import DayPicker from "../../time/components/DayPicker";
-import {Button, FormControl, Grid, IconButton, MenuItem, Paper, Select, Stack, styled, TextField} from "@mui/material";
+import {
+    Button,
+    FormControl,
+    Grid,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Paper,
+    Select,
+    Stack,
+    styled,
+    TextField
+} from "@mui/material";
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {LocalizationProvider, TimeClock, TimePicker} from "@mui/x-date-pickers";
 import PropTypes from "prop-types";
@@ -93,19 +105,21 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                                onChange={onPropertyChanged.bind(null, "description")}/>
                 </Grid>
                 <Grid item>
-                    {editable && <Stack>
-                        {<FormControl size="small">
+                    <Stack>
+                        <FormControl size="medium">
+                            <InputLabel id="repeat-select-label">Repeat</InputLabel>
                             <Select value={taskRepeat.repeatsType}
                                     onChange={onRepeatChanged}
                                     label="Repeat"
                                     variant="outlined"
+                                    disabled={!editable}
                             >
                             <MenuItem value={"NEVER"}>Never</MenuItem>
                             <MenuItem value={"DAILY"}>Daily</MenuItem>
                             <MenuItem value={"WEEKLY"}>Weekly</MenuItem>
                             <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
                         </Select>
-                        </FormControl>} {/* TODO: Implement switching repeat type */}
+                        </FormControl>
                         {/* FIXME: DayPicker doesn't show days of week*/}
                         {taskRepeat.repeatsOn && <DayPicker days={taskRepeat.repeatsOn} onChange={value => {
                             const changed = {...task};
@@ -117,9 +131,7 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                             }
                         }
                         } />}
-                    </Stack>}
-                    {!editable &&
-                        <TextField label="Repeat" value={repeatLabels[taskRepeat.repeatsType]} disabled={true}/>}
+                    </Stack>
                 </Grid>
                 {/*TODO: Implement scheduling tasks at time */}
             </Grid>
