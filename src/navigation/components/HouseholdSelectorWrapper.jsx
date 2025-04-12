@@ -24,6 +24,9 @@ export default function HouseholdSelectorWrapper() {
     const [inviteModalOpen, setInviteModalOpen] = useState(false);
     const user = useSelector(state => state.user.user);
 
+    const [processingInvite, setProcessingInvite] = useState(false);
+    const [inviteError, setInviteError] = useState(null);
+
     useEffect(() => {
         if (!householdsLoaded) {
             async function fetchHouseholds() {
@@ -127,18 +130,22 @@ export default function HouseholdSelectorWrapper() {
     }
 
     async function handleInviteCodeSubmit(inviteCode) {
+        setProcessingInvite(true);
         const user = await getCurrentUser();
 
         const response = await dataClient.mutations.JoinHousehold({
             inviteCode,
             joinerId: user.userId
         });
+
         if (response.errors) {
-            setErrorMessage('Failed to join household. Please check the invite code and try again.');
+            setInviteError('Failed to join household. Please check the invite code and try again.');
+            setProcessingInvite(false);
         } else {
             // TODO: After successfully joining a household, we need to refresh the page to reflect the new household
-            setInviteCodeModalOpen(false);
-            setErrorMessage('');
+            setInviteModalOpen(false);
+            setInviteError('');
+            setProcessingInvite(false);
         }
     }
 
@@ -155,6 +162,8 @@ export default function HouseholdSelectorWrapper() {
         <LogOutButton label={"Log into a different account"}/>
         <HouseholdJoinModal
             open={inviteModalOpen}
+            errorMessage={inviteError}
+            loading={processingInvite}
             onCancel={() => setInviteModalOpen(false)}
             onSubmit={handleInviteCodeSubmit}
         />
