@@ -10,6 +10,7 @@ import {
     Stack
 } from '@mui/material';
 import PropTypes from "prop-types";
+import LogOutButton from "../../authentication/components/LogOutButton";
 
 export default function HouseholdSelectorList({user, households, loading, onJoinHousehold, onSelectHousehold, onCreateHousehold}) {
     return <Fragment>
@@ -45,6 +46,7 @@ export default function HouseholdSelectorList({user, households, loading, onJoin
                                     <ListItemText primary="Create your own household" onClick={onCreateHousehold}/>
                                 </ListItem>
                             </List>
+                            <LogOutButton/>
                         </Stack>
                     </Fragment>
                 }
