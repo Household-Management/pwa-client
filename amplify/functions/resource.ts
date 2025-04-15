@@ -11,3 +11,9 @@ export const joinFunction = defineFunction({
     entry: "./join-with-invite-code/handler.js",
     resourceGroupName: "data"
 });
+
+export const authFunction = defineFunction({
+    name: "AuthorizationHandler",
+    entry: "../functions/authorization/handler.js",
+    resourceGroupName: "data"
+});

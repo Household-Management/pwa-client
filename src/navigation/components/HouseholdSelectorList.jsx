@@ -12,7 +12,7 @@ import {
 import PropTypes from "prop-types";
 import LogOutButton from "../../authentication/components/LogOutButton";
 
-export default function HouseholdSelectorList({user, households, loading, onJoinHousehold, onSelectHousehold, onCreateHousehold}) {
+export default function HouseholdSelectorList({user, errorMessage, households, loading, onJoinHousehold, onSelectHousehold, onCreateHousehold}) {
     return <Fragment>
         <Modal open={true}>
             <Box sx={{width: 400, bgcolor: 'background.paper', p: 4, margin: 'auto', marginTop: '10%'}}>
@@ -27,6 +27,9 @@ export default function HouseholdSelectorList({user, households, loading, onJoin
                         <Typography sx={{textAlign: "center"}}>
                             Signed in as {user.signInDetails.loginId}
                         </Typography>
+                        {errorMessage && <Typography sx={{textAlign: "center", color: "red"}}>
+                            {errorMessage}
+                        </Typography>}
                         <Typography sx={{textAlign: "center"}}>
                             Select a household
                         </Typography>

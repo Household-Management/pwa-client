@@ -2,17 +2,14 @@ import {defineBackend} from '@aws-amplify/backend';
 import * as iam from "aws-cdk-lib/aws-iam";
 import {auth} from './auth/resource';
 import {data} from './data/resource';
-import {inviteFunction, joinFunction} from "./functions/resource";
+import {inviteFunction, joinFunction, authFunction} from "./functions/resource";
 import {cognitoUserPoolsTokenProvider} from 'aws-amplify/auth/cognito';
 import {CookieStorage} from 'aws-amplify/utils';
 
-
-/**
- * @see https://docs.amplify.aws/react/build-a-backend/ to add storage, functions, and more
- */
 const backend = defineBackend({
     inviteFunction,
     joinFunction,
+    authFunction,
     auth,
     data,
 });

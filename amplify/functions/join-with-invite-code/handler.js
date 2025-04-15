@@ -45,15 +45,15 @@ export const handler = async (event, context) => {
         Key: {id: invite.Item.householdId}
     }).promise();
 
-    household.Item.memberGroup.push(userId);
+    household.Item.membersGroup.push(userId);
 
     console.log("Updating household with new member...");
     await dynamoDb.update({
         TableName: process.env.HOUSEHOLD_TABLE_NAME,
         Key: {id: household.Item.id},
-        UpdateExpression: "SET memberGroup = :memberGroup",
+        UpdateExpression: "SET membersGroup = :memberGroup",
         ExpressionAttributeValues: {
-            ":memberGroup": household.Item.memberGroup
+            ":memberGroup": household.Item.membersGroup
         }
     }).promise();
 

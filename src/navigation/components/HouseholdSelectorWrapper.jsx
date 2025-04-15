@@ -1,6 +1,6 @@
 import React, {Fragment, useContext, useEffect, useState} from "react";
 import HouseholdSelectorList from "./HouseholdSelectorList";
-import {getCurrentUser} from "aws-amplify/auth";
+import {getCurrentUser, fetchAuthSession} from "aws-amplify/auth";
 import {DataClientContext} from "../../graphql/DataClient";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -34,6 +34,7 @@ export default function HouseholdSelectorWrapper() {
                     setHouseholdsLoaded(true);
                     setCookie('household', null);
                     const user = await getCurrentUser();
+                    const userSession = await fetchAuthSession();
                     const response = await dataClient.models.Household.list({
                         filter: {
                             membersGroup: {
@@ -43,12 +44,16 @@ export default function HouseholdSelectorWrapper() {
                         selectionSet: [
                             "name",
                             "id"
-                        ]
-                    });
+                        ],
+                        authMode: "lambda",
+                        authToken: `Bearer ${userSession.tokens.accessToken.toString()}`
+                    }
+                    );
                     if (!response.errors) {
                         setHouseholds(response.data);
                     } else {
-                        // TODO: Report errors
+                        console.error("Errors on fetching households", response.errors);
+                        throw new Error("Failed to fetch households");
                     }
                 } catch (err) {
                     setError(err);
@@ -151,6 +156,7 @@ export default function HouseholdSelectorWrapper() {
 
     return <Fragment>
         <HouseholdSelectorList
+            errorMessage={error?.message}
             user={user}
             loading={loading}
             households={households}

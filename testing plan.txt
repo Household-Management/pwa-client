@@ -1,0 +1,48 @@
+1. Sign up and Sign In
+    1.1.  Sign up
+        1.1.1. Successful
+            1.1.1.a. Enter email and password, click submit
+            1.1.1.b. Check email for verification code
+            1.1.1.c. Enter verification code, wait to complete
+            1.1.1.d. Confirm navigation to household selection screen
+        1.1.2. Unsuccessful
+            1.2.  User Already Exists
+                1.2.1.a. Enter email and password, click submit
+                1.2.1.b. Check email for verification code
+                1.2.1.c. Enter verification code, wait to complete
+                1.2.1.d. ???
+    2. Sign In
+
+    3. Creating New Household
+
+    4. Joining Existing Household
+
+    5. Signing In to Existing Household
+
+    6. Signing Out
+
+2. Task Management
+    1. Creating a Task
+
+    2. Editing a Task
+
+    3. Deleting a Task
+
+    4. Marking a Task as Complete
+
+    5. Filtering Tasks by Status
+
+3. Kitchen, Pantry and Recipes
+    1. Adding Items to Pantry
+
+    2. Removing Items from Pantry
+
+    3. Notification on soon-to-expire Pantry Item
+
+    4. Notification on expired Pantry Item
+
+    5. Create a Recipe
+
+    6. Edit a Recipe
+
+    7. Delete a Recipe
