@@ -52,7 +52,7 @@ export default function ({list, expanded, expandedSetter}) {
                 );
             })}
             <div>
-                Add Item {/* Todo: Center vertically*/}
+                Add Item {/* Todo: Center text vertically*/}
             </div>
             <Paper sx={{flexDirection: "row", display: "flex", width: "100%"}}>
                 <div className="grocery-new-item-container">

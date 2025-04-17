@@ -6,7 +6,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 function generateInviteCode() {
     return Math.floor(10000000 + Math.random() * 90000000).toString();
 }
-// TODO: Turn this into a custom resolver
+
 export const handler = async (event, context) => {
     const {householdId} = event.arguments;
     const userId = decodeAuthHeader(event.request.headers?.authorization);

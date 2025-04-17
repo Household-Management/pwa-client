@@ -37,7 +37,7 @@ export default function Alerts({ queuedAlerts, sx }) {
                 const time = Math.max(1000, Math.min(10 * 1000, (lastAlert.message.length * 200)))
                 setTimeout(() => {
                     setShouldBeVisible(false)
-                }, time) // TODO: Constant instead of literal
+                }, time) // TODO: Make configurable
             }}
             in={shouldBeVisible}
             onExited={() => {

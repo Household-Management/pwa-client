@@ -17,7 +17,6 @@ import {useParams} from "react-router-dom";
  * @returns {JSX.Element}
  * @constructor
  */
-// TODO: Edit name of list
 export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTaskSelected, onListChanged, onListDelete, onTaskDelete, selectedTask}) {
     const [editing, setEditing] = useState(false);
     const { taskId: selectedTaskId } = useParams();

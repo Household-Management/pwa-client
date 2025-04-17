@@ -15,7 +15,6 @@ console.log("Loading state from window");
 Amplify.configure(outputs);
 
 // TODO: Implement notifications for tasks.
-// TODO: Implement settings page.
 function App() {
     return (<div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
         <Provider store={store}>
