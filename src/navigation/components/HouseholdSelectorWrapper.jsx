@@ -33,8 +33,9 @@ export default function HouseholdSelectorWrapper() {
                 try {
                     setHouseholdsLoaded(true);
                     setCookie('household', null);
-                    const user = await getCurrentUser();
-                    const userSession = await fetchAuthSession();
+                    const userSession = await fetchAuthSession({
+                        forceRefresh: true
+                    });
                     if (hasGroups(userSession)) {
                         const response = await dataClient.models.Household.list({
                             filter: {
@@ -69,6 +70,8 @@ export default function HouseholdSelectorWrapper() {
                 selectHousehold({id: cookies.household})
                     .then(() => {
                     }, err => {
+                        setHouseholdsLoaded(false);
+                        cookies.household = null;
                         fetchHouseholds();
                     });
             } else if (open) {
@@ -88,7 +91,9 @@ export default function HouseholdSelectorWrapper() {
             setLoading(false);
             if(!createdHousehold.errors) {
                 // Force update of accessToken after group changes
-                await fetchAuthSession();
+                await fetchAuthSession({
+                    forceRefresh: true
+                });
                 await selectHousehold(createdHousehold.data);
             } else {
                 setError(new Error("Failed to create household."));
@@ -105,12 +110,14 @@ export default function HouseholdSelectorWrapper() {
         if (selected.errors) {
             console.error("Errors on selecting household", selected.errors);
             setError("Error selecting household");
-            return;
+            setLoading(false);
+            throw new Error();
         }
         if (!selected.data) {
             console.error("No data on selecting household");
             setError("Error selecting household");
-            return
+            setLoading(false);
+            throw new Error();
         }
         if (!selected.errors && selected.data) {
             setCookie('household', household.id);
