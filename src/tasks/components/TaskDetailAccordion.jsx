@@ -20,10 +20,11 @@ import {
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
 import {LocalizationProvider, TimeClock, TimePicker} from "@mui/x-date-pickers";
 import PropTypes from "prop-types";
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
 import moment from "moment";
 import IconTile from "../../IconTile";
+import {useSearchParams} from "react-router-dom";
 
 const repeatLabels = {
     "NEVER": "Never",
@@ -32,13 +33,14 @@ const repeatLabels = {
     "MONTHLY": "Monthly"
 }
 
+// TODO: Confirm delete
 // TODO: Highlight tasks due today.
 // TODO: Implement completion of tasks.
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
 // TODO: When name changes, wait until the user stops typing for 1 second before updating the model.
 export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle, onDelete}) {
-
+    const [searchParams] = useSearchParams();
     const [editable, setEditable] = useState(false);
     const onPropertyChanged = (property, ev) => {
         const value = ev.target.value;
@@ -74,6 +76,13 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
             console.warn("No onChange handler provided, this change event will have no effect.");
         }
     }
+
+    useEffect(() => {
+        if(searchParams.get("edit") === "true") {
+            setEditable(true);
+        }
+    }, [searchParams.get("edit")]);
+
 
     const taskRepeat = getRepeats(task.repeats);
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
