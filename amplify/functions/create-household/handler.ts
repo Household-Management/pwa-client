@@ -23,27 +23,33 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
         updatedAt: new Date().toISOString(),
     };
 
-    const householdTasksId = crypto.randomUUID();
-    const householdTasks = {
-        id: householdTasksId,
-        householdId,
-        taskLists: [],
-        adminGroup,
-        membersGroup,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    };
-
     const todoListId = crypto.randomUUID();
+    const householdTasksId = crypto.randomUUID();
     const todoList = {
         id: todoListId,
         name: "Todo",
+        adminGroup,
+        membersGroup,
         householdTasksId,
         unremovable: true,
         taskItems: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     }
+
+    // FIXME: This is error-prone doing it manually, need a way that makes use of AppSync's automatic handling that is also
+    // atomic.
+    const householdTasks = {
+        id: householdTasksId,
+        householdId,
+        adminGroup,
+        membersGroup,
+        taskLists: [
+            todoListId
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
 
     const kitchenId = crypto.randomUUID();
     const kitchen = {
