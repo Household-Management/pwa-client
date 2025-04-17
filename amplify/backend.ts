@@ -25,6 +25,7 @@ backend.inviteFunction.resources.cfnResources.cfnFunction.environment = {
         HOUSEHOLD_TASKS_TABLE_NAME: backend.data.resources.tables["HouseholdTasks"].tableName,
         KITCHEN_TABLE_NAME: backend.data.resources.tables["Kitchen"].tableName,
         HOUSEHOLD_RECIPES_TABLE_NAME: backend.data.resources.tables["HouseholdRecipes"].tableName,
+        TASK_LIST_TABLE_NAME: backend.data.resources.tables["TaskList"].tableName,
     }
 };
 

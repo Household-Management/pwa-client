@@ -34,6 +34,17 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
         updatedAt: new Date().toISOString(),
     };
 
+    const todoListId = crypto.randomUUID();
+    const todoList = {
+        id: todoListId,
+        name: "Todo",
+        householdTasksId,
+        unremovable: true,
+        taskItems: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    }
+
     const kitchenId = crypto.randomUUID();
     const kitchen = {
         id: kitchenId,
@@ -84,6 +95,12 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
                     Item: householdRecipes,
                 },
             },
+            {
+                Put: {
+                    TableName: process.env.TASK_LIST_TABLENAME!,
+                    Item: todoList,
+                }
+            }
         ],
     }).promise();
 
