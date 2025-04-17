@@ -31,7 +31,9 @@ function TaskListsBar(props) {
                       navigate(`/tasks/${value}`);
                   }}>
                 {
-                    props.taskLists.map(list =>
+                    props.taskLists.toSorted((a, b) => {
+                        return Date.parse(a.createdAt) - Date.parse(b.createdAt);
+                    }).map(list =>
                         (<Tab value={list.id}
                               key={list.id}
                               label={list.name || "New List"}
