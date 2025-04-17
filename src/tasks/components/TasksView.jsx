@@ -62,7 +62,7 @@ export default function TasksView() {
                                     targetList: realSelectedListId,
                                     newTask: {...task}
                                 }));
-                                navigate(`/tasks/${realSelectedListId}/task/${task.id}`);
+                                navigate(`/tasks/${realSelectedListId}/task/${task.id}?edit=true`);
                             }}
                             onTaskChanged={(task) => dispatch(UpdateTask({selectedListId, task}))}
                             onListDelete={(listId) => {
