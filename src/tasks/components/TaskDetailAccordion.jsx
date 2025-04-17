@@ -82,7 +82,7 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
         onToggle(ex)
     }} sx={sx}>
         <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover": {bgcolor: "#f5f5f5"}}} onKeyUpCapture={e => {
-            switch(e.code) {
+            switch (e.code) {
                 case "Enter":
                 case "Space":
                     e.preventDefault();
@@ -114,11 +114,11 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                                     variant="outlined"
                                     disabled={!editable}
                             >
-                            <MenuItem value={"NEVER"}>Never</MenuItem>
-                            <MenuItem value={"DAILY"}>Daily</MenuItem>
-                            <MenuItem value={"WEEKLY"}>Weekly</MenuItem>
-                            <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
-                        </Select>
+                                <MenuItem value={"NEVER"}>Never</MenuItem>
+                                <MenuItem value={"DAILY"}>Daily</MenuItem>
+                                <MenuItem value={"WEEKLY"}>Weekly</MenuItem>
+                                <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
+                            </Select>
                         </FormControl>
                         {/* FIXME: DayPicker doesn't show days of week*/}
                         {taskRepeat.repeatsOn && <DayPicker days={taskRepeat.repeatsOn} onChange={value => {
@@ -130,7 +130,7 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                                 console.warn("No onChange handler provided, this change event will have no effect.");
                             }
                         }
-                        } />}
+                        }/>}
                     </Stack>
                 </Grid>
                 {/*TODO: Implement scheduling tasks at time */}
@@ -145,7 +145,7 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
         return (<div style={{flexGrow: 1}}>{task.title}</div>);
     }
     if (expanded) {
-        return <Grid container>
+        return <Grid container sx={{width: "90%"}}>
             <Grid item sx={{flexGrow: 1}}>
                 <TextField value={task.title}
                            sx={{width: "100%"}}
@@ -163,7 +163,7 @@ function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged,
                 }} color="primary" size="large"/>
             </Grid>
             <Grid item>
-                <IconTile style={{marginLeft: "32px", borderRadius: "50%"}} onClick={ev => {
+                <IconTile sx={{marginLeft: "32px", borderRadius: "50%", visibility: editable ? "visible" : "hidden"}} onClick={ev => {
                     onDelete(task.id);
                     ev.stopPropagation()
                 }} color="error" size="large" icon={<Delete/>}/>
@@ -177,10 +177,10 @@ function getRepeats(repeatValue) {
     switch (tokens[0]) {
         case "NEVER":
         case "DAILY":
-            return {"repeatsType" : tokens[0] };
+            return {"repeatsType": tokens[0]};
         case "WEEKLY":
         case "MONTHLY":
-            return {"repeatsType" : tokens[0], repeatsOn: tokens[1].split("").map(t => Number.parseInt(t))}
+            return {"repeatsType": tokens[0], repeatsOn: tokens[1].split("").map(t => Number.parseInt(t))}
     }
 }
 
