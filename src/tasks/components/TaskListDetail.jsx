@@ -34,18 +34,18 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
         <Paper sx={{height: "100%"}}>
             <List >
                 <ListSubheader sx={{width: "100%", display: "flex", justifyContent: "space-between"}}>
-                    <TextField sx={{flexGrow: 9}}
+                    <TextField sx={{width: "75%"}}
                                value={list.name}
                                placeholder="New List"
                                onChange={ev => onListChanged({...list, name: ev.target.value})}
                                disabled={list.unremovable || !editing}
                                inputRef={textFieldRef}
                     />
-                    {!list.unremovable && <div style={{flexGrow: 1, display: "flex", justifyContent: "space-around"}}>
+                    {!list.unremovable && <div style={{flexGrow: 1, display: "flex", justifyContent: "space-evenly"}}>
                         <Fab color="primary" onClick={() => setEditing(!editing)}>
                             {editing ? <Done/> : <Edit/>}
                         </Fab>
-                        <Fab color="error" onClick={onListDelete.bind(null, list.id)} >
+                        <Fab color="error" onClick={onListDelete.bind(null, list.id)} sx={{visibility: editing? "visible" : "hidden"}} >
                             <Delete/>
                         </Fab>
                     </div>}
