@@ -1,6 +1,6 @@
 import {combineReducers, combineSlices, configureStore} from "@reduxjs/toolkit";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
-import TutorialStateConfiguration from "../tutorials/state/TutorialStateConfiguration";
+import { TutorialStateConfiguration } from "../tutorials/state/TutorialStateConfiguration";
 import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsStateConfiguration";
 import {put, takeLeading, select, call, spawn, debounce, take, takeEvery} from "redux-saga/effects";
 import createSagaMiddleware from "redux-saga";
