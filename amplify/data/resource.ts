@@ -1,10 +1,10 @@
 import {type ClientSchema, a, defineData, defineFunction} from '@aws-amplify/backend';
-import {inviteFunction, joinFunction} from "../functions/resource";
+import {inviteFunction, joinFunction, createHouseholdFunction} from "../functions/resource";
 
 function defaultOperations(allow: any): any[] {
     return [
-        allow.ownersDefinedIn("membersGroup").to(["read"]),
-        allow.ownersDefinedIn("adminGroup").to(["read", "update", "create", "delete"]),
+        allow.groupsDefinedIn("membersGroup").to(["read"]),
+        allow.groupsDefinedIn("adminGroup").to(["read", "update", "create", "delete"]),
     ]
 }
 
@@ -28,18 +28,18 @@ const tasksModels = {
         name: a.string(),
         householdTasksId: a.id().required(),
         householdTasks: a.belongsTo("HouseholdTasks", "householdTasksId"),
-        taskItems: a.hasMany("Task", "taskListId"),
+        taskItems: a.ref("Task").array(),
         unremovable: a.boolean()
-    })),
-    Task: a.model(ownedModel({
+    })).authorization(defaultOperations),
+    Task: a.customType({
         id: a.id().required(),
         title: a.string(),
         scheduledTime: a.string(),
         repeats: a.string().required(),
         description: a.string(),
         taskListId: a.id(),
-        list: a.belongsTo("TaskList", "taskListId"),
-    })),}
+    })
+}
 
 const kitchenModels = {
     Kitchen: a.model(ownedModel({
@@ -48,34 +48,33 @@ const kitchenModels = {
         pantry: a.hasOne("Pantry", "kitchenId"),
         householdId: a.id(),
         household: a.belongsTo("Household", "householdId"),
-    })),
+    })).authorization(defaultOperations),
     Groceries: a.model(ownedModel({
         id: a.id().required(),
         lists: a.hasMany("GroceryList", "groceriesId"),
         kitchenId: a.id(),
         kitchen: a.belongsTo("Kitchen", "kitchenId"),
-    })),
+    })).authorization(defaultOperations),
     GroceryList: a.model(ownedModel({
         id: a.id().required(),
-        items: a.hasMany("GroceryItem", "groceryListId"),
+        items: a.ref("GroceryItem").array(),
         groceriesId: a.id(),
         groceries: a.belongsTo("Groceries", "groceriesId"),
-    })),
-    GroceryItem: a.model(ownedModel({
+    })).authorization(defaultOperations),
+    GroceryItem: a.customType({
         id: a.id().required(),
         name: a.string(),
         quantity: a.integer(),
         unit: a.string(),
         groceryListId: a.id(),
-        list: a.belongsTo("GroceryList", "groceryListId"),
-    })),
+    }),
     Pantry: a.model(ownedModel({
         id: a.id().required(),
         locations: a.string().array(),
         items: a.hasMany("PantryItem", "pantryId"),
         kitchenId: a.id(),
         kitchen: a.belongsTo("Kitchen", "kitchenId"),
-    })),
+    })).authorization(defaultOperations),
     PantryItem: a.model(ownedModel({
         id: a.id().required(),
         name: a.string(),
@@ -84,7 +83,7 @@ const kitchenModels = {
         expiration: a.date(),
         pantryId: a.id(),
         pantry: a.belongsTo("Pantry", "pantryId"),
-    })),
+    })).authorization(defaultOperations),
 }
 
 const recipeModels = {
@@ -93,7 +92,7 @@ const recipeModels = {
         recipes: a.hasMany("Recipe", "householdRecipesId"),
         householdId: a.id(),
         household: a.belongsTo("Household", "householdId"),
-    })),
+    })).authorization(defaultOperations),
     Recipe: a.model(ownedModel({
         id: a.id().required(),
         title: a.string(),
@@ -102,7 +101,7 @@ const recipeModels = {
         instructions: a.string().array(),
         householdRecipesId: a.id(),
         belongsTo: a.belongsTo("HouseholdRecipes", "householdRecipesId"),
-    })),
+    })).authorization(defaultOperations),
     RecipeIngredient: a.model(ownedModel({
         id: a.id().required(),
         recipeId: a.id(),
@@ -111,12 +110,15 @@ const recipeModels = {
         ingredient: a.belongsTo("Ingredient", "ingredientId"),
         quantity: a.integer(),
         unit: a.string()
-    })),
-    Ingredient: a.model(ownedModel({
+    })).authorization(defaultOperations),
+    Ingredient: a.model({
         id: a.id().required(),
         name: a.string(),
         recipes: a.hasMany("RecipeIngredient", "ingredientId")
-    })),
+    }).authorization(allow => [
+        allow.guest().to(["read"]),
+        allow.group("admin").to(["read", "create"]),
+    ]),
 }
 
 const schema = a.schema({
@@ -130,9 +132,16 @@ const schema = a.schema({
         membersGroup: a.string().array().required(), // Name for group members of the household
         adminGroup: a.string().array().required(), // Name for admins of the household
     }).authorization(allow => [
-        allow.ownersDefinedIn("membersGroup").to(["read"]),
-        allow.ownersDefinedIn("adminGroup").to(["read", "create"]),
+        allow.groupsDefinedIn("membersGroup").to(["read"]),
+        allow.groupsDefinedIn("adminGroup").to(["read",]),
     ]),
+    CreateHousehold: a.mutation()
+        .arguments({
+            name: a.string().required()
+        })
+        .returns(a.ref("Household"))
+        .authorization(customAllow => [customAllow.authenticated("userPools")])
+        .handler(a.handler.function(createHouseholdFunction)),
     InviteToHousehold: a.mutation().arguments({
         householdId: a.id().required()
     }).returns(a.string())
@@ -155,7 +164,7 @@ const schema = a.schema({
     ...tasksModels,
     ...kitchenModels,
     ...recipeModels
-}).authorization(allow =>[
+}).authorization(allow => [
     //@ts-ignore,
     allow.resource(inviteFunction)
 ].concat(defaultOperations(allow)));
@@ -167,4 +176,9 @@ export const data = defineData({
     authorizationModes: {
         defaultAuthorizationMode: 'userPool',
     },
+    logging: {
+        fieldLogLevel: "all",
+        excludeVerboseContent: false,
+        retention: "1 day"
+    }
 });
