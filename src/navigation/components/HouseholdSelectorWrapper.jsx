@@ -1,6 +1,6 @@
 import React, {Fragment, useContext, useEffect, useState} from "react";
 import HouseholdSelectorList from "./HouseholdSelectorList";
-import {getCurrentUser} from "aws-amplify/auth";
+import {getCurrentUser, fetchAuthSession} from "aws-amplify/auth";
 import {DataClientContext} from "../../graphql/DataClient";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -34,21 +34,29 @@ export default function HouseholdSelectorWrapper() {
                     setHouseholdsLoaded(true);
                     setCookie('household', null);
                     const user = await getCurrentUser();
-                    const response = await dataClient.models.Household.list({
-                        filter: {
-                            membersGroup: {
-                                contains: user.userId
-                            }
-                        },
-                        selectionSet: [
-                            "name",
-                            "id"
-                        ]
-                    });
-                    if (!response.errors) {
-                        setHouseholds(response.data);
-                    } else {
-                        // TODO: Report errors
+                    const userSession = await fetchAuthSession();
+                    if (hasGroups(userSession)) {
+                        const response = await dataClient.models.Household.list({
+                            filter: {
+                                or : userSession.tokens.accessToken.payload['cognito:groups'].map(group => {
+                                    if(group.startsWith("admin-") || group.startsWith("members-")) {
+                                        return {id: {eq: group.substring(group.indexOf("-") + 1)}};
+                                    }
+                                }).filter(_ => _)
+                            },
+                            selectionSet: [
+                                "name",
+                                "id",
+                                "adminGroup",
+                                "membersGroup",
+                            ]
+                        });
+                        if (!response.errors) {
+                            setHouseholds(response.data);
+                        } else {
+                            // TODO: Report errors
+                            throw new Error("Error fetching households");
+                        }
                     }
                 } catch (err) {
                     setError(err);
@@ -74,34 +82,17 @@ export default function HouseholdSelectorWrapper() {
         setLoading(true);
         // TODO: Replace after implementation of Issue #11
         getCurrentUser().then(async user => {
-            const createdHousehold = await dataClient.models.Household.create({
+            const createdHousehold = await dataClient.mutations.CreateHousehold({
                 name: `${user.signInDetails.loginId}'s Household`,
-                membersGroup: [user.userId],
-                adminGroup: [user.userId]
-            });
-
-            const createdHouseholdTasks = await dataClient.models.HouseholdTasks.create({
-                householdId: createdHousehold.data.id,
-                membersGroup: [user.userId],
-                adminGroup: [user.userId]
-            });
-            await dataClient.models.TaskList.create({
-                householdTasksId: createdHouseholdTasks.data.id,
-                membersGroup: [user.userId],
-                adminGroup: [user.userId]
-            });
-            await dataClient.models.Kitchen.create({
-                householdId: createdHousehold.data.id,
-                membersGroup: [user.userId],
-                adminGroup: [user.userId]
-            });
-            await dataClient.models.HouseholdRecipes.create({
-                householdId: createdHousehold.data.id,
-                membersGroup: [user.userId],
-                adminGroup: [user.userId]
             });
             setLoading(false);
-            await selectHousehold(createdHousehold.data);
+            if(!createdHousehold.errors) {
+                // Force update of accessToken after group changes
+                await fetchAuthSession();
+                await selectHousehold(createdHousehold.data);
+            } else {
+                setError(new Error("Failed to create household."));
+            }
         })
     };
 
@@ -113,11 +104,13 @@ export default function HouseholdSelectorWrapper() {
             });
         if (selected.errors) {
             console.error("Errors on selecting household", selected.errors);
-            throw new Error();
+            setError("Error selecting household");
+            return;
         }
         if (!selected.data) {
             console.error("No data on selecting household");
-            throw new Error();
+            setError("Error selecting household");
+            return
         }
         if (!selected.errors && selected.data) {
             setCookie('household', household.id);
@@ -152,6 +145,7 @@ export default function HouseholdSelectorWrapper() {
     return <Fragment>
         <HouseholdSelectorList
             user={user}
+            errorMessage={error?.message}
             loading={loading}
             households={households}
             onClick={selectHousehold}
@@ -170,13 +164,8 @@ export default function HouseholdSelectorWrapper() {
     </Fragment>
 }
 
-async function resolve(data) {
-    return Object.keys(data).reduce(async (object, key) => {
-        if (data[key].then) {
-            object[key] = await data[key];
-        } else {
-            object[key] = data[key];
-        }
-        return object;
-    }, {});
+function hasGroups(authSession) {
+    const groups = authSession.tokens.accessToken.payload['cognito:groups'];
+
+    return groups && groups.length > 0;
 }

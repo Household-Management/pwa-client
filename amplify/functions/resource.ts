@@ -11,3 +11,9 @@ export const joinFunction = defineFunction({
     entry: "./join-with-invite-code/handler.js",
     resourceGroupName: "data"
 });
+
+export const createHouseholdFunction = defineFunction({
+    name: "CreateHousehold",
+    entry: "./create-household/handler.ts",
+    resourceGroupName: "data"
+});
