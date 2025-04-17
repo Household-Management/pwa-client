@@ -73,7 +73,7 @@ export default function TasksView() {
                                 navigate(`/tasks/${lists[index]}`);
                             }}
                             onTaskDelete={(taskId) => {
-                                dispatch(DeleteTask({fromList: realSelectedListId, taskId}));
+                                dispatch(DeleteTask({targetList: realSelectedListId, taskId}));
                             }}
                             onListChanged={(list) => {
                                 dispatch(UpdateList(list))

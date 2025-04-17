@@ -12,6 +12,16 @@ const initialState = {
     selectedTask: null
 }
 
+async function PersistList(client, state, action) {
+    const taskList = state.household.householdTasks.taskLists.find(t => t.id === action.payload.targetList);
+    if (taskList) {
+        const updated = await client.models.TaskList.update(taskList);
+        if (updated.errors) {
+            throw new Error(task.errors);
+        }
+    }
+}
+
 const slice = createSlice({
     name: "householdTasks",
     reducerPath: "household",
@@ -45,7 +55,7 @@ const slice = createSlice({
         },
         CreateTask: {
             reducer: (state, action) => {
-                for(const list of state.taskLists) {
+                for (const list of state.taskLists) {
 
                     if (list.id === action.payload.targetList) {
                         list.taskItems.push({...action.payload.newTask});
@@ -58,25 +68,14 @@ const slice = createSlice({
                 return {
                     payload,
                     meta: {
-                        persister: async (client, state, action) => {
-                            const household = state.household;
-                            const task = await client.models.Task.create({
-                                ...action.payload.newTask,
-                                adminGroup: household.adminGroup,
-                                membersGroup: household.membersGroup,
-                                taskListId: action.payload.targetList
-                            });
-                            if(task.errors) {
-                               throw new Error(task.errors);
-                            }
-                        }
+                        persister: PersistList
                     }
                 };
             }
         },
         UpdateList: {
             reducer: (state, action) => {
-                for(const list in state.taskLists) {
+                for (const list in state.taskLists) {
                     if (state.taskLists[list].id === action.payload.id) {
                         state.taskLists[list] = action.payload;
                         return state;
@@ -89,9 +88,7 @@ const slice = createSlice({
                     payload,
                     meta: {
                         persister: (client, state, action) => {
-                            client.models.TaskList.update({
-                                ...action.payload
-                            });
+                            PersistList(client, state, {payload: {targetList: action.payload.id}})
                         }
                     }
                 }
@@ -99,12 +96,12 @@ const slice = createSlice({
         },
         UpdateTask: {
             reducer: (state, action) => {
-                for(const list in state.taskLists) {
+                for (const list in state.taskLists) {
                     const taskList = state.taskLists[list];
-                    if(taskList.id === action.payload.selectedListId) {
-                        for(const item in taskList.taskItems) {
+                    if (taskList.id === action.payload.selectedListId) {
+                        for (const item in taskList.taskItems) {
                             const taskItem = taskList.taskItems[item];
-                            if(taskItem.id === action.payload.task.id) {
+                            if (taskItem.id === action.payload.task.id) {
                                 taskList.taskItems[item] = action.payload.task;
                             }
                         }
@@ -116,11 +113,7 @@ const slice = createSlice({
                 return {
                     payload,
                     meta: {
-                        persister: (client, state, action) => {
-                            client.models.Task.update({
-                                ...action.payload.task
-                            });
-                        }
+                        persister: PersistList
                     }
                 }
             }
@@ -146,7 +139,7 @@ const slice = createSlice({
         },
         DeleteTask: {
             reducer: (state, action) => {
-                const list = state.taskLists.find(list => list.id === action.payload.fromList);
+                const list = state.taskLists.find(list => list.id === action.payload.targetList);
                 list.taskItems = list.taskItems.filter(t => t.id !== action.payload.taskId);
                 if (action.payload.taskId === state.selectedTask) {
                     state.selectedTask = null;
@@ -157,11 +150,7 @@ const slice = createSlice({
                 return {
                     payload,
                     meta: {
-                        persister: (client, state, action) => {
-                            client.models.Task.delete({
-                                id: action.payload.taskId
-                            });
-                        }
+                        persister: PersistList
                     }
                 };
             }
