@@ -69,3 +69,27 @@ export const TaskListDetailStory = {
         onListChanged: fn()
     }
 }
+
+export const UnremovableTaskListStory = {
+    args: {
+        list: {
+            id: "1",
+            name: "List 1",
+            taskItems: [
+                new Task("1", "Task 1", "Description 1"),
+                new Task("2", "Task 2", "Description 2"),
+                new Task("3", "Task 3", "Description 3")
+            ],
+            unremovable: true
+        },
+        selectedTask: null,
+        onClose: fn(),
+        onConfirm: fn(),
+        onCancel: fn(),
+        onTaskChanged: fn(),
+        onTaskCreated: fn(),
+        onTaskSelected: fn(),
+        onListDelete: fn(),
+        onListChanged: fn()
+    }
+}
