@@ -132,7 +132,7 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                             </Select>
                         </FormControl>
                         {/* FIXME: DayPicker doesn't show days of week*/}
-                        {taskRepeat.repeatsOn && <DayPicker days={taskRepeat.repeatsOn} onChange={value => {
+                        {taskRepeat.repeatsOn && <DayPicker dayNames={taskRepeat.repeatsType === "WEEKLY" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] : null} days={taskRepeat.repeatsOn} onChange={value => {
                             const changed = {...task};
                             changed.repeats = taskRepeat.repeatsType + "-" + value.map(v => v ? "1" : "0").join("");
                             if (onChange) {
