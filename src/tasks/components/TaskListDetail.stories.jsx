@@ -2,21 +2,24 @@ import {fn, spyOn} from '@storybook/test';
 import TaskListDetail from "./TaskListDetail";
 import Task from "../model/Task";
 import {useState} from "react";
+import {Router} from "react-router";
 
+//TODO: Implement opening and closing the accordions
 export default {
     render: args => {
         const [list, setList] = useState(args.list);
         const [selectedTask, setSelectedTask] = useState(args.selectedTask);
+
         const onTaskChanged = task => {
             console.log("Task changed: ", task);
             const index = list.taskItems.findIndex(t => t.id === task.id);
-            list.tasks[index] = task;
+            list.taskItems[index] = task;
             setList({...list});
             args.onTaskChanged({...list})
         }
         const onTaskCreated = () => {
             const newTask = new Task(crypto.randomUUID(), "New Task", "New Description");
-            list.tasks.push(newTask);
+            list.taskItems.push(newTask);
             setList({...list});
             args.onTaskCreated(newTask);
             setSelectedTask(newTask.id);
@@ -37,13 +40,15 @@ export default {
             args.onListChanged(list);
         }
 
-        return <TaskListDetail list={list}
-                               onTaskChanged={onTaskChanged}
-                               onTaskCreated={onTaskCreated}
-                               onTaskSelected={onTaskSelected}
-                               onListDelete={onListDelete}
-                               onListChanged={onListChange}
-                               selectedTask={selectedTask} />
+        return <Router navigator={null} location={"/"}>
+            <TaskListDetail list={list}
+                            onTaskChanged={onTaskChanged}
+                            onTaskCreated={onTaskCreated}
+                            onTaskSelected={onTaskSelected}
+                            onListDelete={onListDelete}
+                            onListChanged={onListChange}
+                            selectedTask={selectedTask}/>
+        </Router>
     }
 }
 

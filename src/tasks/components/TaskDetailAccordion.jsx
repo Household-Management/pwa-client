@@ -2,23 +2,25 @@ import {ModelPropTypes} from "../model/Task";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import {Delete, ExpandMore, Edit, Done, CheckCircle} from '@mui/icons-material';
+import {
+    Delete,
+    ExpandMore,
+    Edit,
+    Done,
+    RadioButtonUncheckedOutlined,
+    CheckCircleOutlined
+} from '@mui/icons-material';
 import DayPicker from "../../time/components/DayPicker";
 import {
-    Button,
     FormControl,
     Grid,
     IconButton,
     InputLabel,
     MenuItem,
-    Paper,
     Select,
     Stack,
-    styled,
-    TextField
+    TextField, Typography
 } from "@mui/material";
-import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
-import {LocalizationProvider, TimeClock, TimePicker} from "@mui/x-date-pickers";
 import PropTypes from "prop-types";
 import {Fragment, useEffect, useState} from "react";
 import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
@@ -148,36 +150,82 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
     </Accordion>
 }
 
-function Summary({task, expanded, editable, onEdit, onDelete, onPropertyChanged, toggleEditable}) {
+function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleEditable}) {
     expanded = expanded || editable;
     if (!expanded) {
-        return (<div style={{flexGrow: 1}}>{task.title}</div>);
+        return (
+            <Grid container alignItems="center" spacing={1}>
+                <Grid item>
+                    <IconButton
+                        sx={{borderRadius: "50%", aspectRatio: 1}}
+                        variant="outlined"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPropertyChanged("completed", {
+                                target: {
+                                    value: !task.completed
+                                }
+                            });
+                        }}
+                    >
+                        {task.completed ?
+                            (<CheckCircleOutlined sx={{height: "100%", aspectRatio: 1}} />) :
+                            (<RadioButtonUncheckedOutlined sx={{height: "100%", aspectRatio: 1}} />)
+                        }
+                    </IconButton>
+                </Grid>
+                <Grid item style={{flexGrow: 1}}>
+                    <Typography sx={{color: task.completed ? "darkgray" : "black"}}>
+                        {task.title}
+                    </Typography>
+                </Grid>
+            </Grid>
+        );
     }
     if (expanded) {
-        return <Grid container sx={{width: "90%"}}>
-            <Grid item sx={{flexGrow: 1}}>
-                <TextField value={task.title}
-                           sx={{width: "100%"}}
-                           label="Title"
-                           onChange={e => {
-                               onPropertyChanged("title", e);
-                           }}
-                           disabled={!editable}
-                           onClick={ev => ev.stopPropagation()}/>
+        return (
+            <Grid container sx={{width: "90%"}}>
+                <Grid item sx={{flexGrow: 1}}>
+                    <TextField
+                        value={task.title}
+                        sx={{width: "100%"}}
+                        label="Title"
+                        onChange={(e) => {
+                            onPropertyChanged("title", e);
+                        }}
+                        disabled={!editable}
+                        onClick={(ev) => ev.stopPropagation()}
+                    />
+                </Grid>
+                <Grid item>
+                    <IconTile
+                        icon={editable ? <Done /> : <Edit />}
+                        onClick={(ev) => {
+                            toggleEditable(!editable);
+                            ev.stopPropagation();
+                        }}
+                        color="primary"
+                        size="large"
+                    />
+                </Grid>
+                <Grid item>
+                    <IconTile
+                        sx={{
+                            marginLeft: "32px",
+                            borderRadius: "50%",
+                            visibility: editable ? "visible" : "hidden",
+                        }}
+                        onClick={(ev) => {
+                            onDelete(task.id);
+                            ev.stopPropagation();
+                        }}
+                        color="error"
+                        size="large"
+                        icon={<Delete />}
+                    />
+                </Grid>
             </Grid>
-            <Grid item>
-                <IconTile icon={editable ? <Done/> : <Edit/>} onClick={ev => {
-                    toggleEditable(!editable);
-                    ev.stopPropagation()
-                }} color="primary" size="large"/>
-            </Grid>
-            <Grid item>
-                <IconTile sx={{marginLeft: "32px", borderRadius: "50%", visibility: editable ? "visible" : "hidden"}} onClick={ev => {
-                    onDelete(task.id);
-                    ev.stopPropagation()
-                }} color="error" size="large" icon={<Delete/>}/>
-            </Grid>
-        </Grid>
+        );
     }
 }
 

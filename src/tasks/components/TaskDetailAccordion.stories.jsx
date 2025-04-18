@@ -3,13 +3,14 @@ import TaskDetailAccordion from "./TaskDetailAccordion";
 import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
 import moment from "moment/moment";
 import {useState} from "react";
+import {Router} from "react-router";
 
 export default {
     render: story => {
         const [task, setTask] = useState(story.task);
         const [expanded, setExpanded] = useState(false);
         const onChange = (changed) => {
-            setTask(changed)
+            setTask({...changed})
             story.onChange(changed)
         }
 
@@ -18,12 +19,14 @@ export default {
             story.onToggle()
         }
 
-        return <TaskDetailAccordion
+        return <Router navigator={null} location={'/'}>
+            <TaskDetailAccordion
             expanded={expanded}
             task={task}
             onChange={onChange}
             onToggle={onToggle}
             onDelete={story.onDelete}/>
+        </Router>
     },
     args: {
         onChange: fn(),

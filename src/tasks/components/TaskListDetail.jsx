@@ -1,10 +1,11 @@
 import {
+    Divider,
     List,
     ListItem,
     ListItemButton, ListSubheader,
     Paper, TextField,
 } from "@mui/material";
-import {AddCircleOutline, Delete, Done, Edit} from "@mui/icons-material";
+import {AddCircleOutline, Delete, Done, Edit, HorizontalRule} from "@mui/icons-material";
 import {Fragment, useEffect, useRef, useState} from "react";
 import TaskDetailAccordion from "./TaskDetailAccordion";
 import PropTypes from "prop-types";
@@ -50,13 +51,25 @@ export default function TaskListDetail({list, onTaskChanged, onTaskCreated, onTa
                     </div>}
                 </ListSubheader>
                 {/* FIXME: Make a nice header */}
-                {list.taskItems.map(task =>
+                {list.taskItems.filter(task => !task.completed).map(task =>
                     <ListItem>
                         <TaskDetailAccordion task={task}
                                              onChange={onTaskChanged}
                                              onDelete={onTaskDelete}
                                              onToggle={selected => selected ? onTaskSelected(task.id) : onTaskSelected(null)}
                                              sx={{width: "100%"}}
+                                             expanded={selectedTaskId === task.id}
+                        />
+                    </ListItem>
+                )}
+                <Divider/>
+                {list.taskItems.filter(task => task.completed).map(task =>
+                    <ListItem>
+                        <TaskDetailAccordion task={task}
+                                             onChange={onTaskChanged}
+                                             onDelete={onTaskDelete}
+                                             onToggle={selected => selected ? onTaskSelected(task.id) : onTaskSelected(null)}
+                                             sx={{width: "100%", backgroundColor: "whitesmoke"}}
                                              expanded={selectedTaskId === task.id}
                         />
                     </ListItem>
