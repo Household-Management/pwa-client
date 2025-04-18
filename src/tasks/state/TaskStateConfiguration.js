@@ -1,5 +1,6 @@
 import {createSlice} from "@reduxjs/toolkit";
 import TaskList from "../model/TaskList";
+import moment from "moment";
 
 const initialState = {
     taskLists: {
@@ -97,13 +98,11 @@ const slice = createSlice({
         UpdateTask: {
             reducer: (state, action) => {
                 for (const list in state.taskLists) {
-                    const taskList = state.taskLists[list];
-                    if (taskList.id === action.payload.selectedListId) {
-                        for (const item in taskList.taskItems) {
-                            const taskItem = taskList.taskItems[item];
-                            if (taskItem.id === action.payload.task.id) {
-                                taskList.taskItems[item] = action.payload.task;
-                            }
+                    const taskList = state.taskLists.filter(t => t.id === action.payload.targetList)[0];
+                    for (const item in taskList.taskItems) {
+                        const taskItem = taskList.taskItems[item];
+                        if (taskItem.id === action.payload.task.id) {
+                            taskList.taskItems[item] = action.payload.task;
                         }
                     }
                 }
@@ -165,6 +164,37 @@ const slice = createSlice({
                 if (!t.taskItems) {
                     t.taskItems = []
                 }
+                result.taskLists = result.taskLists.map(t => {
+                    if (!t.taskItems) {
+                        t.taskItems = [];
+                    }
+
+                    t.taskItems = t.taskItems.filter(task => !task.completed || task.repeats);
+
+                    t.taskItems = t.taskItems.filter(task => {
+                        if (!task.repeats || !task.repeats.startsWith("WEEKLY")) {
+                            return true;
+                        }
+
+                        const weeklyRepeats = task.repeats.split("-")[1];
+                        const dayOfWeek = moment().day();
+
+                        return !task.completed && weeklyRepeats[dayOfWeek] === "1";
+                    });
+
+                    t.taskItems = t.taskItems.filter(task => {
+                        if (!task.repeats || !task.repeats.startsWith("MONTHLY")) {
+                            return true;
+                        }
+
+                        const monthlyRepeats = task.repeats.split("-")[1];
+                        const dayOfMonth = moment().date();
+
+                        return !task.completed && monthlyRepeats[dayOfMonth] === "1";
+                    });
+
+                    return t;
+                });
                 return t;
             })
             return result;
