@@ -1,11 +1,10 @@
 import PropTypes from "prop-types";
 import {useSelector} from "react-redux";
 
-export default function Guarded({requiredRoles, children, deniedComponent, deniedAction}) {
+export default function Guarded({user, requiredRoles, children, deniedComponent, deniedAction}) {
     if (deniedAction && deniedComponent) {
         throw new Error("Guarded component cannot have both deniedComponent and deniedAction props");
     }
-    const user = useSelector(state => state.user.user);
     const allowed = user && hasRoles(user, requiredRoles);
     if (allowed) {
         return children;
