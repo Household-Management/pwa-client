@@ -1,12 +1,46 @@
 import {fn, spyOn} from '@storybook/test';
-import TaskListDetail from "./TaskListDetail";
+import { TaskListDetailPresentation} from "./TaskListDetail";
 import Task from "../model/Task";
 import {useState} from "react";
-import {Router} from "react-router";
+import {configureStore} from "@reduxjs/toolkit";
+import {Provider} from "react-redux";
+import {reactRouterParameters, withRouter} from "storybook-addon-remix-react-router";
 
+const store = configureStore({
+    reducer: (state, action) => {
+        switch (action.type) {
+            case "change-role":
+                return {
+                    ...state,
+                    user: {
+                        ...state.user,
+                        user: {
+                            ...state.user.user,
+                            roles: [action.payload]
+                        }
+                    }
+                }
+            default:
+                return state || {
+                    user: {
+                        user: {
+                            id: "1",
+                            name: "Test User",
+                            roles: ["member-foobar"]
+                        }
+                    }
+                }
+        }
+    }
+})
 //TODO: Implement opening and closing the accordions
 export default {
     render: args => {
+        store.dispatch({
+            type: "change-role",
+            payload: args.userRole
+        });
+        args.list.unremovable = args.unremovable;
         const [list, setList] = useState(args.list);
         const [selectedTask, setSelectedTask] = useState(args.selectedTask);
 
@@ -40,15 +74,15 @@ export default {
             args.onListChanged(list);
         }
 
-        return <Router navigator={null} location={"/"}>
-            <TaskListDetail list={list}
+        return <Provider store={store}>
+            <TaskListDetailPresentation list={list}
                             onTaskChanged={onTaskChanged}
                             onTaskCreated={onTaskCreated}
                             onTaskSelected={onTaskSelected}
                             onListDelete={onListDelete}
                             onListChanged={onListChange}
-                            selectedTask={selectedTask}/>
-        </Router>
+                            selectedTaskId={selectedTask}/>
+        </Provider>
     }
 }
 
@@ -63,7 +97,7 @@ export const TaskListDetailStory = {
                 new Task("3", "Task 3", "Description 3")
             ]
         },
-        selectedTask: null,
+        unremovable: false,
         onClose: fn(),
         onConfirm: fn(),
         onCancel: fn(),
@@ -71,30 +105,7 @@ export const TaskListDetailStory = {
         onTaskCreated: fn(),
         onTaskSelected: fn(),
         onListDelete: fn(),
-        onListChanged: fn()
-    }
-}
-
-export const UnremovableTaskListStory = {
-    args: {
-        list: {
-            id: "1",
-            name: "List 1",
-            taskItems: [
-                new Task("1", "Task 1", "Description 1"),
-                new Task("2", "Task 2", "Description 2"),
-                new Task("3", "Task 3", "Description 3")
-            ],
-            unremovable: true
-        },
-        selectedTask: null,
-        onClose: fn(),
-        onConfirm: fn(),
-        onCancel: fn(),
-        onTaskChanged: fn(),
-        onTaskCreated: fn(),
-        onTaskSelected: fn(),
-        onListDelete: fn(),
-        onListChanged: fn()
+        onListChanged: fn(),
+        userRole: "member"
     }
 }

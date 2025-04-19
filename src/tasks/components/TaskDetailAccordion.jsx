@@ -22,11 +22,7 @@ import {
     TextField, Typography
 } from "@mui/material";
 import PropTypes from "prop-types";
-import {Fragment, useEffect, useState} from "react";
-import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
-import moment from "moment";
 import IconTile from "../../IconTile";
-import {useSearchParams} from "react-router-dom";
 
 const repeatLabels = {
     "NEVER": "Never",
@@ -35,15 +31,14 @@ const repeatLabels = {
     "MONTHLY": "Monthly"
 }
 
+// FIXME: This file is getting too large.
 // TODO: Confirm delete
 // TODO: Highlight tasks due today.
 // TODO: Implement completion of tasks.
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
 // TODO: When name changes, wait until the user stops typing for 1 second before updating the model.
-export default function TaskDetailAccordion({task, onChange, sx, expanded, onToggle, onDelete}) {
-    const [searchParams] = useSearchParams();
-    const [editable, setEditable] = useState(false);
+export default function TaskDetailAccordion({task, onChange, sx, expanded, editable, onToggle, onDelete, onToggleEditable}) {
     const onPropertyChanged = (property, ev) => {
         const value = ev.target.value;
         const changed = {...task};
@@ -79,18 +74,16 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
         }
     }
 
-    useEffect(() => {
-        if(searchParams.get("edit") === "true") {
-            setEditable(true);
-        }
-    }, [searchParams.get("edit")]);
-
 
     const taskRepeat = getRepeats(task.repeats);
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
     return <Accordion expanded={expanded || editable} onChange={(ev, ex) => {
-        setEditable(false);
+        ev.stopPropagation();
+        ev.preventDefault();
         onToggle(ex)
+    }} onClick={e => {
+        e.stopPropagation();
+        e.preventDefault();
     }} sx={sx}>
         <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover": {bgcolor: "#f5f5f5"}}} onKeyUpCapture={e => {
             switch (e.code) {
@@ -103,10 +96,10 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
             <Summary task={task}
                      expanded={expanded}
                      editable={editable}
-                     onEdit={setEditable}
+                     onEdit={onToggleEditable}
                      onDelete={onDelete}
                      onPropertyChanged={onPropertyChanged}
-                     toggleEditable={setEditable}/>
+                     toggleEditable={onToggleEditable}/>
         </AccordionSummary>
         <AccordionDetails>
             <Grid container rowSpacing={2}>
@@ -131,7 +124,6 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, onTog
                                 <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
                             </Select>
                         </FormControl>
-                        {/* FIXME: DayPicker doesn't show days of week*/}
                         {taskRepeat.repeatsOn && <DayPicker dayNames={taskRepeat.repeatsType === "WEEKLY" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] : null} days={taskRepeat.repeatsOn} onChange={value => {
                             const changed = {...task};
                             changed.repeats = taskRepeat.repeatsType + "-" + value.map(v => v ? "1" : "0").join("");
@@ -201,8 +193,9 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
                     <IconTile
                         icon={editable ? <Done /> : <Edit />}
                         onClick={(ev) => {
-                            toggleEditable(!editable);
                             ev.stopPropagation();
+                            ev.preventDefault();
+                            toggleEditable(editable ? null : task.id);
                         }}
                         color="primary"
                         size="large"
@@ -245,5 +238,6 @@ TaskDetailAccordion.propTypes = {
     task: ModelPropTypes.isRequired,
     onChange: PropTypes.func,
     readOnly: PropTypes.bool,
-    onToggle: PropTypes.func
+    onToggle: PropTypes.func,
+    onToggleEditable: PropTypes.func
 }
