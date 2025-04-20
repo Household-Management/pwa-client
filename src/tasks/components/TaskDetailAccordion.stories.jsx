@@ -9,6 +9,7 @@ export default {
     render: story => {
         const [task, setTask] = useState(story.task);
         const [expanded, setExpanded] = useState(false);
+        const [editable, setEditable] = useState(false);
         const onChange = (changed) => {
             setTask({...changed})
             story.onChange(changed)
@@ -19,13 +20,21 @@ export default {
             story.onToggle()
         }
 
+        const toggleEditable = (id, editable) => {
+            setEditable(editable);
+        }
+
+
         return <Router navigator={null} location={'/'}>
             <TaskDetailAccordion
-            expanded={expanded}
-            task={task}
-            onChange={onChange}
-            onToggle={onToggle}
-            onDelete={story.onDelete}/>
+                expanded={expanded}
+                task={task}
+                onChange={onChange}
+                onToggle={onToggle}
+                onDelete={story.onDelete}
+                onToggleEditable={toggleEditable}
+                editable={editable}
+            />
         </Router>
     },
     args: {
