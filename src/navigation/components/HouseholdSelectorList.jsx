@@ -1,4 +1,4 @@
-import React, {Fragment, useContext, useEffect, useState} from 'react';
+import React, {Fragment} from 'react';
 import {
     Box,
     Modal,
@@ -7,12 +7,20 @@ import {
     ListItemText,
     Typography,
     LinearProgress,
-    Stack
+    Stack, Divider
 } from '@mui/material';
 import PropTypes from "prop-types";
 import LogOutButton from "../../authentication/components/LogOutButton";
 
-export default function HouseholdSelectorList({user, errorMessage, households, loading, onJoinHousehold, onSelectHousehold, onCreateHousehold}) {
+export default function HouseholdSelectorList({
+                                                  user,
+                                                  errorMessage,
+                                                  households,
+                                                  loading,
+                                                  onJoinHousehold,
+                                                  onSelectHousehold,
+                                                  onCreateHousehold
+                                              }) {
     return <Fragment>
         <Modal open={true}>
             <Box sx={{width: 400, bgcolor: 'background.paper', p: 4, margin: 'auto', marginTop: '10%'}}>
@@ -33,7 +41,7 @@ export default function HouseholdSelectorList({user, errorMessage, households, l
                         <Typography sx={{textAlign: "center"}}>
                             Select a household
                         </Typography>
-                        <Stack spacing={4} direction="column">
+                        <Stack spacing={0} direction="column">
                             <List>
                                 {households.map((household) => (
                                     <ListItem button variant="contained" key={household.id}
@@ -41,6 +49,10 @@ export default function HouseholdSelectorList({user, errorMessage, households, l
                                         <ListItemText primary={household.name}/>
                                     </ListItem>
                                 ))}
+                            </List>
+                            <Divider/>
+                            <List>
+
                                 <ListItem button>
                                     <ListItemText primary="Join a different household"
                                                   onClick={onJoinHousehold}/>
