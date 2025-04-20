@@ -6,10 +6,16 @@ import PropTypes from "prop-types";
 
 export default function HouseholdJoinModal({open, loading, errorMessage, onCancel, onSubmit}) {
     const [inviteCode, setInviteCode] = useState('');
+    const [validationError, setValidationError] = useState('');
 
     useEffect(() => {
-        if (inviteCode && inviteCode.length === 8) {
-            handleInviteCodeSubmit();
+        if (inviteCode) {
+            if(inviteCode.length !== 8) {
+                setValidationError("Invite code must be 8 characters long");
+            } else {
+                setValidationError(null);
+                handleInviteCodeSubmit();
+            }
         }
     }, [inviteCode]);
 
@@ -41,6 +47,11 @@ export default function HouseholdJoinModal({open, loading, errorMessage, onCance
             {errorMessage && (
                 <Typography color="error" sx={{textAlign: "center"}}>
                     {errorMessage}
+                </Typography>
+            )}
+            {validationError && (
+                <Typography color="error" sx={{textAlign: "center"}}>
+                    {validationError}
                 </Typography>
             )}
             {loading && <LinearProgress/> }
