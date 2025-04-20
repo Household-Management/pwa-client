@@ -195,7 +195,7 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
                         onClick={(ev) => {
                             ev.stopPropagation();
                             ev.preventDefault();
-                            toggleEditable(editable ? null : task.id);
+                            toggleEditable(task.id, !editable);
                         }}
                         color="primary"
                         size="large"

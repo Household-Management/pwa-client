@@ -1,5 +1,5 @@
 import {fn, spyOn} from '@storybook/test';
-import { TaskListDetailPresentation} from "./TaskListDetail";
+import {TaskListDetailPresentation} from "./TaskListDetail";
 import Task from "../model/Task";
 import {useState} from "react";
 import {configureStore} from "@reduxjs/toolkit";
@@ -57,6 +57,7 @@ export default {
             setList({...list});
             args.onTaskCreated(newTask);
             setSelectedTask(newTask.id);
+            setEditableTaskId(newTask.id);
         }
         const onTaskSelected = (id) => {
             setSelectedTask(id);
@@ -76,12 +77,14 @@ export default {
 
         return <Provider store={store}>
             <TaskListDetailPresentation list={list}
-                            onTaskChanged={onTaskChanged}
-                            onTaskCreated={onTaskCreated}
-                            onTaskSelected={onTaskSelected}
-                            onListDelete={onListDelete}
-                            onListChanged={onListChange}
-                            selectedTaskId={selectedTask}/>
+                                        onTaskChanged={onTaskChanged}
+                                        onTaskCreated={onTaskCreated}
+                                        onTaskSelected={onTaskSelected}
+                                        onListDelete={onListDelete}
+                                        onListChanged={onListChange}
+                                        selectedTaskId={selectedTask}
+                                        onTaskDelete={() => {}}
+            />
         </Provider>
     }
 }
