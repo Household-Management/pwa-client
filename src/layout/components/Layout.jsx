@@ -5,11 +5,11 @@ import React from "react";
 import Alerts from "../../alerts/components/Alerts";
 import {useSelector} from "react-redux";
 
-const Layout = () => {
+const Layout = ({children}) => {
     const {headerContent} = useHeader(); // Get dynamic header content
 
     const globalAlerts = useSelector(state => {
-        return state.alerts.queued;
+        return state?.alerts?.queued || [];
     });
 
     return (
@@ -21,9 +21,8 @@ const Layout = () => {
                 <Alerts queuedAlerts={globalAlerts}/>
             </div>
 
-            {/* Main Content */}
             <main className="main-content">
-                <Outlet/>
+                {children}
             </main>
 
             <BottomNavigator/>

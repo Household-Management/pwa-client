@@ -1,4 +1,4 @@
-import {createBrowserRouter, Navigate, redirect} from "react-router-dom";
+import {createBrowserRouter, Navigate, Outlet, redirect} from "react-router-dom";
 import Layout from "../../layout/components/Layout";
 import KitchenView from "../../kitchen/kitchen/components/KitchenView";
 import PantryView from "../../kitchen/pantry/components/PantryView";
@@ -21,7 +21,9 @@ export const router = createBrowserRouter(
     [
         {
             path: "/",
-            element: (<Layout/>),
+            element: (<Layout>
+                <Outlet/>
+            </Layout>),
             children: [
                 {
                     index: true,
