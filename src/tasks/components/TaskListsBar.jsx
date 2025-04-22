@@ -1,37 +1,30 @@
 import {
-    IconButton, Toolbar
+    Divider,
+    IconButton, Paper, Toolbar
 } from "@mui/material";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import {forwardRef} from "react";
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from "prop-types";
-import { useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
+import {Fragment} from "react";
 
-/**
- * Component for displaying the summarized list of all users to-do lists.
- * @param props
- * @returns {JSX.Element}
- * @constructor
- */
-function TaskListsBar(props) {
-    // FIXME: Have todo list use a normal id, instead of trying to use the "todo" special name
-    const navigate = useNavigate();
-    return <div style={{overflowX: "auto"}}>
+export default function TaskListsBar({ taskLists, selectedList, onListCreated, onSelect}) {
+    return <Paper sx={{overflowX: "auto"}}>
         <Toolbar sx={{width: "100%", justifyContent: "flex-start", boxSizing: "border-box"}}>
-            <IconButton variant="contained" color="primary" data-testid="new-list" onClick={props.onListCreated}>
+            <IconButton variant="outlined" color="primary" data-testid="new-list" onClick={onListCreated}>
                 <AddIcon/>
             </IconButton>
-            <Tabs value={props.selectedList}
+            <Tabs value={selectedList}
                   variant="scrollable"
                   onClick={() => {
 
                   }}
                   onChange={(e, value) => {
-                      navigate(`/tasks/${value}`);
+                      onSelect(value);
                   }}>
                 {
-                    props.taskLists.toSorted((a, b) => {
+                    taskLists.toSorted((a, b) => {
                         return Date.parse(a.createdAt) - Date.parse(b.createdAt);
                     }).map(list =>
                         (<Tab value={list.id}
@@ -42,7 +35,7 @@ function TaskListsBar(props) {
                 }
             </Tabs>
         </Toolbar>
-    </div>
+    </Paper>
 
 }
 
@@ -52,5 +45,3 @@ TaskListsBar.propTypes = {
     onListCreated: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired
 }
-
-export default TaskListsBar;
