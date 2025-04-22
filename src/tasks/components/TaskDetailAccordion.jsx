@@ -80,7 +80,7 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, edita
     return <Accordion expanded={expanded || editable} onChange={(ev, ex) => {
         ev.stopPropagation();
         ev.preventDefault();
-        onToggle(ex)
+        onToggle(task.id, ex)
     }} onClick={e => {
         e.stopPropagation();
         e.preventDefault();
@@ -236,8 +236,8 @@ function getRepeats(repeatValue) {
 
 TaskDetailAccordion.propTypes = {
     task: ModelPropTypes.isRequired,
-    onChange: PropTypes.func,
+    onChange: PropTypes.func.isRequired,
     readOnly: PropTypes.bool,
-    onToggle: PropTypes.func,
-    onToggleEditable: PropTypes.func
+    onToggle: PropTypes.func.isRequired,
+    onToggleEditable: PropTypes.func.isRequired
 }

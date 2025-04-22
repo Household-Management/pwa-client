@@ -15,9 +15,9 @@ export default {
             story.onChange(changed)
         }
 
-        const onToggle = () => {
-            setExpanded(!expanded)
-            story.onToggle()
+        const onToggle = (taskId, toggled) => {
+            setExpanded(toggled)
+            story.onToggle(taskId, toggled)
         }
 
         const toggleEditable = (id, editable) => {
