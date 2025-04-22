@@ -10,7 +10,7 @@ import {
     DeleteList,
     UpdateTask, DeleteTask, UpdateList
 } from "../state/TaskStateConfiguration";
-import TaskListDetail from "./TaskListDetail";
+import TaskListDetail, {TaskListDetailPresentation} from "./TaskListDetail";
 import Task from "../model/Task";
 import {useHeader} from "../../layout/hooks/HeaderContext";
 import {useNavigate, useParams} from "react-router-dom";
@@ -26,10 +26,13 @@ export default function TasksView() {
     const {setHeaderContent} = useHeader()
     const dispatch = useDispatch();
     const taskLists = useSelector(selectLists);
-    const {id: selectedListId} = useParams();
+    const {list: selectedListId, task: selectedTaskId} = useParams();
     const realSelectedListId = selectedListId === "todo" ? taskLists[0].id : selectedListId;
-    const selectedTask = useSelector(selectActiveTask);
     const navigate = useNavigate();
+
+    const user = useSelector(state => {
+        return state?.user?.user || {};
+    });
 
     useEffect(() => {
 
@@ -47,37 +50,41 @@ export default function TasksView() {
 
     return <Fragment>
         {selectedListId && taskLists.find(_ => _.id === realSelectedListId) &&
-            <TaskListDetail list={taskLists.find(_ => _.id === realSelectedListId)}
-                            selectedTask={selectedTask}
-                            onTaskSelected={(taskId) => {
-                                if (taskId) {
-                                    navigate(`/tasks/${realSelectedListId}/task/${taskId}`)
-                                } else {
-                                    navigate(`/tasks/${realSelectedListId}`);
-                                }
-                            }}
-                            onTaskCreated={() => {
-                                const task = new Task(crypto.randomUUID(), "New Task", "");
-                                dispatch(CreateTask({
-                                    targetList: realSelectedListId,
-                                    newTask: {...task}
-                                }));
-                                navigate(`/tasks/${realSelectedListId}/task/${task.id}?edit=true`);
-                            }}
-                            onTaskChanged={(task) => dispatch(UpdateTask({targetList: selectedListId, task}))}
-                            onListDelete={(listId) => {
-                                dispatch(DeleteList(listId));
-                                let lists = Object.keys(taskLists)
-                                let index = Math.max(0, lists.indexOf(listId) - 1);
+            <TaskListDetailPresentation list={taskLists.find(_ => _.id === realSelectedListId)}
+                                        user={user}
+                                        selectedTaskId={selectedTaskId}
+                                        onTaskSelected={(taskId, toggle) => {
+                                            if (toggle) {
+                                                navigate(`/tasks/${realSelectedListId}/task/${taskId}`)
+                                            } else {
+                                                navigate(`/tasks/${realSelectedListId}`);
+                                            }
+                                        }}
+                                        onTaskCreated={() => {
+                                            const task = new Task(crypto.randomUUID(), "New Task", "");
+                                            dispatch(CreateTask({
+                                                targetList: realSelectedListId,
+                                                newTask: {...task}
+                                            }));
+                                            navigate(`/tasks/${realSelectedListId}/task/${task.id}?edit=true`);
+                                        }}
+                                        onTaskChanged={(task) => dispatch(UpdateTask({
+                                            targetList: selectedListId,
+                                            task
+                                        }))}
+                                        onListDelete={(listId) => {
+                                            dispatch(DeleteList(listId));
+                                            let lists = Object.keys(taskLists)
+                                            let index = Math.max(0, lists.indexOf(listId) - 1);
 
-                                navigate(`/tasks/${lists[index]}`);
-                            }}
-                            onTaskDelete={(taskId) => {
-                                dispatch(DeleteTask({targetList: realSelectedListId, taskId}));
-                            }}
-                            onListChanged={(list) => {
-                                dispatch(UpdateList(list))
-                            }}
+                                            navigate(`/tasks/${lists[index]}`);
+                                        }}
+                                        onTaskDelete={(taskId) => {
+                                            dispatch(DeleteTask({targetList: realSelectedListId, taskId}));
+                                        }}
+                                        onListChanged={(list) => {
+                                            dispatch(UpdateList(list))
+                                        }}
             />}
     </Fragment>
 }

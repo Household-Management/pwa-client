@@ -23,19 +23,10 @@ import TaskListItems from "./TaskListItems";
  * @constructor
  */
 
+// TODO: Delete, everything in here was actually pulled up into TasksView.
 export default function TaskListDetail(props) {
-    const user = useSelector(state => state.user.user);
-    const navigate = useNavigate();
-    const {taskId: selectedTaskId} = useParams();
-    const [searchParams] = useSearchParams();
-
-    const onTaskSelected = (id) => {
-        navigate("/tasks/" + props.list.id + "/task/" + id);
-    }
-
     return <TaskListDetailPresentation {...props} user={user} onTaskSelected={onTaskSelected}
                                        selectedTaskId={selectedTaskId}
-                                       editing={searchParams.get("edit") === "true"}
     />
 }
 
@@ -119,6 +110,7 @@ export function TaskListDetailPresentation({
 
 TaskListDetailPresentation.propTypes = {
     list: PropTypes.object.isRequired,
+    user: PropTypes.object.isRequired,
     onTaskChanged: PropTypes.func.isRequired,
     onTaskCreated: PropTypes.func.isRequired,
     onTaskSelected: PropTypes.func.isRequired,
@@ -131,7 +123,6 @@ TaskListDetailPresentation.propTypes = {
 
 TaskListDetail.propTypes = {
     list: PropTypes.object.isRequired,
-    user: PropTypes.object.isRequired,
     onTaskChanged: PropTypes.func.isRequired,
     onTaskCreated: PropTypes.func.isRequired,
     onTaskSelected: PropTypes.func.isRequired,
