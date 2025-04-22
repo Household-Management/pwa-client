@@ -15,7 +15,7 @@ export default function TaskListItems({
         <TaskDetailAccordion task={task}
                              onChange={onTaskChanged}
                              onDelete={onTaskDelete}
-                             onToggle={selected => selected ? onTaskSelected(task.id) : onTaskSelected(null)}
+                             onToggle={onTaskSelected}
                              sx={{width: "100%"}}
                              editable={task.id === taskBeingEdited}
                              onToggleEditable={onToggleTaskEditing}
@@ -26,7 +26,7 @@ export default function TaskListItems({
 
 TaskListItems.propTypes = {
     taskItems: PropTypes.array.isRequired,
-    selectedTaskId: PropTypes.string.isRequired,
+    selectedTaskId: PropTypes.string,
     onTaskSelected: PropTypes.func.isRequired,
     onTaskChanged: PropTypes.func.isRequired,
     onToggleTaskEditing: PropTypes.func.isRequired,
