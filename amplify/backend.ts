@@ -17,7 +17,7 @@ const backend = defineBackend({
     auth,
     data,
 });
-
+// TODO: A backend function to delete non-repeating completed tasks in the past
 //@ts-ignore
 inviteFunction.configure(backend);
 //@ts-ignore
