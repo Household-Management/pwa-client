@@ -1,4 +1,3 @@
-import '@aws-amplify/ui-react/styles.css';
 import {useContext, useEffect, useState} from "react";
 import SignUp from "./SignUp";
 import {Box, CircularProgress, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
@@ -8,6 +7,7 @@ import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 import {useLocation} from "react-router";
 import {useNavigate} from "react-router-dom";
 import {getCurrentUser} from "aws-amplify/auth";
+import {signIn, signOut} from "@aws-amplify/auth";
 
 // TODO: When login fails while offline, tell the user that they need to be online to login.
 export default function AppAuthenticator({children}) {
@@ -19,8 +19,8 @@ export default function AppAuthenticator({children}) {
     const location = useLocation();
 
     useEffect(() => {
-        if (!user && !authenticationNeeded) {
-            wb.active.then(async () => {
+        (async () => {
+            if (!user && !authenticationNeeded) {
                 try {
                     const currentUser = await getCurrentUser();
 
@@ -30,15 +30,16 @@ export default function AppAuthenticator({children}) {
                             payload: response.payload,
                             noSave: true
                         });
+                        navigate("/household-select")
                     }
                 } catch (e) {
                     setAuthenticationNeeded(true)
                 }
-            });
-        }
+            }
+        })()
     }, [user]);
     useEffect(() => {
-        if(!user && location.pathname !== "/sign-in" && location.pathname !== "/sign-up") {
+        if (!user && location.pathname !== "/sign-in" && location.pathname !== "/sign-up") {
             navigate("/sign-in");
         }
     }, [user, location]);
@@ -67,6 +68,24 @@ function Authentication() {
     const location = useLocation();
     const navigate = useNavigate();
     const tab = location.pathname === "/sign-in" ? "/sign-in" : "/sign-up";
+    const submitAuth = async function (username, password) {
+        await signOut();
+        await signIn({
+            username: email,
+            password: password
+        });
+        const user = await getCurrentUser();
+        const response = {
+            payload: user
+        };
+        dispatch({
+            type: "AUTHENTICATED",
+            noSave: true,
+            payload: response.payload
+        });
+        navigate("/household-select")
+    }
+
     return <Modal open={true}>
         <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", width: "100vw"}}>
             <Box sx={modalStyle}>
@@ -79,7 +98,7 @@ function Authentication() {
                         </Stack>
                     </ToggleButtonGroup>
                     <div>
-                        {tab === "/sign-in" && <SignIn/>}
+                        {tab === "/sign-in" && <SignIn onSubmit={submitAuth}/>}
                         {tab === "/sign-up" && <SignUp/>}
                     </div>
                 </Stack>

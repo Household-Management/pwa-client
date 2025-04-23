@@ -8,48 +8,17 @@ import {getCurrentUser} from "aws-amplify/auth";
 import {useNavigate} from "react-router-dom";
 
 
-export default function () {
-    const wb = useContext(ServiceWorkerContext);
+export default function ({onSubmit}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const dispatch = useDispatch();
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        getCurrentUser().then(user => {
-            dispatch({
-                type: "AUTHENTICATED",
-                payload: user
-
-            });
-            navigate("/household-select")
-        }, () => {
-
-        });
-    }, []);
 
     async function submit() {
         try {
             setLoading(true);
-            await wb.active;
-            await signOut();
-            await signIn({
-                username: email,
-                password: password
-            });
-            const user = await getCurrentUser();
-            const response = {
-                payload: user
-            };
+            await onSubmit(email, password);
             setLoading(false);
-            dispatch({
-                type: "AUTHENTICATED",
-                noSave: true,
-                payload: response.payload
-            });
-            navigate("/household-select")
         } catch (e) {
             setLoading(false);
             switch (e.name) {
