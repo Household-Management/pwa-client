@@ -6,8 +6,9 @@ import {useDispatch, useSelector} from "react-redux";
 import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
 import {useLocation} from "react-router";
 import {useNavigate} from "react-router-dom";
-import {getCurrentUser} from "aws-amplify/auth";
+import {getCurrentUser, fetchAuthSession} from "aws-amplify/auth";
 import {signIn, signOut} from "@aws-amplify/auth";
+import _ from "lodash";
 
 // TODO: When login fails while offline, tell the user that they need to be online to login.
 export default function AppAuthenticator({children}) {
@@ -23,14 +24,17 @@ export default function AppAuthenticator({children}) {
             if (!user && !authenticationNeeded) {
                 try {
                     const currentUser = await getCurrentUser();
+                    const currentAuth = await fetchAuthSession();
 
                     if (currentUser) {
                         dispatch({
                             type: "AUTHENTICATED",
-                            payload: response.payload,
+                            payload: mapAuthenticationPayload(currentUser, currentAuth),
                             noSave: true
                         });
                         navigate("/household-select")
+                    } else {
+                        setAuthenticationNeeded(true)
                     }
                 } catch (e) {
                     setAuthenticationNeeded(true)
@@ -38,11 +42,11 @@ export default function AppAuthenticator({children}) {
             }
         })()
     }, [user]);
-    useEffect(() => {
-        if (!user && location.pathname !== "/sign-in" && location.pathname !== "/sign-up") {
-            navigate("/sign-in");
-        }
-    }, [user, location]);
+    // useEffect(() => {
+    //     if (!user && location.pathname !== "/sign-in" && location.pathname !== "/sign-up") {
+    //         navigate("/sign-in");
+    //     }
+    // }, [user, location]);
     return <>
         {user ? children : (authenticationNeeded ? <Authentication/> : (
             <Box sx={{width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>
@@ -68,20 +72,19 @@ function Authentication() {
     const location = useLocation();
     const navigate = useNavigate();
     const tab = location.pathname === "/sign-in" ? "/sign-in" : "/sign-up";
+    const dispatch = useDispatch();
     const submitAuth = async function (username, password) {
         await signOut();
         await signIn({
-            username: email,
+            username,
             password: password
         });
         const user = await getCurrentUser();
-        const response = {
-            payload: user
-        };
+        const auth = await fetchAuthSession();
         dispatch({
             type: "AUTHENTICATED",
             noSave: true,
-            payload: response.payload
+            payload: mapAuthenticationPayload(user, auth)
         });
         navigate("/household-select")
     }
@@ -105,4 +108,17 @@ function Authentication() {
             </Box>
         </div>
     </Modal>
+}
+
+function mapAuthenticationPayload(currentUser, currentAuth) {
+    return _.mapKeys(_.merge({},
+        _.pick(currentAuth.tokens.accessToken.payload, ["cognito:groups"]),
+        _.pick(currentUser.signInDetails, ["loginId"])
+    ), (value, key) => {
+        if(key === "cognito:groups") {
+            return "roles";
+        } else {
+            return key;
+        }
+    })
 }
