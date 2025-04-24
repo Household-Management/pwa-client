@@ -27,11 +27,8 @@ export const ModelPropTypes = PropTypes.shape({
     id: PropTypes.string.isRequired,
     title: PropTypes.string,
     description: PropTypes.string,
-    repeats: PropTypes.shape({
-        repeatType: PropTypes.oneOf(["DAILY", "WEEKLY", "MONTHLY"]),
-        repeatOn: PropTypes.arrayOf(PropTypes.bool)
-    }),
-    scheduledTime: PropTypes.instanceOf(moment)
+    repeats: PropTypes.string,
+    scheduledTime: PropTypes.string
 });
 
 export function RepeatDaily() {

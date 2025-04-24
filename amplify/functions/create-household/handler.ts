@@ -11,8 +11,8 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
     const userPoolId = process.env.COGNITO_USER_POOL_ID;
 
     const householdId = crypto.randomUUID();
-    const adminGroup = [`admin-${householdId}`];
-    const membersGroup = [`members-${householdId}`];
+    const adminGroup = [`admin:${householdId}`];
+    const membersGroup = [`members:${householdId}`];
 
     const household = {
         id: householdId,
