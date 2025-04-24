@@ -148,9 +148,9 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
         return (
             <Grid container alignItems="center" spacing={1}>
                 <Grid item>
-                    <IconButton
-                        sx={{borderRadius: "50%", aspectRatio: 1}}
-                        variant="outlined"
+                    {/* FIXME: A button cannot be a descendant of another button. */}
+                    <div
+                        style={{borderRadius: "50%", aspectRatio: 1, border: "1px"}}
                         onClick={(e) => {
                             e.stopPropagation();
                             onPropertyChanged("completed", {
@@ -164,7 +164,7 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
                             (<CheckCircleOutlined sx={{height: "100%", aspectRatio: 1}} />) :
                             (<RadioButtonUncheckedOutlined sx={{height: "100%", aspectRatio: 1}} />)
                         }
-                    </IconButton>
+                    </div>
                 </Grid>
                 <Grid item style={{flexGrow: 1}}>
                     <Typography sx={{color: task.completed ? "darkgray" : "black"}}>
