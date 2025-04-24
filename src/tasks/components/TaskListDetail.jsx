@@ -40,7 +40,6 @@ export function TaskListDetailPresentation({
                                                onListChanged,
                                                onListDelete,
                                                onTaskDelete,
-                                               listEditing,
                                                selectedTaskId,
                                            }) {
     const [taskBeingEdited, setTaskBeingEdited] = useState(null);
@@ -53,13 +52,15 @@ export function TaskListDetailPresentation({
         }
     }
 
+    const [listEditing, setListEditing] = useState(false);
+
     return <Fragment>
         <Paper sx={{height: "100%"}}>
             <List>
                 <TaskListHeader
                     list={list}
                     editing={listEditing}
-                    toggleEditing={onListChanged}
+                    toggleEditing={editing => setListEditing(editing)}
                     onListChanged={onListChanged}
                     onListDelete={onListDelete}
                 />
@@ -83,7 +84,9 @@ export function TaskListDetailPresentation({
 
                 <ListItem>
                     <Paper style={{position: "relative", overflowAnchor: "none", width: "100%"}}>
-                        <ListItemButton style={{flexGrow: 1, display: "flex"}} onClick={onTaskCreated}>
+                        <ListItemButton style={{flexGrow: 1, display: "flex"}} onClick={() => onTaskCreated(id => {
+                            setTaskBeingEdited(id);
+                        })}>
                             <AddCircleOutline/>New Task
                         </ListItemButton>
                     </Paper>
@@ -129,6 +132,5 @@ TaskListDetail.propTypes = {
     onListChanged: PropTypes.func.isRequired,
     onListDelete: PropTypes.func.isRequired,
     onTaskDelete: PropTypes.func.isRequired,
-    listEditing: PropTypes.bool, // If this list is being editing
     selectedTaskId: PropTypes.string,
 }
