@@ -1,7 +1,6 @@
 import {Button} from "@mui/material";
 import {signOut} from "@aws-amplify/auth";
 import {useDispatch} from "react-redux";
-import {useHeader} from "../../layout/hooks/HeaderContext";
 import {useCookies} from "react-cookie";
 import LogoutIcon from "@mui/icons-material/Logout";
 
