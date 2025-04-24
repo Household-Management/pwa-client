@@ -31,18 +31,18 @@ export const router = createBrowserRouter(
                 },
                 {
                     path: "/tasks",
-                    element: secured(<TasksView/>, []),
+                    element: secured(<TasksView/>, ["members", "admin"]),
                     children: [
                         {
                             index: true,
                             loader: async () => redirect("/tasks/todo")
                         },
                         {
-                            path: ":id",
-                            element: secured(<TasksView/>, []),
+                            path: ":list",
+                            element: secured(<TasksView/>, ["members", "admin"]),
                             children: [
                                 {
-                                    path: "task/:taskId",
+                                    path: "task/:task",
                                 }
                             ]
                         }
@@ -50,7 +50,7 @@ export const router = createBrowserRouter(
                 },
                 {
                     path: "/kitchen",
-                    element: secured(<KitchenView/> ,[]),
+                    element: secured(<KitchenView/> ,["members", "admin"]),
                     children: [
                         {
                             index: true,
@@ -58,21 +58,21 @@ export const router = createBrowserRouter(
                         },
                         {
                             path: "/kitchen/pantry",
-                            element: secured(<PantryView/>, [])
+                            element: secured(<PantryView/>, ["members", "admin"]),
                         },
                         {
                             path: "/kitchen/recipes",
-                            element: secured(<RecipesView/>, [])
+                            element: secured(<RecipesView/>, ["members", "admin"]),
                         },
                         {
                             path: "/kitchen/grocery",
-                            element: secured(<GroceryView/>, [])
+                            element: secured(<GroceryView/>, ["members", "admin"]),
                         }
                     ]
                 },
                 {
                     path: "/settings",
-                    element: secured(<SettingsView/>, [])
+                    element: secured(<SettingsView/>, ["members", "admin"]),
                 },
                 {
                     path: "/sign-in",
