@@ -6,8 +6,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from "prop-types";
-import {useNavigate} from "react-router-dom";
-import {Fragment} from "react";
 
 export default function TaskListsBar({ taskLists, selectedList, onListCreated, onSelect}) {
     return <Paper sx={{overflowX: "auto"}}>
@@ -41,7 +39,7 @@ export default function TaskListsBar({ taskLists, selectedList, onListCreated, o
 
 TaskListsBar.propTypes = {
     taskLists: PropTypes.array.isRequired,
-    selectedList: PropTypes.string.isRequired,
+    selectedList: PropTypes.string,
     onListCreated: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired
 }
