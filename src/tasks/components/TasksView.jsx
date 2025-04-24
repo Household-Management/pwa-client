@@ -60,16 +60,17 @@ export default function TasksView() {
                                                 navigate(`/tasks/${realSelectedListId}`);
                                             }
                                         }}
-                                        onTaskCreated={() => {
+                                        onTaskCreated={(cb) => {
                                             const task = new Task(crypto.randomUUID(), "New Task", "");
                                             dispatch(CreateTask({
                                                 targetList: realSelectedListId,
                                                 newTask: {...task}
                                             }));
-                                            navigate(`/tasks/${realSelectedListId}/task/${task.id}?edit=true`);
+                                            cb(task.id);
+                                            navigate(`/tasks/${realSelectedListId}/task/${task.id}`);
                                         }}
                                         onTaskChanged={(task) => dispatch(UpdateTask({
-                                            targetList: selectedListId,
+                                            targetList: realSelectedListId,
                                             task
                                         }))}
                                         onListDelete={(listId) => {
