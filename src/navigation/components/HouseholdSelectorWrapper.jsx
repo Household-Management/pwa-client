@@ -22,7 +22,7 @@ export default function HouseholdSelectorWrapper() {
     const navigate = useNavigate();
     const [cookies, setCookie] = useCookies(['household']);
     const [inviteModalOpen, setInviteModalOpen] = useState(false);
-    const user = useSelector(state => state.user.user);
+    const user = useSelector(state => state.user);
 
     const [processingInvite, setProcessingInvite] = useState(false);
     const [inviteError, setInviteError] = useState(null);
@@ -181,7 +181,7 @@ export default function HouseholdSelectorWrapper() {
 }
 
 function hasGroups(authSession) {
-    const groups = authSession.tokens.accessToken.payload['cognito:groups'];
+    const groups = authSession?.tokens?.accessToken?.payload['cognito:groups'];
 
     return groups && groups.length > 0;
 }

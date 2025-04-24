@@ -33,7 +33,7 @@ export default function HouseholdSelectorList({
                     :
                     <Fragment>
                         <Typography sx={{textAlign: "center"}}>
-                            Signed in as {user.signInDetails.loginId}
+                            Signed in as {user.loginId}
                         </Typography>
                         {errorMessage && <Typography sx={{textAlign: "center", color: "red"}}>
                             {errorMessage}
@@ -52,9 +52,8 @@ export default function HouseholdSelectorList({
                             </List>
                             <Divider/>
                             <List>
-
                                 <ListItem button>
-                                    <ListItemText primary="Join a different household"
+                                    <ListItemText primary="Join someone else's household"
                                                   onClick={onJoinHousehold}/>
                                 </ListItem>
                                 <ListItem variant="contained" button>
