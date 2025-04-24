@@ -11,7 +11,7 @@ export default function TaskListItems({
                            onTaskDelete,
                            taskBeingEdited
                        }) {
-    return taskItems.map(task => (<ListItem>
+    return taskItems.map(task => (<ListItem key={task.id}>
         <TaskDetailAccordion task={task}
                              onChange={onTaskChanged}
                              onDelete={onTaskDelete}
