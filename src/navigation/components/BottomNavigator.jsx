@@ -24,11 +24,11 @@ const routes = [
         icon: <ListIcon/>,
         path: "/tasks"
     },
-    {
-        label: "Pantry and Recipes",
-        icon: <KitchenIcon/>,
-        path: "/kitchen"
-    },
+    // {
+    //     label: "Pantry and Recipes",
+    //     icon: <KitchenIcon/>,
+    //     path: "/kitchen"
+    // },
     {
         label: "Settings",
         icon: <SettingsIcon/>,
