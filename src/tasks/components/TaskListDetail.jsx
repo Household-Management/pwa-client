@@ -60,8 +60,7 @@ export default function TaskListDetail({
     });
     const completedTasks = list.taskItems.filter(task => task.completed);
 
-    return <Fragment>
-        <Paper sx={{height: "100%"}}>
+    return <Paper sx={{flexGrow: 1}}>
             <List>
                 <TaskListHeader
                     list={list}
@@ -70,6 +69,16 @@ export default function TaskListDetail({
                     onListChanged={onListChanged}
                     onListDelete={onListDelete}
                 />
+                <ListItem>
+                    <Paper style={{position: "relative", overflowAnchor: "none", width: "100%"}}>
+                        <ListItemButton style={{flexGrow: 1, display: "flex"}} onClick={() => onTaskCreated(id => {
+                            setTaskBeingEdited(id);
+                        })}>
+                            <AddCircleOutline/>New Task
+                        </ListItemButton>
+                    </Paper>
+                </ListItem>
+                <Divider/>
                 <ListSubheader>
                     Due Tasks
                 </ListSubheader>
