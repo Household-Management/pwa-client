@@ -20,7 +20,6 @@ import _ from "lodash";
  * Top-level container for all user tasks ui elements.
  * @constructor
  */
-// TODO: Check for if a task is being edited when trying to open another one?
 // TODO: Handle deleting lists and tasks.
 export default function TasksView() {
     const {setHeaderContent} = useHeader()
@@ -29,10 +28,6 @@ export default function TasksView() {
     const {list: selectedListId, task: selectedTaskId} = useParams();
     const realSelectedListId = selectedListId === "todo" ? taskLists[0].id : selectedListId;
     const navigate = useNavigate();
-
-    const user = useSelector(state => {
-        return state?.user?.user || {};
-    });
 
     useEffect(() => {
 
