@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 export default function TaskListHeader({list, editing, toggleEditing, onListChanged, onListDelete}) {
     return <ListSubheader sx={{width: "100%", display: "flex", justifyContent: "space-between"}}>
-        <TextField sx={{width: "75%"}}
+        <TextField sx={{width: !list.unremovable ? "75%" : "100%"}}
                    value={list.name}
                    placeholder="New List"
                    onChange={ev => onListChanged({...list, name: ev.target.value})}
