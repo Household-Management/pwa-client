@@ -169,30 +169,6 @@ const slice = createSlice({
                         t.taskItems = [];
                     }
 
-                    t.taskItems = t.taskItems.filter(task => !task.completed || task.repeats);
-
-                    t.taskItems = t.taskItems.filter(task => {
-                        if (!task.repeats || !task.repeats.startsWith("WEEKLY")) {
-                            return true;
-                        }
-
-                        const weeklyRepeats = task.repeats.split("-")[1];
-                        const dayOfWeek = moment().day();
-
-                        return !task.completed && weeklyRepeats[dayOfWeek] === "1";
-                    });
-
-                    t.taskItems = t.taskItems.filter(task => {
-                        if (!task.repeats || !task.repeats.startsWith("MONTHLY")) {
-                            return true;
-                        }
-
-                        const monthlyRepeats = task.repeats.split("-")[1];
-                        const dayOfMonth = moment().date();
-
-                        return !task.completed && monthlyRepeats[dayOfMonth] === "1";
-                    });
-
                     return t;
                 });
                 return t;
