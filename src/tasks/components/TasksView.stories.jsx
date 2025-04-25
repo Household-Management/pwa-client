@@ -1,36 +1,26 @@
 import TasksView from "./TasksView";
-import {combineReducers, combineSlices, configureStore, createSlice} from "@reduxjs/toolkit";
+import {configureStore} from "@reduxjs/toolkit";
 import {Provider} from "react-redux";
-import TaskStateConfiguration from "../state/TaskStateConfiguration";
 import {HeaderProvider} from "../../layout/hooks/HeaderContext";
-import {reactRouterOutlet, reactRouterParameters, withRouter} from "storybook-addon-remix-react-router";
+import {reactRouterParameters, withRouter} from "storybook-addon-remix-react-router";
 import Task from "../model/Task";
 import Layout from "../../layout/components/Layout";
-import {Outlet} from "react-router-dom";
-import {makeDecorator} from "@storybook/preview-api";
+import {combinedReducer} from "../../redux/store"
 
 export default {
     component: TasksView
 }
 
 const store = configureStore({
-    reducer: combineReducers({
-        user: (state, action) => {
-            return state || {
-                user: {
-                    roles: []
-                }
-            };
-        },
-        household: combineSlices({
-            householdTasks: TaskStateConfiguration.reducer
-        })
-    })
+    reducer: combinedReducer
 });
 
 store.dispatch({
     type: "LOADED_STATE",
     payload: {
+        id: "1",
+        adminGroup: ["admin:1"],
+        membersGroup: ["member:1"],
         householdTasks: {
             taskLists: [{
                 id: "1",
@@ -55,15 +45,27 @@ store.dispatch({
 })
 
 export const TasksViewStory = {
-    render: () => (
-        <Provider store={store}>
-            <HeaderProvider>
-                <Layout>
-                    <TasksView/>
-                </Layout>
-            </HeaderProvider>
-        </Provider>
-    ),
+    render: (args) => {
+        store.dispatch({
+            type: "AUTHENTICATED",
+            payload: {
+                loginId: "1",
+                roles: args.userRoles.map(role => `${role}:1`),
+            }
+        })
+
+        return (<Provider store={store}>
+                <HeaderProvider>
+                    <Layout>
+                        <TasksView/>
+                    </Layout>
+                </HeaderProvider>
+            </Provider>
+        )
+    },
+    args: {
+        userRoles: ["members"]
+    },
     decorators: [
         withRouter
     ],
