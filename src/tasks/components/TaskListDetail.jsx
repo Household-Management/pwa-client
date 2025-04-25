@@ -51,7 +51,14 @@ export default function TaskListDetail({
 
     const [listEditing, setListEditing] = useState(false);
 
-    const dueTasks = list.taskItems.filter(task => !task.completed && moment().diff(moment(task.scheduledTime, 'days')) <= 0);
+    const dueTasks = list.taskItems.filter(task => {
+        switch (task.repeats) {
+            case "DAILY":
+                return !task.completed;
+        }
+        return !task.completed && moment().diff(moment(task.scheduledTime, 'days')) <= 0
+    });
+    const completedTasks = list.taskItems.filter(task => task.completed);
 
     return <Fragment>
         <Paper sx={{height: "100%"}}>
