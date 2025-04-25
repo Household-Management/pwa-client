@@ -22,22 +22,41 @@ store.dispatch({
         adminGroup: ["admin:1"],
         membersGroup: ["member:1"],
         householdTasks: {
-            taskLists: [{
-                id: "1",
-                name: "List 1",
-                taskItems: [
-                    {...new Task("1", "Task 1-1", "Description 1")},
-                    {...new Task("2", "Task 1-2", "Description 2")},
-                    {...new Task("3", "Task 1-3", "Description 3")}
-                ]
-            },
+            taskLists: [
+                {
+                    id: "1",
+                    name: "List 1",
+                    taskItems: [
+                        {
+                            ...new Task("1", "Task 1-1", "Description 1"),
+                            repeats: "DAILY"
+                        },
+                        {
+                            ...new Task("2", "Task 1-2", "Description 2"),
+                            repeats: "DAILY"
+                        },
+                        {
+                            ...new Task("3", "Task 1-3", "Description 3"),
+                            repeats: "DAILY"
+                        }
+                    ]
+                },
                 {
                     id: "2",
                     name: "List 2",
                     taskItems: [
-                        {...new Task("1", "Task 2-1", "Description 1")},
-                        {...new Task("2", "Task 2-2", "Description 2")},
-                        {...new Task("3", "Task 2-3", "Description 3")}
+                        {
+                            ...new Task("1", "Task 2-1", "Description 1"),
+                            repeats: "DAILY"
+                        },
+                        {
+                            ...new Task("2", "Task 2-2", "Description 2"),
+                            repeats: "DAILY"
+                        },
+                        {
+                            ...new Task("3", "Task 2-3", "Description 3"),
+                            repeats: "DAILY"
+                        }
                     ]
                 }]
         }
