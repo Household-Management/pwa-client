@@ -39,6 +39,7 @@ export default function TaskListDetail({
 
     const taskSelected = (id, toggled) => {
         onTaskSelected(id, toggled);
+        setTaskBeingEdited(null);
     }
 
     const onToggleTaskEditing = (taskId, editing) => {
@@ -66,7 +67,7 @@ export default function TaskListDetail({
                     Due Tasks
                 </ListSubheader>
                 <TaskListItems taskItems={dueTasks}
-                               onTaskSelected={onTaskSelected}
+                               onTaskSelected={taskSelected}
                                onTaskChanged={onTaskChanged}
                                onTaskDelete={onTaskDelete}
                                selectedTaskId={selectedTaskId}
@@ -75,7 +76,7 @@ export default function TaskListDetail({
                 />
                 <Divider/>
                 <TaskListItems taskItems={list.taskItems.filter(task => task.completed)}
-                               onTaskSelected={onTaskSelected}
+                               onTaskSelected={taskSelected}
                                onTaskChanged={onTaskChanged}
                                onTaskDelete={onTaskDelete}
                                selectedTaskId={selectedTaskId}
@@ -101,7 +102,7 @@ export default function TaskListDetail({
                                    onTaskChanged={onTaskChanged}
                                    onTaskDelete={onTaskDelete}
                                    selectedTaskId={selectedTaskId}
-                                   onTaskSelected={onTaskSelected}
+                                   onTaskSelected={taskSelected}
                                    onToggleTaskEditing={onToggleTaskEditing}
                                    taskBeingEdited={taskBeingEdited}
                     />
