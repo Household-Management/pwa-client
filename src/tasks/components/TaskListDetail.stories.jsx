@@ -4,7 +4,6 @@ import Task from "../model/Task";
 import {useState} from "react";
 import {configureStore} from "@reduxjs/toolkit";
 import {Provider} from "react-redux";
-import {reactRouterParameters, withRouter} from "storybook-addon-remix-react-router";
 
 const store = configureStore({
     reducer: (state, action) => {
@@ -75,17 +74,20 @@ export default {
             args.onListChanged(list);
         }
 
-        return <Provider store={store}>
-            <TaskListDetailPresentation list={list}
-                                        onTaskChanged={onTaskChanged}
-                                        onTaskCreated={onTaskCreated}
-                                        onTaskSelected={onTaskSelected}
-                                        onListDelete={onListDelete}
-                                        onListChanged={onListChange}
-                                        selectedTaskId={selectedTask}
-                                        onTaskDelete={() => {}}
-            />
-        </Provider>
+        return <div className="App">
+            <Provider store={store}>
+                <TaskListDetailPresentation list={list}
+                                            onTaskChanged={onTaskChanged}
+                                            onTaskCreated={onTaskCreated}
+                                            onTaskSelected={onTaskSelected}
+                                            onListDelete={onListDelete}
+                                            onListChanged={onListChange}
+                                            selectedTaskId={selectedTask}
+                                            onTaskDelete={() => {
+                                            }}
+                />
+            </Provider>
+        </div>
     }
 }
 
