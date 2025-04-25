@@ -80,7 +80,7 @@ export default function TaskListDetail({
                 </ListItem>
                 <Divider/>
                 <ListSubheader>
-                    Due Tasks
+                    Due Tasks ({dueTasks.length})
                 </ListSubheader>
                 <TaskListItems taskItems={dueTasks}
                                onTaskSelected={taskSelected}
@@ -91,7 +91,10 @@ export default function TaskListDetail({
                                taskBeingEdited={taskBeingEdited}
                 />
                 <Divider/>
-                <TaskListItems taskItems={list.taskItems.filter(task => task.completed)}
+                <ListSubheader>
+                    Completed Tasks ({completedTasks.length})
+                </ListSubheader>
+                <TaskListItems taskItems={completedTasks}
                                onTaskSelected={taskSelected}
                                onTaskChanged={onTaskChanged}
                                onTaskDelete={onTaskDelete}
@@ -99,20 +102,10 @@ export default function TaskListDetail({
                                onToggleTaskEditing={onToggleTaskEditing}
                                taskBeingEdited={taskBeingEdited}
                 />
-
-                <ListItem>
-                    <Paper style={{position: "relative", overflowAnchor: "none", width: "100%"}}>
-                        <ListItemButton style={{flexGrow: 1, display: "flex"}} onClick={() => onTaskCreated(id => {
-                            setTaskBeingEdited(id);
-                        })}>
-                            <AddCircleOutline/>New Task
-                        </ListItemButton>
-                    </Paper>
-                </ListItem>
-
+                <Divider/>
                 <Guarded requiredRoles={["admin"]}>
                     <ListSubheader>
-                        All Tasks
+                        All Tasks ({list.taskItems.length})
                     </ListSubheader>
                     <TaskListItems taskItems={list.taskItems}
                                    onTaskChanged={onTaskChanged}
@@ -125,7 +118,6 @@ export default function TaskListDetail({
                 </Guarded>
             </List>
         </Paper>
-    </Fragment>
 }
 
 TaskListDetail.propTypes = {
