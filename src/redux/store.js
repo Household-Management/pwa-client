@@ -59,15 +59,22 @@ const combinedReducer = combineReducers({
                 welcomed: false
             };
         } else if (action.type === "AUTHENTICATED") {
-            return {...state, user: action.payload};
+            if (isValidUser(action.payload)) {
+                return {...state, ...action.payload};
+            } else {
+                throw new Error("Invalid user payload: " +  JSON.stringify(action.payload));
+            }
         } else {
             return state ? state : {
-                user: null,
                 welcomed: false
             };
         }
     }
 });
+
+function isValidUser(user) {
+    return user && typeof user.loginId === "string";
+}
 
 const saga = createSagaMiddleware()
 
@@ -78,7 +85,7 @@ function* welcomeUser() {
             const user = yield select(state => state.user);
             welcomed = true
             yield put(
-                Alert({message: `Welcome ${user.user.signInDetails.loginId}`})
+                Alert({message: `Welcome ${user.loginId}`})
             )
         }
     })
