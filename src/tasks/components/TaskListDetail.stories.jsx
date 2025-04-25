@@ -1,5 +1,5 @@
 import {fn, spyOn} from '@storybook/test';
-import {TaskListDetailPresentation} from "./TaskListDetail";
+import TaskListDetail from "./TaskListDetail";
 import Task from "../model/Task";
 import {useState} from "react";
 import {configureStore} from "@reduxjs/toolkit";
@@ -13,31 +13,29 @@ const store = configureStore({
                     ...state,
                     user: {
                         ...state.user,
-                        user: {
-                            ...state.user.user,
-                            roles: [action.payload]
-                        }
+                        roles: [action.payload]
                     }
                 }
             default:
                 return state || {
+                    household: {
+                        id: 1,
+                    },
                     user: {
-                        user: {
-                            id: "1",
-                            name: "Test User",
-                            roles: ["member-foobar"]
-                        }
+                        loginId: "1",
+                        name: "Test User",
+                        roles: []
                     }
                 }
         }
     }
 })
-//TODO: Implement opening and closing the accordions
+
 export default {
     render: args => {
         store.dispatch({
             type: "change-role",
-            payload: args.userRole
+            payload: `${args.userRole}:1`
         });
         args.list.unremovable = args.unremovable;
         const [list, setList] = useState(args.list);
@@ -50,17 +48,21 @@ export default {
             setList({...list});
             args.onTaskChanged({...list})
         }
-        const onTaskCreated = () => {
+        const onTaskCreated = (cb) => {
             const newTask = new Task(crypto.randomUUID(), "New Task", "New Description");
             list.taskItems.push(newTask);
             setList({...list});
             args.onTaskCreated(newTask);
             setSelectedTask(newTask.id);
-            setEditableTaskId(newTask.id);
+            cb(newTask.id);
         }
-        const onTaskSelected = (id) => {
-            setSelectedTask(id);
-            args.onTaskSelected(id);
+        const onTaskSelected = (id, toggled) => {
+            if(toggled) {
+                setSelectedTask(id);
+            } else {
+                setSelectedTask(null);
+            }
+            args.onTaskSelected(id, toggled);
         }
 
         const onListDelete = (id) => {
@@ -76,15 +78,15 @@ export default {
 
         return <div className="App">
             <Provider store={store}>
-                <TaskListDetailPresentation list={list}
-                                            onTaskChanged={onTaskChanged}
-                                            onTaskCreated={onTaskCreated}
-                                            onTaskSelected={onTaskSelected}
-                                            onListDelete={onListDelete}
-                                            onListChanged={onListChange}
-                                            selectedTaskId={selectedTask}
-                                            onTaskDelete={() => {
-                                            }}
+                <TaskListDetail list={list}
+                                onTaskChanged={onTaskChanged}
+                                onTaskCreated={onTaskCreated}
+                                onTaskSelected={onTaskSelected}
+                                onListDelete={onListDelete}
+                                onListChanged={onListChange}
+                                selectedTaskId={selectedTask}
+                                onTaskDelete={() => {
+                                }}
                 />
             </Provider>
         </div>

@@ -15,6 +15,7 @@ import Guarded from "../../authentication/components/Guarded";
 import {useSelector} from "react-redux";
 import TaskListHeader from "./TaskListHeader";
 import TaskListItems from "./TaskListItems";
+import moment from "moment";
 
 /**
  * Component for displaying the detailed view of a TaskList model instance.
@@ -23,36 +24,33 @@ import TaskListItems from "./TaskListItems";
  * @constructor
  */
 
-// TODO: Delete, everything in here was actually pulled up into TasksView.
-export default function TaskListDetail(props) {
-    return <TaskListDetailPresentation {...props} user={user} onTaskSelected={onTaskSelected}
-                                       selectedTaskId={selectedTaskId}
-    />
-}
-
 // TODO: Show all tasks to admins.
-export function TaskListDetailPresentation({
-                                               list,
-                                               user,
-                                               onTaskChanged,
-                                               onTaskCreated,
-                                               onTaskSelected,
-                                               onListChanged,
-                                               onListDelete,
-                                               onTaskDelete,
-                                               selectedTaskId,
-                                           }) {
+export default function TaskListDetail({
+                                           list,
+                                           onTaskChanged,
+                                           onTaskCreated,
+                                           onTaskSelected,
+                                           onListChanged,
+                                           onListDelete,
+                                           onTaskDelete,
+                                           selectedTaskId,
+                                       }) {
     const [taskBeingEdited, setTaskBeingEdited] = useState(null);
 
+    const taskSelected = (id, toggled) => {
+        onTaskSelected(id, toggled);
+    }
+
     const onToggleTaskEditing = (taskId, editing) => {
-        if(editing) {
-            setTaskBeingEdited(taskId);
-        } else {
-            setTaskBeingEdited(null);
+        setTaskBeingEdited(editing ? taskId : null);
+        if(selectedTaskId !== taskId) {
+            taskSelected(taskId, editing);
         }
     }
 
     const [listEditing, setListEditing] = useState(false);
+
+    const dueTasks = list.taskItems.filter(task => !task.completed && moment().diff(moment(task.scheduledTime, 'days')) <= 0);
 
     return <Fragment>
         <Paper sx={{height: "100%"}}>
@@ -64,7 +62,10 @@ export function TaskListDetailPresentation({
                     onListChanged={onListChanged}
                     onListDelete={onListDelete}
                 />
-                <TaskListItems taskItems={list.taskItems.filter(task => !task.completed)}
+                <ListSubheader>
+                    Due Tasks
+                </ListSubheader>
+                <TaskListItems taskItems={dueTasks}
                                onTaskSelected={onTaskSelected}
                                onTaskChanged={onTaskChanged}
                                onTaskDelete={onTaskDelete}
@@ -92,7 +93,7 @@ export function TaskListDetailPresentation({
                     </Paper>
                 </ListItem>
 
-                <Guarded requiredRoles={["admin"]} user={user}>
+                <Guarded requiredRoles={["admin"]}>
                     <ListSubheader>
                         All Tasks
                     </ListSubheader>
@@ -108,20 +109,6 @@ export function TaskListDetailPresentation({
             </List>
         </Paper>
     </Fragment>
-}
-
-
-TaskListDetailPresentation.propTypes = {
-    list: PropTypes.object.isRequired,
-    user: PropTypes.object.isRequired,
-    onTaskChanged: PropTypes.func.isRequired,
-    onTaskCreated: PropTypes.func.isRequired,
-    onTaskSelected: PropTypes.func.isRequired,
-    onListChanged: PropTypes.func.isRequired,
-    onListDelete: PropTypes.func.isRequired,
-    onTaskDelete: PropTypes.func.isRequired,
-    listEditing: PropTypes.bool, // If this list is being editing
-    selectedTaskId: PropTypes.string,
 }
 
 TaskListDetail.propTypes = {

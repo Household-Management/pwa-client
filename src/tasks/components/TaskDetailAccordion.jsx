@@ -77,10 +77,10 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, edita
 
     const taskRepeat = getRepeats(task.repeats);
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
-    return <Accordion expanded={expanded || editable} onChange={(ev, ex) => {
+    return <Accordion expanded={expanded || editable} onChange={(ev, toggled) => {
         ev.stopPropagation();
         ev.preventDefault();
-        onToggle(task.id, ex)
+        onToggle(task.id, toggled)
     }} onClick={e => {
         e.stopPropagation();
         e.preventDefault();
