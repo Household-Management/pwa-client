@@ -25,7 +25,8 @@ store.dispatch({
             taskLists: [
                 {
                     id: "1",
-                    name: "List 1",
+                    name: "Unremovable List",
+                    unremovable: true,
                     taskItems: [
                         {
                             ...new Task("1", "Task 1-1", "Description 1"),
@@ -43,7 +44,7 @@ store.dispatch({
                 },
                 {
                     id: "2",
-                    name: "List 2",
+                    name: "Removable List",
                     taskItems: [
                         {
                             ...new Task("1", "Task 2-1", "Description 1"),
