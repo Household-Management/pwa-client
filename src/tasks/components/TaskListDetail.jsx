@@ -51,6 +51,7 @@ export default function TaskListDetail({
 
     const [listEditing, setListEditing] = useState(false);
 
+    // TODO: Filtering for weekly and monthly tasks.
     const dueTasks = list.taskItems.filter(task => {
         switch (task.repeats) {
             case "DAILY":
