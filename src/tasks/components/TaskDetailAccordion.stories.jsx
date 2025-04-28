@@ -48,9 +48,10 @@ export const DailyTaskPastDueDetailAccordionStories = {
     args: {
         task: {
             id: "1",
-            title: "Daily Task",
+            title: "Daily Task Past Due",
             description: "Description",
             repeats: RepeatDaily(),
+            lastCompleted: [],
             scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).subtract(1, "day").toISOString(),
         }
     }
@@ -60,9 +61,10 @@ export const DailyTaskDueTodayDetailAccordionStories = {
     args: {
         task: {
             id: "1",
-            title: "Daily Task",
+            title: "Daily Task Due Today",
             description: "Description",
             repeats: RepeatDaily(),
+            lastCompleted: [],
             scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).add(1, "hour").toISOString(),
         }
     }
@@ -72,10 +74,10 @@ export const DailyTaskDueSoonDetailAccordionStories = {
     args: {
         task: {
             id: "1",
-            title: "Daily Task",
+            title: "Daily Task Due Soon",
             description: "Description",
             repeats: RepeatDaily(),
-            scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).add(1, "day").toISOString(),
+            scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).add(2, "day").toISOString(),
         }
     }
 }
