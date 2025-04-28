@@ -223,8 +223,7 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
                             onClick={(ev) => ev.stopPropagation()}
                         />
                         {task.scheduledTime ?
-                            <Typography>Due
-                                ${moment(task.scheduledTime).format("MMMM Do [by] h:mm a")}</Typography> : null}
+                            <Typography>Due {moment(task.scheduledTime).format("MMMM Do [by] h:mm a")}</Typography> : null}
                     </Stack>
                 </Grid>
                 <Grid item>
