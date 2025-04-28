@@ -113,3 +113,24 @@
     flex-grow: 1;
   }
 }
+
+.due-soon {
+  background-color: #28a745!important; /* Green */
+  :hover {
+    background-color: #5cd65c; /* Lighter green */
+  }
+}
+
+.due-now {
+  background-color: #ffc107!important; /* Yellow */
+  :hover {
+    background-color: #ffe066; /* Lighter yellow */
+  }
+}
+
+.past-due {
+  background-color: #ff8c00!important; /* Orange */
+  :hover {
+    background-color: #ffb84d; /* Lighter orange */
+  }
+}

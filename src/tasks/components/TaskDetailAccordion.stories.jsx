@@ -44,14 +44,50 @@ export default {
     }
 }
 
-export const DailyTaskDetailAccordionStories = {
+export const DailyTaskPastDueDetailAccordionStories = {
     args: {
         task: {
             id: "1",
             title: "Daily Task",
             description: "Description",
             repeats: RepeatDaily(),
-            scheduledTime: moment().set({minute: 0, hour: 12}),
+            scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).subtract(1, "day").toISOString(),
+        }
+    }
+}
+
+export const DailyTaskDueTodayDetailAccordionStories = {
+    args: {
+        task: {
+            id: "1",
+            title: "Daily Task",
+            description: "Description",
+            repeats: RepeatDaily(),
+            scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).add(1, "hour").toISOString(),
+        }
+    }
+}
+
+export const DailyTaskDueSoonDetailAccordionStories = {
+    args: {
+        task: {
+            id: "1",
+            title: "Daily Task",
+            description: "Description",
+            repeats: RepeatDaily(),
+            scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).add(1, "day").toISOString(),
+        }
+    }
+}
+
+export const DailyTaskDueLaterDetailAccordionStories = {
+    args: {
+        task: {
+            id: "1",
+            title: "Daily Task",
+            description: "Description",
+            repeats: RepeatDaily(),
+            scheduledTime: moment().set({minute: 0, second: 0, millisecond: 0}).add(4, "day").toISOString(),
         }
     }
 }
@@ -63,7 +99,7 @@ export const WeeklyTaskDetailAccordionStories = {
             title: "Weekly Task",
             description: "Description",
             repeats: RepeatWeekly([false, true, false, true, false, true, false]),
-            scheduledTime: moment().set({minute: 0, hour: 12}),
+            scheduledTime: moment().set({minute: 0, hour: 12}).toISOString(),
         }
     }
 }
@@ -75,7 +111,7 @@ export const MonthlyTaskDetailAccordionStories = {
             title: "Monthly Task",
             description: "Description",
             repeats: RepeatMonthly(Array(31).fill(false)),
-            scheduledTime: moment().set({minute: 0, hour: 12}),
+            scheduledTime: moment().set({minute: 0, hour: 12}).toISOString(),
         }
     }
 }

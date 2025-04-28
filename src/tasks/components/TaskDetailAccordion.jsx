@@ -2,6 +2,7 @@ import {ModelPropTypes} from "../model/Task";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import Task from "../model/Task"
 import {
     Delete,
     ExpandMore,
@@ -23,6 +24,7 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 import IconTile from "../../IconTile";
+import moment from "moment";
 
 const repeatLabels = {
     "NEVER": "Never",
@@ -38,7 +40,16 @@ const repeatLabels = {
 // TODO: Remove hard-coded color values
 // TODO: Gray highlight on hover
 // TODO: When name changes, wait until the user stops typing for 1 second before updating the model.
-export default function TaskDetailAccordion({task, onChange, sx, expanded, editable, onToggle, onDelete, onToggleEditable}) {
+export default function TaskDetailAccordion({
+                                                task,
+                                                onChange,
+                                                sx,
+                                                expanded,
+                                                editable,
+                                                onToggle,
+                                                onDelete,
+                                                onToggleEditable
+                                            }) {
     const onPropertyChanged = (property, ev) => {
         const value = ev.target.value;
         const changed = {...task};
@@ -74,10 +85,27 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, edita
         }
     }
 
-
     const taskRepeat = getRepeats(task.repeats);
+    const dueDateOffset = moment(task.scheduledTime).diff(moment(), "days");
+    let dueDateStyle;
+    switch (dueDateOffset) {
+        case 0:
+            dueDateStyle = "due-now";
+            break;
+        case 1:
+        case 2:
+            dueDateStyle = "due-soon";
+            break;
+        default:
+            if (dueDateOffset < 0) {
+                dueDateStyle = "past-due";
+            } else {
+                dueDateStyle = "due-later";
+            }
+            break;
+    }
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
-    return <Accordion expanded={expanded || editable} onChange={(ev, toggled) => {
+    return <Accordion className={dueDateStyle} expanded={expanded || editable} onChange={(ev, toggled) => {
         ev.stopPropagation();
         ev.preventDefault();
         onToggle(task.id, toggled)
@@ -85,14 +113,15 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, edita
         e.stopPropagation();
         e.preventDefault();
     }} sx={sx}>
-        <AccordionSummary expandIcon={<ExpandMore/>} sx={{":hover": {bgcolor: "#f5f5f5"}}} onKeyUpCapture={e => {
-            switch (e.code) {
-                case "Enter":
-                case "Space":
-                    e.preventDefault();
-                    break;
-            }
-        }}>
+        <AccordionSummary expandIcon={<ExpandMore/>}
+                          onKeyUpCapture={e => {
+                              switch (e.code) {
+                                  case "Enter":
+                                  case "Space":
+                                      e.preventDefault();
+                                      break;
+                              }
+                          }}>
             <Summary task={task}
                      expanded={expanded}
                      editable={editable}
@@ -124,7 +153,9 @@ export default function TaskDetailAccordion({task, onChange, sx, expanded, edita
                                 <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
                             </Select>
                         </FormControl>
-                        {taskRepeat.repeatsOn && <DayPicker dayNames={taskRepeat.repeatsType === "WEEKLY" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] : null} days={taskRepeat.repeatsOn} onChange={value => {
+                        {taskRepeat.repeatsOn && <DayPicker
+                            dayNames={taskRepeat.repeatsType === "WEEKLY" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] : null}
+                            days={taskRepeat.repeatsOn} onChange={value => {
                             const changed = {...task};
                             changed.repeats = taskRepeat.repeatsType + "-" + value.map(v => v ? "1" : "0").join("");
                             if (onChange) {
@@ -148,7 +179,6 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
         return (
             <Grid container alignItems="center" spacing={1}>
                 <Grid item>
-                    {/* FIXME: A button cannot be a descendant of another button. */}
                     <div
                         style={{borderRadius: "50%", aspectRatio: 1, border: "1px"}}
                         onClick={(e) => {
@@ -161,14 +191,17 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
                         }}
                     >
                         {task.completed ?
-                            (<CheckCircleOutlined sx={{height: "100%", aspectRatio: 1}} />) :
-                            (<RadioButtonUncheckedOutlined sx={{height: "100%", aspectRatio: 1}} />)
+                            (<CheckCircleOutlined sx={{height: "100%", aspectRatio: 1}}/>) :
+                            (<RadioButtonUncheckedOutlined sx={{height: "100%", aspectRatio: 1}}/>)
                         }
                     </div>
                 </Grid>
                 <Grid item style={{flexGrow: 1}}>
                     <Typography sx={{color: task.completed ? "darkgray" : "black"}}>
                         {task.title}
+                    </Typography>
+                    <Typography>
+                        {task.scheduledTime ? `Due ${moment(task.scheduledTime).format("MMMM Do [by] h:mm a")}` : null}
                     </Typography>
                 </Grid>
             </Grid>
@@ -178,20 +211,25 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
         return (
             <Grid container sx={{width: "90%"}}>
                 <Grid item sx={{flexGrow: 1}}>
-                    <TextField
-                        value={task.title}
-                        sx={{width: "100%"}}
-                        label="Title"
-                        onChange={(e) => {
-                            onPropertyChanged("title", e);
-                        }}
-                        disabled={!editable}
-                        onClick={(ev) => ev.stopPropagation()}
-                    />
+                    <Stack>
+                        <TextField
+                            value={task.title}
+                            sx={{width: "100%"}}
+                            label="Title"
+                            onChange={(e) => {
+                                onPropertyChanged("title", e);
+                            }}
+                            disabled={!editable}
+                            onClick={(ev) => ev.stopPropagation()}
+                        />
+                        {task.scheduledTime ?
+                            <Typography>Due
+                                ${moment(task.scheduledTime).format("MMMM Do [by] h:mm a")}</Typography> : null}
+                    </Stack>
                 </Grid>
                 <Grid item>
                     <IconTile
-                        icon={editable ? <Done /> : <Edit />}
+                        icon={editable ? <Done/> : <Edit/>}
                         onClick={(ev) => {
                             ev.stopPropagation();
                             ev.preventDefault();
@@ -214,7 +252,7 @@ function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleE
                         }}
                         color="error"
                         size="large"
-                        icon={<Delete />}
+                        icon={<Delete/>}
                     />
                 </Grid>
             </Grid>
