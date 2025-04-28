@@ -105,7 +105,7 @@ export default function TaskDetailAccordion({
             break;
     }
     // I actually just guessed that #f5f5f5 was the right color to match the button hover color and it was.
-    return <Accordion className={dueDateStyle} expanded={expanded || editable} onChange={(ev, toggled) => {
+    return <Accordion expanded={expanded || editable} onChange={(ev, toggled) => {
         ev.stopPropagation();
         ev.preventDefault();
         onToggle(task.id, toggled)
@@ -121,7 +121,9 @@ export default function TaskDetailAccordion({
                                       e.preventDefault();
                                       break;
                               }
-                          }}>
+                          }}
+                          className={dueDateStyle}
+        >
             <Summary task={task}
                      expanded={expanded}
                      editable={editable}
@@ -175,9 +177,27 @@ export default function TaskDetailAccordion({
 
 function Summary({task, expanded, editable, onDelete, onPropertyChanged, toggleEditable}) {
     expanded = expanded || editable;
+    const dueDateOffset = moment(task.scheduledTime).diff(moment(), "days");
+    let dueDateStyle;
+    switch (dueDateOffset) {
+        case 0:
+            dueDateStyle = "due-now";
+            break;
+        case 1:
+        case 2:
+            dueDateStyle = "due-soon";
+            break;
+        default:
+            if (dueDateOffset < 0) {
+                dueDateStyle = "past-due";
+            } else {
+                dueDateStyle = "due-later";
+            }
+            break;
+    }
     if (!expanded) {
         return (
-            <Grid container alignItems="center" spacing={1}>
+            <Grid container alignItems="center" spacing={1} className={dueDateStyle}>
                 <Grid item>
                     <div
                         style={{borderRadius: "50%", aspectRatio: 1, border: "1px"}}
