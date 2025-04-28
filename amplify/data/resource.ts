@@ -34,7 +34,7 @@ const tasksModels = {
     Task: a.customType({
         id: a.id().required(),
         title: a.string(),
-        scheduledTime: a.string(),
+        lastCompleted: a.datetime().array(),
         repeats: a.string().required(),
         description: a.string(),
         taskListId: a.id(),

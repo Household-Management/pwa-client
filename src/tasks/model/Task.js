@@ -7,6 +7,7 @@ export default class Task {
     description
     scheduledTime
     repeats
+    lastCompleted
 
     constructor(id, title, description) {
         this.id = id;
@@ -20,6 +21,7 @@ export default class Task {
         this.title = title;
         this.scheduledTime = moment("12 00", "HH mm").toISOString(false);
         this.repeats = RepeatDaily();
+        this.lastCompleted = [];
     }
 }
 
@@ -47,4 +49,30 @@ export function RepeatMonthly(repeatDays) {
         throw "Repeat days must be an array of no more than 31 and no less than 28 booleans, one for each day of the month."
     }
     return "MONTHLY-" + repeatDays.map(x => x ? 1 : 0).join("");
+}
+
+Task.dueToday = function(task) {
+    const repeatConfig = task.repeats.split("-");
+    const repeat = repeatConfig[0];
+    const repeatInterval = repeatConfig[1]?.split("")?.map(i => i === "1" ? "0" : i);
+    const now = moment();
+
+    switch (repeat) {
+        case "DAILY":
+            return !task.lastCompleted ||
+                task.lastCompleted.length === 0 ||
+                moment(task.lastCompleted[1]).diff(now) <= 0;
+        case "WEEKLY":
+            // If the task is not completed, is due this day of the week and last completed is in the past, make it available.
+            return false;
+        case "MONTHLY":
+            break;
+    }
+    return !task.completed && moment().diff(moment(task.scheduledTime, 'days')) <= 0
+}
+
+Task.pastDue = function(task) {
+    const dueNow = !!Task.dueToday(task)
+    const scheduledInPast = moment(task.scheduledTime).diff(moment(), "days") < 0;
+    return dueNow && scheduledInPast;
 }
