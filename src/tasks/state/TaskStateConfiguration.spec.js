@@ -22,7 +22,12 @@ describe("TaskStateConfiguration", () => {
             state = {
                 household: {
                     householdTasks: {
-                        id: "householdTasksId"
+                        id: "householdTasksId",
+                        taskLists: [
+                            {
+                                id: "foobar",
+                            }
+                        ]
                     }
                 }
             };
@@ -46,42 +51,46 @@ describe("TaskStateConfiguration", () => {
             const prepared = TaskStateConfiguration.actions.CreateTask({});
             expect(prepared.meta.persister).toBeDefined();
 
+            client.models.TaskList.update.mockReturnValueOnce({});
             prepared.meta.persister(client, state, {
                 payload: {
-                    householdTasksId: "foobar"
+                    targetList: "foobar",
                 }
             });
 
-            expect(client.models.Task.create).toHaveBeenCalledWith({
-                householdTasksId: "foobar",
+            expect(client.models.TaskList.update).toHaveBeenCalledWith({
+                id: "foobar",
             });
         });
         it("UpdateList persister updates a task list", () => {
             const prepared = TaskStateConfiguration.actions.UpdateList({});
             expect(prepared.meta.persister).toBeDefined();
 
+            client.models.TaskList.update.mockReturnValueOnce({});
+
             prepared.meta.persister(client, state, {
                 payload: {
-                    name: "foobar"
+                    id: "foobar"
                 }
             });
 
             expect(client.models.TaskList.update).toHaveBeenCalledWith({
-                name: "foobar",
+                id: "foobar",
             });
         });
         it("UpdateTask persister updates a task", () => {
             const prepared = TaskStateConfiguration.actions.UpdateTask({});
             expect(prepared.meta.persister).toBeDefined();
+            client.models.TaskList.update.mockReturnValueOnce({});
 
             prepared.meta.persister(client, state, {
                 payload: {
-                    name: "foobar"
+                    targetList: "foobar"
                 }
             });
 
-            expect(client.models.Task.update).toHaveBeenCalledWith({
-                name: "foobar",
+            expect(client.models.TaskList.update).toHaveBeenCalledWith({
+                id: "foobar",
             });
         });
         it("DeleteList persister deletes a task list", () => {
@@ -89,7 +98,7 @@ describe("TaskStateConfiguration", () => {
             expect(prepared.meta.persister).toBeDefined();
 
             prepared.meta.persister(client, state, {
-                payload: "foobar"
+                payload: {taskId: "foobar"}
             });
 
             expect(client.models.TaskList.delete).toHaveBeenCalledWith({
@@ -100,11 +109,14 @@ describe("TaskStateConfiguration", () => {
             const prepared = TaskStateConfiguration.actions.DeleteTask({});
             expect(prepared.meta.persister).toBeDefined();
 
+            client.models.TaskList.update.mockReturnValueOnce({
+                id: "foobar",
+            });
             prepared.meta.persister(client, state, {
-                payload: "foobar"
+                payload: {targetList: "foobar"}
             });
 
-            expect(client.models.Task.delete).toHaveBeenCalledWith({
+            expect(client.models.TaskList.update).toHaveBeenCalledWith({
                 id: "foobar",
             });
         });

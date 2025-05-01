@@ -14,11 +14,11 @@ const initialState = {
 }
 
 async function PersistList(client, state, action) {
-    const taskList = state.household.householdTasks.taskLists.find(t => t.id === action.payload.targetList);
+    const taskList = (state.household.householdTasks.taskLists || []).find(t => t.id === action.payload.targetList);
     if (taskList) {
         const updated = await client.models.TaskList.update(taskList);
         if (updated.errors) {
-            throw new Error(task.errors);
+            throw new Error(updated.errors);
         }
     }
 }
@@ -164,10 +164,13 @@ const slice = createSlice({
                 if (!t.taskItems) {
                     t.taskItems = []
                 }
+
                 result.taskLists = result.taskLists.map(t => {
                     if (!t.taskItems) {
                         t.taskItems = [];
                     }
+
+                    // TODO: Set the scheduled time.
 
                     return t;
                 });
