@@ -9,7 +9,10 @@ export default class Task {
     repeats
     lastCompleted
 
-    constructor(id, title, description) {
+    constructor(id, title, description, repeats) {
+        if (typeof (id) !== "string") {
+            throw "Task id must be a string"
+        }
         this.id = id;
         if (typeof (description) !== "string") {
             throw "Task description must be a string"
@@ -20,7 +23,25 @@ export default class Task {
         }
         this.title = title;
         this.scheduledTime = moment("12 00", "HH mm").toISOString(false);
-        this.repeats = RepeatDaily();
+
+        if (repeats === undefined) {
+            repeats = "DAILY";
+        }
+        switch (repeats.toLowerCase()) {
+            case "daily":
+                this.repeats = RepeatDaily();
+                break;
+            case "weekly":
+                this.repeats = RepeatWeekly([false, false, false, false, false, false, false]);
+                break;
+            case "monthly":
+                this.repeats = RepeatMonthly(new Array(31).fill(false));
+
+                break;
+            default:
+                throw "Task repeats must be one of the following: DAILY, WEEKLY, MONTHLY but was " + repeats;
+
+        }
         this.lastCompleted = [];
     }
 }
@@ -38,40 +59,65 @@ export function RepeatDaily() {
 }
 
 export function RepeatWeekly(repeatDays) {
-    if(!repeatDays || repeatDays.length !== 7) {
+    if (!repeatDays || repeatDays.length !== 7) {
         throw "Repeat days must be an array of 7 booleans, one for each day of the week."
     }
     return "WEEKLY-" + repeatDays.map(x => x ? 1 : 0).join("");
 }
 
 export function RepeatMonthly(repeatDays) {
-    if(!repeatDays || repeatDays.length > 31 || repeatDays.length < 28) {
+    if (!repeatDays || repeatDays.length > 31 || repeatDays.length < 28) {
         throw "Repeat days must be an array of no more than 31 and no less than 28 booleans, one for each day of the month."
     }
     return "MONTHLY-" + repeatDays.map(x => x ? 1 : 0).join("");
 }
 
-Task.dueToday = function(task) {
+Task.dueToday = function (task, today) {
     const repeatConfig = task.repeats.split("-");
-    const repeat = repeatConfig[0];
-    const repeatInterval = repeatConfig[1]?.split("")?.map(i => i === "1" ? "0" : i);
-    const now = moment();
+    const repeats = repeatConfig[0];
+    const now = (moment(today) || moment()).set("hours", 0).set("minutes", 0).set("seconds", 0).set("millisecond", 0);
 
-    switch (repeat) {
+    const neverCompleted = !task.lastCompleted || task.lastCompleted.length === 0;
+    const completedInThePast = task.lastCompleted && task.lastCompleted.length > 0 && moment(task.lastCompleted[0]).diff(now) < 0;
+
+    switch (repeats) {
+        case "NEVER":
+            return true;
         case "DAILY":
-            return !task.lastCompleted ||
-                task.lastCompleted.length === 0 ||
-                moment(task.lastCompleted[1]).diff(now) <= 0;
+            if (neverCompleted) {
+                return true;
+            }
+            const lastCompletedDay = moment(task.lastCompleted[0]).set("hours", 0).set("minutes", 0).set("seconds", 0).set("millisecond", 0);
+            return lastCompletedDay.diff(now) <= -1;
         case "WEEKLY":
-            // If the task is not completed, is due this day of the week and last completed is in the past, make it available.
-            return false;
+            const todayOfWeek = now.day();
+            const dueToday =  repeatConfig[1].split("").some((weekDay, index) => {
+                return index === todayOfWeek && weekDay === "1";
+            });
+
+            if(!dueToday) {
+                return false;
+            }
+
+            return dueToday && neverCompleted;
         case "MONTHLY":
-            break;
+            const todayOfMonth = now.date();
+            const repeatDays = repeatConfig[1].split("");
+            const dueTodayMonthly = repeatDays.some((day, index) => {
+                return index === todayOfMonth - 1 && day === "1";
+            });
+
+            if (!dueTodayMonthly) {
+                return false;
+            }
+
+            return dueTodayMonthly && (neverCompleted || completedInThePast);
+        default:
+            throw "Task repeats must be one of the following: NEVER, DAILY, WEEKLY, MONTHLY but was " + repeats;
     }
-    return !task.completed && moment().diff(moment(task.scheduledTime, 'days')) <= 0
 }
 
-Task.pastDue = function(task) {
+Task.pastDue = function (task) {
     const dueNow = !!Task.dueToday(task)
     const scheduledInPast = moment(task.scheduledTime).diff(moment(), "days") < 0;
     return dueNow && scheduledInPast;
