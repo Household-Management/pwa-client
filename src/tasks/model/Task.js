@@ -2,48 +2,93 @@ import moment from "moment";
 import PropTypes from "prop-types";
 
 export default class Task {
-    id
-    title
-    description
-    scheduledTime
-    repeats
-    lastCompleted
+    id // The unique id of the task
+    title // The main title of the task
+    description // A description of the task
+    scheduledTime // The time that the task is scheduled to begin
+    repeats // If the task repeats multiple times or is a one-time task
+    lastCompleted // Array, the last time that the task was completed, for repeat tasks
 
-    constructor(id, title, description, repeats) {
+    /**
+     * Prefer using the builder returned from 'createTask' on the Task prototype.
+     */
+    constructor(id, title, description, repeats, scheduledTime) {
         if (typeof (id) !== "string") {
-            throw "Task id must be a string"
+            throw "Task id must be a string but was " + typeof (id);
         }
         this.id = id;
         if (typeof (description) !== "string") {
-            throw "Task description must be a string"
+            throw "Task description must be a string but was " + typeof (description);
         }
-        this.description = description;
+
         if (typeof (title) !== "string") {
-            throw "Task title must be a string"
+            throw "Task title must be a string but was" + typeof (title);
         }
+
+        this.description = description;
         this.title = title;
-        this.scheduledTime = moment("12 00", "HH mm").toISOString(false);
-
-        if (repeats === undefined) {
-            repeats = "DAILY";
+        if (typeof (scheduledTime) !== "string") {
+            throw "Task scheduledTime must be a string but was " + typeof (scheduledTime);
         }
-        switch (repeats.toLowerCase()) {
-            case "daily":
-                this.repeats = RepeatDaily();
-                break;
-            case "weekly":
-                this.repeats = RepeatWeekly([false, false, false, false, false, false, false]);
-                break;
-            case "monthly":
-                this.repeats = RepeatMonthly(new Array(31).fill(false));
+        this.scheduledTime = scheduledTime;
+        // this.scheduledTime = moment().startOf("day").toISOString(false);
 
+        if (typeof (repeats) !== "string") {
+            throw "Task repeats must be a string but was " + typeof (repeats);
+        }
+
+        switch (repeats.split("-")[0]) {
+            case "DAILY":
+                break;
+            case "WEEKLY":
+                repeats = "WEEKLY-" + new Array(7).fill(0).join("");
+                break;
+            case "MONTHLY":
+                repeats = "MONTHLY-" + new Array(31).fill(0).join("");
+                break;
+            case "NEVER":
                 break;
             default:
                 throw "Task repeats must be one of the following: DAILY, WEEKLY, MONTHLY but was " + repeats;
-
         }
+        this.repeats = repeats;
         this.lastCompleted = [];
     }
+}
+
+class TaskBuilder {
+    constructor(id, title) {
+        this.id = id;
+        this.title = title;
+        this.description = "";
+        this.scheduledTime = moment().startOf("day").toISOString();
+    }
+
+    withDescription(description) {
+        this.description = description;
+        return this;
+    }
+
+    withScheduledTime(scheduledTime) {
+        this.scheduledTime = moment(scheduledTime).toISOString();
+        return this;
+    }
+
+    repeats(repeats) {
+        if (!["NEVER", "DAILY", "WEEKLY", "MONTHLY"].includes(repeats.split("-")[0].toUpperCase())) {
+            throw "Repeats must be one of the following: NEVER, DAILY, WEEKLY, MONTHLY.";
+        }
+        this.repeats = repeats.toUpperCase();
+        return this;
+    }
+
+    build() {
+        return new Task(this.id, this.title, this.description, this.repeats, this.scheduledTime);
+    }
+}
+
+Task.createTask = function(id) {
+    return new TaskBuilder(id, "New Task");
 }
 
 export const ModelPropTypes = PropTypes.shape({
@@ -91,11 +136,11 @@ Task.dueToday = function (task, today) {
             return lastCompletedDay.diff(now) <= -1;
         case "WEEKLY":
             const todayOfWeek = now.day();
-            const dueToday =  repeatConfig[1].split("").some((weekDay, index) => {
+            const dueToday = repeatConfig[1].split("").some((weekDay, index) => {
                 return index === todayOfWeek && weekDay === "1";
             });
 
-            if(!dueToday) {
+            if (!dueToday) {
                 return false;
             }
 
@@ -122,3 +167,52 @@ Task.pastDue = function (task) {
     const scheduledInPast = moment(task.scheduledTime).diff(moment(), "days") < 0;
     return dueNow && scheduledInPast;
 }
+
+Task.calculateScheduledTime = function (task) {
+    const now = moment().startOf("day");
+    const repeatConfig = task.repeats.split("-");
+    const repeats = repeatConfig[0];
+
+    switch (repeats) {
+        case "NEVER":
+            return task.scheduledTime; // For tasks that never repeat, return the original scheduled time.
+        case "DAILY":
+            if (task.lastCompleted.length === 0) {
+                return task.scheduledTime;
+            }
+
+            // If it has been completed today, return tomorrow
+            const lastCompletedDay = moment(task.lastCompleted[0]).set("hours", 0).set("minutes", 0).set("seconds", 0).set("millisecond", 0);
+            if (lastCompletedDay.diff(now) === 0) {
+                return now.add(1, "days").toISOString();
+            }
+            // If it has been completed in the past, return the day after completion
+            if (lastCompletedDay.diff(now) < 0) {
+                return now.add(1, "days").toISOString();
+            }
+
+            return task.scheduledTime;
+        case "WEEKLY":
+            const repeatDays = repeatConfig[1].split("").map(day => day === "1");
+            for (let i = 0; i < 7; i++) {
+                const nextDay = now.clone().add(i, "days").day();
+                if (repeatDays[nextDay]) {
+                    return now.add(i, "days").toISOString();
+                }
+            }
+            break;
+        case "MONTHLY":
+            const todayOfMonth = now.date();
+            const monthlyDays = repeatConfig[1].split("").map(day => day === "1");
+            for (let i = 0; i < 31; i++) {
+                const nextDay = (todayOfMonth + i - 1) % 31;
+                if (monthlyDays[nextDay]) {
+                    return now.add(i, "days").toISOString();
+                }
+            }
+            break;
+        default:
+            throw "Task repeats must be one of the following: NEVER, DAILY, WEEKLY, MONTHLY but was " + repeats;
+    }
+    throw "Unable to calculate scheduled time for task.";
+};

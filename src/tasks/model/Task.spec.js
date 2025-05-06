@@ -17,17 +17,30 @@ describe('Task', () => {
             new Task(null, "title", "description");
         }).toThrow();
     });
+    describe("which repeats never", () => {
+       it("is always due today", () => {
+            expect(Task.dueToday({
+                lastCompleted: [],
+                repeats: "NEVER"
+            })).toBeTruthy();
+        });
+       it("is scheduled for the start of the day it was created", () => {
+           const task = Task.createTask("").repeats("NEVER").build();
+          expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day").toISOString());
+       });
+    });
     describe("which repeats daily", () => {
         it('has a value of `DAILY`', () => {
-            const task = new Task("id", "title", "description");
+            const task = Task.createTask("id").repeats("daily").build();
             expect(task.repeats).toBe("DAILY");
         });
         it('is due today if never completed', () => {
             const task = {
                 lastCompleted: [],
-                repeats: "DAILY"
+                repeats: "DAILY",
+                scheduledTime: moment().startOf("day").toISOString()
             };
-
+            expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day").toISOString());
             expect(Task.dueToday(task)).toBeTruthy();
         });
         it('is due today if last completed in the past', () => {
@@ -46,10 +59,17 @@ describe('Task', () => {
 
             expect(Task.dueToday(task)).toBeFalsy();
         });
+        it("schedules for the next time it repeats after completion", () => {
+            const task = Task.createTask("id").repeats("DAILY");
+            task.lastCompleted = [moment()];
+            expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day")
+                .add(1, "days")
+                .toISOString());
+        });
     });
     describe('which repeats weekly', () => {
         it('has a value of `WEEKLY`', () => {
-            const task = new Task("id", "title", "description", "WEEKLY");
+            const task = Task.createTask("id").repeats("WEEKLY").build();
             expect(task.repeats).toBe("WEEKLY-0000000");
         });
         it('is due today if never completed', () => {
@@ -89,11 +109,11 @@ describe('Task', () => {
     });
     describe('which repeats monthly', () => {
         it('has a value of `MONTHLY`', () => {
-            const task = new Task("id", "title", "description", "MONTHLY");
-            expect(task.repeats).toBe("MONTHLY-" + new Array(31).fill(false).map(x => x ? 1 : 0).join(""));
+            const task = Task.createTask("id").repeats("MONTHLY").build();
+            expect(task.repeats).toBe("MONTHLY-" + new Array(31).fill(0).join(""));
         });
         it('has a value of `MONTHLY` with all days set to false', () => {
-            const task = new Task("id", "title", "description", "MONTHLY");
+            const task = Task.createTask("id").repeats("MONTHLY").build();
             expect(task.repeats).toBe("MONTHLY-" + new Array(31).fill(false).map(x => x ? 1 : 0).join(""));
         });
 
