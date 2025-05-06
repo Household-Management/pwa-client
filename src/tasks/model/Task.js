@@ -32,6 +32,7 @@ export default class Task {
 
         this.description = description;
         this.title = title;
+        // TODO: Allow time to be a moment object
         if (typeof (scheduledTime) !== "string") {
             throw "Task scheduledTime must be a string but was " + typeof (scheduledTime);
         }
@@ -42,21 +43,18 @@ export default class Task {
             throw "Task repeats must be a string but was " + typeof (repeats);
         }
 
-        switch (repeats.split("-")[0]) {
-            case "DAILY":
-                break;
-            case "WEEKLY":
-                repeats = "WEEKLY-" + new Array(7).fill(0).join("");
-                break;
-            case "MONTHLY":
-                repeats = "MONTHLY-" + new Array(31).fill(0).join("");
-                break;
-            case "NEVER":
-                break;
-            default:
-                throw "Task repeats must be one of the following: DAILY, WEEKLY, MONTHLY but was " + repeats;
+        if (new RegExp("WEEKLY-[01]{7}").test(repeats) || new RegExp("MONTHLY-[01]{31}").test(repeats)) {
+            this.repeats = repeats;
+        } else {
+            switch (repeats.split("-")[0]) {
+                case "DAILY":
+                case "NEVER":
+                    this.repeats = repeats;
+                    break;
+                default:
+                    throw "Task repeats must be one of the following: 'NEVER', 'DAILY', 'WEEKLY-XXXXXXX' or 'MONTHLY-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' (where X is a 0 or 1) but was '" + repeats + "'";
+            }
         }
-        this.repeats = repeats;
     }
 }
 
@@ -68,6 +66,7 @@ class TaskBuilder {
         this.scheduledTime = moment().startOf("day").toISOString();
         this.lastCompleted = [];
         this.repeatsOn = "NEVER";
+        this.repeatDays = [];
     }
 
     withDescription(description) {
@@ -81,9 +80,22 @@ class TaskBuilder {
     }
 
     repeats(repeats) {
-        if (!["NEVER", "DAILY", "WEEKLY", "MONTHLY"].includes(repeats.split("-")[0].toUpperCase())) {
-            throw "Repeats must be one of the following: NEVER, DAILY, WEEKLY, MONTHLY.";
+        if(typeof(repeats) !== "string") {
+            return "repeats must be a string but was " + typeof(repeats);
         }
+        if (!["NEVER", "DAILY", "WEEKLY", "MONTHLY"].includes(repeats.toUpperCase())) {
+            throw `Repeats must be one of the following: 'NEVER', 'DAILY', 'WEEKLY', 'MONTHLY'. To specify which days to repeats, use 'willRepeatOn' instead.`;
+        }
+        switch(repeats.toUpperCase()) {
+            case "WEEKLY":
+                this.repeatDays = new Array(7).fill(0);
+                break;
+            case "MONTHLY":
+                this.repeatDays = new Array(31).fill(0);
+                break;
+
+        }
+
         this.repeatsOn = repeats.toUpperCase();
         return this;
     }
@@ -97,7 +109,18 @@ class TaskBuilder {
     }
 
     build() {
-        return new Task(this.id, this.title, this.description, this.repeatsOn, this.scheduledTime, this.lastCompleted);
+        let repeats;
+        if(this.repeatsOn === "DAILY" || this.repeatsOn === "NEVER") {
+            repeats = this.repeatsOn;
+        } else if(this.repeatsOn === "WEEKLY") {
+            repeats = this.repeatsOn + "-" + this.repeatDays.join("");
+        } else if (this.repeatsOn === "MONTHLY") {
+            repeats = this.repeatsOn + "-" + this.repeatDays.join("");
+        }
+
+        return new Task(this.id, this.title, this.description,
+            repeats,
+            this.scheduledTime, this.lastCompleted);
     }
 }
 

@@ -23,6 +23,14 @@ describe('Task', () => {
                new Task("", "title", "description", "repeats", undefined, []);
            }).toThrow("Task scheduledTime must be a string but was undefined");
         });
+        it("must have a repeats", () => {
+            expect(() => {
+                new Task("", "title", "description", "repeats", moment().toISOString(), []);
+            }).toThrow("Task repeats must be one of the following: 'NEVER', 'DAILY', 'WEEKLY-XXXXXXX' or 'MONTHLY-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' (where X is a 0 or 1) but was 'repeats'");
+            expect(() => {
+                new Task("", "title", "description", 1, moment().toISOString(), []);
+            }).toThrow("Task repeats must be a string but was number");
+        });
     })
     describe("which repeats never", () => {
        it("is always due today", () => {
