@@ -12,7 +12,7 @@ export default class Task {
     /**
      * Prefer using the builder returned from 'createTask' on the Task prototype.
      */
-    constructor(id, title, description, repeats, scheduledTime) {
+    constructor(id, title, description, repeats, scheduledTime, lastCompleted) {
         if (typeof (id) !== "string") {
             throw "Task id must be a string but was " + typeof (id);
         }
@@ -24,6 +24,11 @@ export default class Task {
         if (typeof (title) !== "string") {
             throw "Task title must be a string but was" + typeof (title);
         }
+
+        if(!Array.isArray(lastCompleted)) {
+            throw "Task lastCompleted must be an array but was " + typeof (lastCompleted);
+        }
+        this.lastCompleted = lastCompleted;
 
         this.description = description;
         this.title = title;
@@ -62,6 +67,7 @@ class TaskBuilder {
         this.title = title;
         this.description = "";
         this.scheduledTime = moment().startOf("day").toISOString();
+        this.lastCompleted = [];
     }
 
     withDescription(description) {
@@ -82,8 +88,16 @@ class TaskBuilder {
         return this;
     }
 
+    wasLastCompleted(completed) {
+        if(!Array.isArray(completed)) {
+            throw "Task lastCompleted must be an array but was " + typeof (completed);
+        }
+        this.lastCompleted = completed;
+        return this;
+    }
+
     build() {
-        return new Task(this.id, this.title, this.description, this.repeats, this.scheduledTime);
+        return new Task(this.id, this.title, this.description, this.repeats, this.scheduledTime, this.lastCompleted);
     }
 }
 

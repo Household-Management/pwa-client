@@ -44,11 +44,11 @@ describe('Task', () => {
             expect(Task.dueToday(task)).toBeTruthy();
         });
         it('is due today if last completed in the past', () => {
-            const task = {
-                lastCompleted: [moment().subtract(1, "day").toISOString()],
-                repeats: "DAILY"
-            };
+            const task = Task.createTask("").repeats("DAILY")
+                .wasLastCompleted([moment().startOf("day").subtract(1, "day").toISOString()])
+                .build();
 
+            expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day").toISOString());
             expect(Task.dueToday(task)).toBeTruthy();
         });
         it('is not due today if last completed is today', () => {
