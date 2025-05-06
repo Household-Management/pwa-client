@@ -162,12 +162,6 @@ Task.dueToday = function (task, today) {
     }
 }
 
-Task.pastDue = function (task) {
-    const dueNow = !!Task.dueToday(task)
-    const scheduledInPast = moment(task.scheduledTime).diff(moment(), "days") < 0;
-    return dueNow && scheduledInPast;
-}
-
 Task.calculateScheduledTime = function (task) {
     const now = moment().startOf("day");
     const repeatConfig = task.repeats.split("-");
