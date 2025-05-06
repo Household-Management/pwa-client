@@ -45,7 +45,7 @@ describe('Task', () => {
         });
         it('is due today if last completed in the past', () => {
             const task = Task.createTask("").repeats("DAILY")
-                .wasLastCompleted([moment().startOf("day").subtract(1, "day").toISOString()])
+                .wasLastCompleted([moment().subtract(1, "day").startOf("day").toISOString()])
                 .build();
 
             expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day").toISOString());
@@ -60,7 +60,7 @@ describe('Task', () => {
             expect(Task.dueToday(task)).toBeFalsy();
         });
         it("schedules for the next time it repeats after completion", () => {
-            const task = Task.createTask("id").repeats("DAILY");
+            const task = Task.createTask("id").repeats("DAILY").build();
             task.lastCompleted = [moment()];
             expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day")
                 .add(1, "days")
@@ -88,7 +88,7 @@ describe('Task', () => {
                 repeats: "WEEKLY-1000000"
             };
 
-            const now = moment().day(0).set("hour", 0).set("minute", 0).set("second", 0);
+            const now = moment().day(0).startOf("day");
 
             expect(Task.dueToday(task, now)).toBeFalsy();
         });
@@ -105,6 +105,16 @@ describe('Task', () => {
            expect(() => {
                new Task("1", "title", "description", "notweekly");
            }).toThrow();
+        });
+        it.each([0,1,2,3,4,5,6])('is scheduled for the next day of the week in the future', (dayOfWeek) => {
+
+            const task = Task.createTask("").build();
+            task.repeats = "WEEKLY-" + new Array(7).fill(0).map((x, i) => {
+                return i === dayOfWeek ? "1" : "0";
+            }).join("");
+            // 01-01-2025 was a wednesday
+            expect(Task.calculateScheduledTime(task, moment().set("year", 2025).startOf("year")))
+                .toEqual(moment().set("year", 2025).startOf("year").add((4 + dayOfWeek) % 7, "day").toISOString());
         });
     });
     describe('which repeats monthly', () => {

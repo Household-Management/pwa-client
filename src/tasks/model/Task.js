@@ -25,7 +25,7 @@ export default class Task {
             throw "Task title must be a string but was" + typeof (title);
         }
 
-        if(!Array.isArray(lastCompleted)) {
+        if (!Array.isArray(lastCompleted)) {
             throw "Task lastCompleted must be an array but was " + typeof (lastCompleted);
         }
         this.lastCompleted = lastCompleted;
@@ -57,7 +57,6 @@ export default class Task {
                 throw "Task repeats must be one of the following: DAILY, WEEKLY, MONTHLY but was " + repeats;
         }
         this.repeats = repeats;
-        this.lastCompleted = [];
     }
 }
 
@@ -68,6 +67,7 @@ class TaskBuilder {
         this.description = "";
         this.scheduledTime = moment().startOf("day").toISOString();
         this.lastCompleted = [];
+        this.repeatsOn = "NEVER";
     }
 
     withDescription(description) {
@@ -84,12 +84,12 @@ class TaskBuilder {
         if (!["NEVER", "DAILY", "WEEKLY", "MONTHLY"].includes(repeats.split("-")[0].toUpperCase())) {
             throw "Repeats must be one of the following: NEVER, DAILY, WEEKLY, MONTHLY.";
         }
-        this.repeats = repeats.toUpperCase();
+        this.repeatsOn = repeats.toUpperCase();
         return this;
     }
 
     wasLastCompleted(completed) {
-        if(!Array.isArray(completed)) {
+        if (!Array.isArray(completed)) {
             throw "Task lastCompleted must be an array but was " + typeof (completed);
         }
         this.lastCompleted = completed;
@@ -97,11 +97,11 @@ class TaskBuilder {
     }
 
     build() {
-        return new Task(this.id, this.title, this.description, this.repeats, this.scheduledTime, this.lastCompleted);
+        return new Task(this.id, this.title, this.description, this.repeatsOn, this.scheduledTime, this.lastCompleted);
     }
 }
 
-Task.createTask = function(id) {
+Task.createTask = function (id) {
     return new TaskBuilder(id, "New Task");
 }
 
@@ -176,8 +176,9 @@ Task.dueToday = function (task, today) {
     }
 }
 
-Task.calculateScheduledTime = function (task) {
-    const now = moment().startOf("day");
+// TODO: In these functions, transform the task object into an instance of Task.
+Task.calculateScheduledTime = function (task, now) {
+    now = moment(now) || moment().startOf("day");
     const repeatConfig = task.repeats.split("-");
     const repeats = repeatConfig[0];
 
@@ -190,24 +191,32 @@ Task.calculateScheduledTime = function (task) {
             }
 
             // If it has been completed today, return tomorrow
-            const lastCompletedDay = moment(task.lastCompleted[0]).set("hours", 0).set("minutes", 0).set("seconds", 0).set("millisecond", 0);
-            if (lastCompletedDay.diff(now) === 0) {
-                return now.add(1, "days").toISOString();
+            const lastCompletedDay = moment(task.lastCompleted[0]).startOf("day");
+            if (lastCompletedDay.diff(now.startOf("day")) === 0) {
+                return now.add(1, "days").startOf("day").toISOString();
             }
             // If it has been completed in the past, return the day after completion
-            if (lastCompletedDay.diff(now) < 0) {
-                return now.add(1, "days").toISOString();
+            if (lastCompletedDay.diff(now.startOf("day")) < 0) {
+                return lastCompletedDay.add(1, "days").toISOString();
             }
 
             return task.scheduledTime;
         case "WEEKLY":
-            const repeatDays = repeatConfig[1].split("").map(day => day === "1");
-            for (let i = 0; i < 7; i++) {
-                const nextDay = now.clone().add(i, "days").day();
-                if (repeatDays[nextDay]) {
-                    return now.add(i, "days").toISOString();
+            const repeatsToday = repeatConfig[1].split("").some((x, i) => i === now.weekday() === i && x === "1");
+            // If it has been completed in the past or never and repeats today, return today
+            if ((task.lastCompleted.length === 0 || moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) < 0) && repeatsToday) {
+                return moment().startOf("day");
+            } else if(!repeatsToday || moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) === 0) {
+                // If it does not repeat today or has been completed today find the next day it does repeat
+                const todayOfWeek = now.day();
+                for (let i = 0; i < 7; i++) {
+                    const index = (todayOfWeek + i) % 7;
+                    if (repeatConfig[1][index] === "1") {
+                        return now.add(i, "days").toISOString();
+                    }
                 }
             }
+
             break;
         case "MONTHLY":
             const todayOfMonth = now.date();
