@@ -22,7 +22,7 @@ export default class Task {
         }
 
         if (typeof (title) !== "string") {
-            throw "Task title must be a string but was" + typeof (title);
+            throw "Task title must be a string but was " + typeof (title);
         }
 
         if (!Array.isArray(lastCompleted)) {

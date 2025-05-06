@@ -2,21 +2,28 @@ import Task, {RepeatMonthly} from "./Task";
 import moment from "moment";
 
 describe('Task', () => {
-    it('must have a title', () => {
-        expect(() => {
-            new Task("id", null, "description")
-        }).toThrow();
-    });
-    it('must have a description', () => {
-        expect(() => {
-            new Task("id", "title", null)
-        }).toThrow();
-    });
-    it('must have an id', () => {
-        expect(() => {
-            new Task(null, "title", "description");
-        }).toThrow();
-    });
+    describe('validation', () => {
+        it('must have a title', () => {
+            expect(() => {
+                new Task("id", null, "description")
+            }).toThrow("Task title must be a string but was object");
+        });
+        it('must have a description', () => {
+            expect(() => {
+                new Task("id", "title", null)
+            }).toThrow("Task description must be a string but was object");
+        });
+        it('must have an id', () => {
+            expect(() => {
+                new Task(null, "title", "description");
+            }).toThrow("Task id must be a string but was object");
+        });
+        it("must have a scheduledTime", () => {
+           expect(() => {
+               new Task("", "title", "description", "repeats", undefined, []);
+           }).toThrow("Task scheduledTime must be a string but was undefined");
+        });
+    })
     describe("which repeats never", () => {
        it("is always due today", () => {
             expect(Task.dueToday({
