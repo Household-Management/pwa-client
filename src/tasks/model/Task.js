@@ -74,17 +74,17 @@ class TaskBuilder {
         return this;
     }
 
-    withScheduledTime(scheduledTime) {
+    scheduledFor(scheduledTime) {
         this.scheduledTime = moment(scheduledTime).toISOString();
         return this;
     }
 
-    repeats(repeats) {
+    thatRepeats(repeats) {
         if(typeof(repeats) !== "string") {
-            return "repeats must be a string but was " + typeof(repeats);
+            throw "Task repeats must be a string but was " + typeof(repeats);
         }
         if (!["NEVER", "DAILY", "WEEKLY", "MONTHLY"].includes(repeats.toUpperCase())) {
-            throw `Repeats must be one of the following: 'NEVER', 'DAILY', 'WEEKLY', 'MONTHLY'. To specify which days to repeats, use 'willRepeatOn' instead.`;
+            throw `Repeats must be one of the following: 'NEVER', 'DAILY', 'WEEKLY' or 'MONTHLY', but was '${repeats}'. To specify which days to repeat, use 'thatRepeatsOn' instead.`;
         }
         switch(repeats.toUpperCase()) {
             case "WEEKLY":
@@ -93,10 +93,26 @@ class TaskBuilder {
             case "MONTHLY":
                 this.repeatDays = new Array(31).fill(0);
                 break;
-
         }
 
         this.repeatsOn = repeats.toUpperCase();
+        return this;
+    }
+
+    thatRepeatsOn(repeatDays) {
+        if (this.repeatsOn === "WEEKLY") {
+            if (repeatDays.length !== 7) {
+                throw "Repeat days must be an array of 7 numbers."
+            }
+            this.repeatDays = repeatDays;
+        } else if (this.repeatsOn === "MONTHLY") {
+            if (repeatDays.length < 28 || repeatDays.length > 31) {
+                throw "Repeat days must be an array of 31 numbers."
+            }
+            this.repeatDays = repeatDays;
+        } else {
+            throw "Cannot set repeat days on a task that does not repeat WEEKLY or MONTHLY. Use 'thatRepeats' to set it to 'WEEKLY' or 'MONTHLY' first.";
+        }
         return this;
     }
 
