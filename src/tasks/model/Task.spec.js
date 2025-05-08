@@ -18,11 +18,6 @@ describe('Task', () => {
                 new Task(null, "title", "description");
             }).toThrow("Task id must be a string but was object");
         });
-        it("must have a scheduledTime", () => {
-            expect(() => {
-                new Task("", "title", "description", "repeats", undefined, []);
-            }).toThrow("Task scheduledTime must be a string but was undefined");
-        });
         it("must have a repeats", () => {
             expect(() => {
                 new Task("", "title", "description", "repeats", moment().toISOString(), []);
@@ -77,9 +72,6 @@ describe('Task', () => {
         it("can have a description", () => {
             expect(Task.createTask("").withDescription("description").build().description).toBe("description");
         });
-        it("can have a scheduled time", () => {
-            expect(Task.createTask("").scheduledFor("2023-01-01").build().scheduledTime).toBe(moment("2023-01-01").toISOString());
-        })
     });
     describe("which repeats never", () => {
         it("is always due today", () => {
@@ -101,8 +93,7 @@ describe('Task', () => {
         it('is due today if never completed', () => {
             const task = {
                 lastCompleted: [],
-                repeats: "DAILY",
-                scheduledTime: moment().startOf("day").toISOString()
+                repeats: "DAILY"
             };
             expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day").toISOString());
             expect(Task.dueToday(task)).toBeTruthy();
@@ -129,6 +120,10 @@ describe('Task', () => {
             expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day")
                 .add(1, "days")
                 .toISOString());
+        });
+        it("is due today if somehow completed in the future", () => {
+           const task = Task.createTask("id").thatRepeats("DAILY").wasLastCompleted(moment().add(1, "day")).build();
+           expect(Task.calculateScheduledTime(task)).toEqual(moment().startOf("day").toISOString());
         });
     });
     describe('which repeats weekly', () => {
@@ -195,7 +190,6 @@ describe('Task', () => {
             const task = Task.createTask("id").thatRepeats("MONTHLY").build();
             expect(task.repeats).toBe("MONTHLY-" + new Array(31).fill(false).map(x => x ? 1 : 0).join(""));
         });
-
         it('is due today if never completed and today is a scheduled day', () => {
             const today = moment().date(); // Get today\'s day of the month
             const repeatDays = new Array(31).fill(false);
@@ -208,7 +202,17 @@ describe('Task', () => {
 
             expect(Task.dueToday(task)).toBeTruthy();
         });
+        it('is due in the past if never completed and there is a repeat time between creation and now', () => {
+            const task = Task.createTask("id")
+                .thatRepeats("MONTHLY")
+                .thatRepeatsOn(new Array(31).fill(0).map((_, i) => i === 1 ? 1 : 0)) // Set the 2nd day of the month
+                .scheduledFor(moment("2023-01-01").startOf("day").toISOString())
+                .createdAt(moment("2023-01-01").startOf("day").toISOString())
+                .build();
 
+            expect(Task.calculateScheduledTime(task, moment().month(1).day(3)))
+                .toEqual(moment("2023-01-02").startOf("day").toISOString());
+        });
         it('is not due today if today is not a scheduled day', () => {
             const today = moment().date(); // Get today\'s day of the month
             const repeatDays = new Array(31).fill(false);
@@ -220,7 +224,6 @@ describe('Task', () => {
 
             expect(Task.dueToday(task)).toBeFalsy();
         });
-
         it('is not due today if last completed is today', () => {
             const today = moment().date(); // Get today\'s day of the month
             const repeatDays = new Array(31).fill(false);
@@ -233,7 +236,6 @@ describe('Task', () => {
 
             expect(Task.dueToday(task)).toBeFalsy();
         });
-
         it('is due today if last completed is in the past and today is a scheduled day', () => {
             const today = moment().date(); // Get today\'s day of the month
             const repeatDays = new Array(31).fill(false);
@@ -246,13 +248,11 @@ describe('Task', () => {
 
             expect(Task.dueToday(task)).toBeTruthy();
         });
-
-        it('throws an error if repeat days array is invalid', () => {
-            expect(() => {
-                RepeatMonthly(new Array(32).fill(false)); // Invalid array length
-            }).toThrow("Repeat days must be an array of no more than 31 and no less than 28 booleans, one for each day of the month.");
+        it('is due on the last day of the month if scheduled for day that does not exist in month', () => {
+            const task = Task.createTask("").thatRepeats("MONTHLY").thatRepeatsOn(new Array(30).fill(0).concat([1])).build();
+            expect(Task.calculateScheduledTime(task, moment("2025-2-28").startOf("day")))
+                .toEqual(moment("2025-2-28").startOf("day").toISOString());
         });
-
         it.each(new Array(31).fill(1))("can define the days of the month for repeating", x=> {
             const task = Task.createTask("").thatRepeats("monthly").thatRepeatsOn(new Array(31).fill(0).map((_, i) => i === x ? 1 : 0)).build();
             expect(task.repeats.split("-")[1].split("").map(x => Number.parseInt(x)))

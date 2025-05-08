@@ -5,14 +5,14 @@ export default class Task {
     id // The unique id of the task
     title // The main title of the task
     description // A description of the task
-    scheduledTime // The time that the task is scheduled to begin
+    createdAt // When the task was created
     repeats // If the task repeats multiple times or is a one-time task
     lastCompleted // Array, the last time that the task was completed, for repeat tasks
 
     /**
      * Prefer using the builder returned from 'createTask' on the Task prototype.
      */
-    constructor(id, title, description, repeats, scheduledTime, lastCompleted) {
+    constructor(id, title, description, repeats, createdAt, lastCompleted) {
         if (typeof (id) !== "string") {
             throw "Task id must be a string but was " + typeof (id);
         }
@@ -30,14 +30,10 @@ export default class Task {
         }
         this.lastCompleted = lastCompleted;
 
+        this.createdAt = createdAt;
+
         this.description = description;
         this.title = title;
-        // TODO: Allow time to be a moment object
-        if (typeof (scheduledTime) !== "string") {
-            throw "Task scheduledTime must be a string but was " + typeof (scheduledTime);
-        }
-        this.scheduledTime = scheduledTime;
-        // this.scheduledTime = moment().startOf("day").toISOString(false);
 
         if (typeof (repeats) !== "string") {
             throw "Task repeats must be a string but was " + typeof (repeats);
@@ -67,6 +63,12 @@ class TaskBuilder {
         this.lastCompleted = [];
         this.repeatsOn = "NEVER";
         this.repeatDays = [];
+        this.wasCreatedAt = moment().startOf("day").toISOString();
+    }
+
+    createdAt(createdAt) {
+        this.wasCreatedAt = moment(createdAt).toISOString();
+        return this;
     }
 
     withDescription(description) {
@@ -118,9 +120,10 @@ class TaskBuilder {
 
     wasLastCompleted(completed) {
         if (!Array.isArray(completed)) {
-            throw "Task lastCompleted must be an array but was " + typeof (completed);
+            this.lastCompleted = [completed];
+        } else {
+            this.lastCompleted = completed;
         }
-        this.lastCompleted = completed;
         return this;
     }
 
@@ -136,7 +139,8 @@ class TaskBuilder {
 
         return new Task(this.id, this.title, this.description,
             repeats,
-            this.scheduledTime, this.lastCompleted);
+            this.wasCreatedAt,
+            this.lastCompleted);
     }
 }
 
@@ -151,24 +155,6 @@ export const ModelPropTypes = PropTypes.shape({
     repeats: PropTypes.string,
     scheduledTime: PropTypes.string
 });
-
-export function RepeatDaily() {
-    return "DAILY"
-}
-
-export function RepeatWeekly(repeatDays) {
-    if (!repeatDays || repeatDays.length !== 7) {
-        throw "Repeat days must be an array of 7 booleans, one for each day of the week."
-    }
-    return "WEEKLY-" + repeatDays.map(x => x ? 1 : 0).join("");
-}
-
-export function RepeatMonthly(repeatDays) {
-    if (!repeatDays || repeatDays.length > 31 || repeatDays.length < 28) {
-        throw "Repeat days must be an array of no more than 31 and no less than 28 booleans, one for each day of the month."
-    }
-    return "MONTHLY-" + repeatDays.map(x => x ? 1 : 0).join("");
-}
 
 Task.dueToday = function (task, today) {
     const repeatConfig = task.repeats.split("-");
@@ -223,10 +209,10 @@ Task.calculateScheduledTime = function (task, now) {
 
     switch (repeats) {
         case "NEVER":
-            return task.scheduledTime; // For tasks that never repeat, return the original scheduled time.
+            return task.createdAt; // For tasks that never repeat, return the original scheduled time.
         case "DAILY":
-            if (task.lastCompleted.length === 0) {
-                return task.scheduledTime;
+            if(task.lastCompleted.length === 0) {
+                return now.startOf("day").toISOString();
             }
 
             // If it has been completed today, return tomorrow
@@ -239,7 +225,7 @@ Task.calculateScheduledTime = function (task, now) {
                 return lastCompletedDay.add(1, "days").toISOString();
             }
 
-            return task.scheduledTime;
+            return now.startOf("day").toISOString();
         case "WEEKLY":
             const repeatsToday = repeatConfig[1].split("").some((x, i) => i === now.weekday() === i && x === "1");
             // If it has been completed in the past or never and repeats today, return today
@@ -258,13 +244,49 @@ Task.calculateScheduledTime = function (task, now) {
 
             break;
         case "MONTHLY":
-            const todayOfMonth = now.date();
-            const monthlyDays = repeatConfig[1].split("").map(day => day === "1");
-            for (let i = 0; i < 31; i++) {
-                const nextDay = (todayOfMonth + i - 1) % 31;
-                if (monthlyDays[nextDay]) {
-                    return now.add(i, "days").toISOString();
+            // If repeats today
+            const repeatDays = repeatConfig[1].split("");
+            const repeatsTodayMonthly = repeatConfig[1].split("").some((x, i) => i === now.date() - 1 && x === "1");
+            if(repeatsTodayMonthly) {
+                // If never completed, return today
+                if (task.lastCompleted.length === 0) {
+                    return now.startOf("day").toISOString();
                 }
+                // If completed in the past and there is a repeat time between then and now, return the first repeat time between then and now
+                if (moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) < 0) {
+                    const lastCompletedDay = moment(task.lastCompleted[0]).startOf("day");
+                    for (let i = 0; i < 31; i++) {
+                        const nextDay = (lastCompletedDay.date() + i - 1) % 31;
+                        if (repeatConfig[1][nextDay] === "1") {
+                            return lastCompletedDay.add(i, "days").toISOString();
+                        }
+                    }
+                }
+                // if completed today, return the next repeat time
+                if (moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) === 0) {
+                    for (let i = 1; i < 31; i++) {
+                        const nextDay = (now.date() + i - 1) % 31;
+                        if (repeatConfig[1][nextDay] === "1") {
+                            return now.add(i, "days").toISOString();
+                        }
+                    }
+                }
+            }
+
+            // If created in the past and there is a repeat time between then and now, return the first repeat time between then and now
+            if (moment(task.createdAt).startOf("day").diff(now.startOf("day")) < 0) {
+                const createdDay = moment(task.createdAt).startOf("day");
+                for (let i = 0; i < 31; i++) {
+                    const nextDay = (createdDay.date() + i - 1) % 31;
+                    if (repeatConfig[1][nextDay] === "1") {
+                        return createdDay.add(i, "days").toISOString();
+                    }
+                }
+            }
+
+            // If the next repeat time this month is after today but today is the last day of the month, repeat today
+            if (repeatDays.findLastIndex(x => x === "1") > now.date()) {
+                return now.startOf("day").toISOString();
             }
             break;
         default:
