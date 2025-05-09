@@ -204,93 +204,46 @@ Task.dueToday = function (task, today) {
 // TODO: In these functions, transform the task object into an instance of Task.
 Task.calculateScheduledTime = function (task, now) {
     now = moment(now) || moment().startOf("day");
-    const repeatConfig = task.repeats.split("-");
-    const repeats = repeatConfig[0];
 
-    switch (repeats) {
-        case "NEVER":
-            return task.createdAt; // For tasks that never repeat, return the original scheduled time.
-        case "DAILY":
-            if(task.lastCompleted.length === 0) {
-                return now.startOf("day").toISOString();
-            }
+    const checkpointTime = task.lastCompleted.length === 0 ? moment(task.createdAt) : moment(task.lastCompleted[0]);
+    let nextDue = firstDueDayBetween(checkpointTime, now).for(task);
 
-            // If it has been completed today, return tomorrow
-            const lastCompletedDay = moment(task.lastCompleted[0]).startOf("day");
-            if (lastCompletedDay.diff(now.startOf("day")) === 0) {
-                return now.add(1, "days").startOf("day").toISOString();
-            }
-            // If it has been completed in the past, return the day after completion
-            if (lastCompletedDay.diff(now.startOf("day")) < 0) {
-                return lastCompletedDay.add(1, "days").toISOString();
-            }
-
-            return now.startOf("day").toISOString();
-        case "WEEKLY":
-            const repeatsToday = repeatConfig[1].split("").some((x, i) => i === now.weekday() === i && x === "1");
-            // If it has been completed in the past or never and repeats today, return today
-            if ((task.lastCompleted.length === 0 || moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) < 0) && repeatsToday) {
-                return moment().startOf("day");
-            } else if(!repeatsToday || moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) === 0) {
-                // If it does not repeat today or has been completed today find the next day it does repeat
-                const todayOfWeek = now.day();
-                for (let i = 0; i < 7; i++) {
-                    const index = (todayOfWeek + i) % 7;
-                    if (repeatConfig[1][index] === "1") {
-                        return now.add(i, "days").toISOString();
-                    }
-                }
-            }
-
-            break;
-        case "MONTHLY":
-            // If repeats today
-            const repeatDays = repeatConfig[1].split("");
-            const repeatsTodayMonthly = repeatConfig[1].split("").some((x, i) => i === now.date() - 1 && x === "1");
-            if(repeatsTodayMonthly) {
-                // If never completed, return today
-                if (task.lastCompleted.length === 0) {
-                    return now.startOf("day").toISOString();
-                }
-                // If completed in the past and there is a repeat time between then and now, return the first repeat time between then and now
-                if (moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) < 0) {
-                    const lastCompletedDay = moment(task.lastCompleted[0]).startOf("day");
-                    for (let i = 0; i < 31; i++) {
-                        const nextDay = (lastCompletedDay.date() + i - 1) % 31;
-                        if (repeatConfig[1][nextDay] === "1") {
-                            return lastCompletedDay.add(i, "days").toISOString();
-                        }
-                    }
-                }
-                // if completed today, return the next repeat time
-                if (moment(task.lastCompleted[0]).startOf("day").diff(now.startOf("day")) === 0) {
-                    for (let i = 1; i < 31; i++) {
-                        const nextDay = (now.date() + i - 1) % 31;
-                        if (repeatConfig[1][nextDay] === "1") {
-                            return now.add(i, "days").toISOString();
-                        }
-                    }
-                }
-            }
-
-            // If created in the past and there is a repeat time between then and now, return the first repeat time between then and now
-            if (moment(task.createdAt).startOf("day").diff(now.startOf("day")) < 0) {
-                const createdDay = moment(task.createdAt).startOf("day");
-                for (let i = 0; i < 31; i++) {
-                    const nextDay = (createdDay.date() + i - 1) % 31;
-                    if (repeatConfig[1][nextDay] === "1") {
-                        return createdDay.add(i, "days").toISOString();
-                    }
-                }
-            }
-
-            // If the next repeat time this month is after today but today is the last day of the month, repeat today
-            if (repeatDays.findLastIndex(x => x === "1") > now.date()) {
-                return now.startOf("day").toISOString();
-            }
-            break;
-        default:
-            throw "Task repeats must be one of the following: NEVER, DAILY, WEEKLY, MONTHLY but was " + repeats;
+    if (task.repeats.startsWith("MONTHLY")) {
+        // next do is next month but there is a monthly repeat that happens after the end of this month
+        if (task.repeats.split("-")[1].split("").lastIndexOf("1") > now.daysInMonth() && nextDue.month() > now.month()) {
+            nextDue = now.endOf("month").startOf("day");
+        }
     }
-    throw "Unable to calculate scheduled time for task.";
+
+    return nextDue.toISOString();
 };
+
+export function firstDueDayBetween(then, now) {
+    return {
+        for: function(task) {
+            const repeatConfig = task.repeats.split("-");
+            const repeats = repeatConfig[0];
+            if(repeats === "NEVER") {
+                return moment(task.createdAt);
+            } else if (repeats === "DAILY") {
+                return now.startOf("day");
+            } else if (repeats === "WEEKLY") {
+                const initialDayOfWeek = then.day();
+                for (let i = 1; i <= 7; i++) {
+                    const index = (initialDayOfWeek + i) % 7;
+                    if (repeatConfig[1][index] === "1") {
+                        return then.add(i, "days").startOf("day");
+                    }
+                }
+            } else if (repeats === "MONTHLY") {
+                const repeatDays = repeatConfig[1].split("");
+                for (let i = 0; i < 31; i++) {
+                    const nextDay = (then.date() + i - 1) % 31;
+                    if (repeatDays[nextDay] === "1") {
+                        return then.add(i, "days").startOf("day");
+                    }
+                }
+            }
+        }
+    }
+}
