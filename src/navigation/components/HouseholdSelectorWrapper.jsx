@@ -40,8 +40,8 @@ export default function HouseholdSelectorWrapper() {
                         const response = await dataClient.models.Household.list({
                             filter: {
                                 or : userSession.tokens.accessToken.payload['cognito:groups'].map(group => {
-                                    if(group.startsWith("admin-") || group.startsWith("members-")) {
-                                        return {id: {eq: group.substring(group.indexOf("-") + 1)}};
+                                    if(group.startsWith("admin:") || group.startsWith("members:")) {
+                                        return {id: {eq: group.substring(group.indexOf(":") + 1)}};
                                     }
                                 }).filter(_ => _)
                             },
