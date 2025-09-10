@@ -27,7 +27,7 @@ export const router = createBrowserRouter(
             children: [
                 {
                     index: true,
-                    loader: async () => redirect("/tasks")
+                    loader: async () => redirect("/kitchen/pantry") // TODO: Configure default route, not hardcode.
                 },
                 {
                     path: "/tasks",
