@@ -49,6 +49,14 @@ async function PersistPantryLocation(client, state, action) {
     }
 }
 
+async function DeletePantryItem(client, state, action) {
+    const itemId = action.payload;
+    const deleted = await client.models.PantryItem.delete(itemId);
+    if (deleted.errors) {
+        throw new Error(deleted.errors.join(", "));
+    }
+}
+
 const slice = createSlice({
     name: "pantry",
     initialState,
@@ -88,7 +96,7 @@ const slice = createSlice({
             prepare: (payload) => ({
                 payload,
                 meta: {
-                    persister: PersistPantryItem
+                    persister: DeletePantryItem
                 }
             })
         },
