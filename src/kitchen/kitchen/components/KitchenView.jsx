@@ -21,16 +21,16 @@ const KitchenView = () => {
                             Pantry & Fridge
                         </ToggleButton>
                     </NavLink>
-                    <NavLink to="/kitchen/recipes" className="nav-link">
-                        <ToggleButton value="/kitchen/recipes">
-                            Recipes
-                        </ToggleButton>
-                    </NavLink>
-                    <NavLink to="/kitchen/grocery" className="nav-link">
-                        <ToggleButton value="/kitchen/grocery">
-                            Groceries
-                        </ToggleButton>
-                    </NavLink>
+                    {/*<NavLink to="/kitchen/recipes" className="nav-link">*/}
+                    {/*    <ToggleButton value="/kitchen/recipes">*/}
+                    {/*        Recipes*/}
+                    {/*    </ToggleButton>*/}
+                    {/*</NavLink>*/}
+                    {/*<NavLink to="/kitchen/grocery" className="nav-link">*/}
+                    {/*    <ToggleButton value="/kitchen/grocery">*/}
+                    {/*        Groceries & Shopping Lists*/}
+                    {/*    </ToggleButton>*/}
+                    {/*</NavLink>*/}
                 </ToggleButtonGroup>
             </Toolbar>
         );
