@@ -7,10 +7,12 @@ import {store} from "./redux/store";
 import {HeaderProvider} from "./layout/hooks/HeaderContext";
 import {RouterProvider} from "react-router";
 import {router} from "./navigation/configuration/routing";
-import {DataClientContext} from "./graphql/DataClient";
+import ConfigurationService from "./config/ConfigurationService";
 import {CookiesProvider} from "react-cookie";
 
 console.log("Loading state from window");
+
+ConfigurationService.loadConfiguration();
 
 Amplify.configure(outputs);
 
