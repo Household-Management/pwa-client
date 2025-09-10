@@ -18,17 +18,18 @@ export default function BottomNavigator(props) {
     </Paper>
 }
 
+// TODO: Use configuration to determine which routes are shown
 const routes = [
-    {
-        label: "Todos & Chores",
-        icon: <ListIcon/>,
-        path: "/tasks"
-    },
     // {
-    //     label: "Pantry and Recipes",
-    //     icon: <KitchenIcon/>,
-    //     path: "/kitchen"
+    //     label: "Todos & Chores",
+    //     icon: <ListIcon/>,
+    //     path: "/tasks"
     // },
+    {
+        label: "Pantry and Recipes",
+        icon: <KitchenIcon/>,
+        path: "/kitchen"
+    },
     {
         label: "Settings",
         icon: <SettingsIcon/>,
