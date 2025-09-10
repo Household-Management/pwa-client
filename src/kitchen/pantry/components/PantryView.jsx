@@ -23,7 +23,7 @@ import Grid from "@mui/material/Grid2";
 import Delete from "@mui/icons-material/Delete"
 import Edit from "@mui/icons-material/Edit"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { AddPantryItem, UpdatePantryItem } from "../state/PantryStateConfiguration";
+import { AddPantryItem, UpdatePantryItem, RemovePantryItem } from "../state/PantryStateConfiguration";
 
 import moment from "moment";
 // TODO: Notifications of expiring items.
@@ -68,6 +68,17 @@ const PantryView = props => {
         dispatch(UpdatePantryItem(editingItem));
         setEditingItem(null);
     }
+
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
+    const handleDelete = () => {
+        if (itemToDelete) {
+            dispatch(RemovePantryItem(itemToDelete.id));
+            setItemToDelete(null);
+            setIsDeleteDialogOpen(false);
+        }
+    };
 
     return (
         <div className="pantry-container" style={{height: "100%"}}>
@@ -167,7 +178,10 @@ const PantryView = props => {
                                     <TableCell>
                                         {!isEditing &&
                                             (<>
-                                                <IconButton onClick={() => dispatch(RemovePantryItem(item.id))}>
+                                                <IconButton onClick={() => {
+                                                    setItemToDelete(item);
+                                                    setIsDeleteDialogOpen(true);
+                                                }}>
                                                     <Delete/>
                                                 </IconButton>
                                             </>
@@ -198,6 +212,18 @@ const PantryView = props => {
                 <DialogActions>
                     <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
                     <Button onClick={handleAddLocation}>Add</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete the item "{itemToDelete?.name}"?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleDelete} color="error">Delete</Button>
                 </DialogActions>
             </Dialog>
             <Box style={{padding: "2rem"}}>
