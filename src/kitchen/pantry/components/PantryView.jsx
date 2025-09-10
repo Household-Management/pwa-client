@@ -288,7 +288,7 @@ const PantryView = props => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography>Edit Locations</Typography>
+                    <Typography>Locations</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <TableContainer component={Paper}>
