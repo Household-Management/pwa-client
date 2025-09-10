@@ -8,9 +8,6 @@ import PantryStateConfiguration from "../kitchen/pantry/state/PantryStateConfigu
 import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesStateConfiguration";
 import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
 
-import {AddGroceryList } from "../kitchen/groceries/state/GroceriesStateConfiguration";
-import {CreateList, Persisters as TaskPersisters} from "../tasks/state/TaskStateConfiguration"
-
 import {generateClient} from "aws-amplify/data";
 
 const client = generateClient();
@@ -19,10 +16,9 @@ const client = generateClient();
 // TODO: Implement remote persistence.
 // TODO: Implement user tutorials.
 // TODO: Middleware for intercepting dangerous actions.
-const combinedReducer = combineReducers({
+export const combinedReducer = combineReducers({
     household: combineSlices({
         id: (state, action) => {
-
             if(action.type === "LOADED_STATE") {
                 return action.payload.id;
             }
@@ -107,12 +103,7 @@ function* persistOnChange() {
 }
 
 export const store = configureStore({
-    reducer: (state, action) => {
-        switch (action.type) {
-            default:
-                return combinedReducer(state, action);
-        }
-    },
+    reducer: combinedReducer,
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware().concat([saga])
     }
