@@ -102,6 +102,7 @@ export default function HouseholdSelectorWrapper() {
     };
 
     async function selectHousehold(household) {
+        // TODO: If required values are missing, create them in the backend.
         const selected = await dataClient.models.Household.get(household,
             {
                 selectionSet: ["id",
@@ -111,6 +112,8 @@ export default function HouseholdSelectorWrapper() {
                     "householdTasks.*",
                     "householdTasks.taskLists.*",
                     "kitchen.*",
+                    "kitchen.pantry.*",
+                    "kitchen.pantry.items.*",
                     "recipes.*",
                     "householdTasks.taskLists.taskItems.*"
                 ],
@@ -134,7 +137,7 @@ export default function HouseholdSelectorWrapper() {
                 type: "LOADED_STATE",
                 payload: await selected.data
             });
-            navigate("/tasks");
+            navigate("/kitchen"); // TODO: Navigate to default route.
         }
     }
 
