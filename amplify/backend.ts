@@ -64,7 +64,7 @@ const restAPI = new RestApi(apiStack, 'MyApi', {
         stageName: 'staging',
     },
     defaultCorsPreflightOptions: {
-        allowOrigins: Cors.ALL_ORIGINS, // Restrict this to domains you trust
+        allowOrigins: [process.env.HOSTED_DOMAIN as string], // Restrict this to domains you trust
         allowMethods: Cors.ALL_METHODS, // Specify only the methods you need to allow
         allowHeaders:["*"], // Specify only the headers you need to allow
     },
@@ -113,3 +113,5 @@ backend.addOutput({
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(restApiAccessPolicy);
 
 cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage());
+
+backend.
