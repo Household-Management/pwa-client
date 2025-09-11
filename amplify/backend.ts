@@ -14,7 +14,14 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import * as iam from "aws-cdk-lib/aws-iam";
 import { Stack } from 'aws-cdk-lib';
+import { AmplifyClient, ListDomainAssociationsCommand } from "@aws-sdk/client-amplify";
 
+async function getAmplifyDomain(appId: string, region: string): Promise<string[]> {
+    const amplify = new AmplifyClient({ region });
+    const command = new ListDomainAssociationsCommand({ appId });
+    const response = await amplify.send(command);
+    return response.domainAssociations?.map(domain => domain.domainName as string) || [];
+}
 
 export type BackendType = {
     auth: typeof auth,
@@ -54,6 +61,12 @@ if (fetchConfigurationFunction.configure) {
     fetchConfigurationFunction.configure(backend);
 }
 
+const appId = process.env.AMPLIFY_APP_ID as string; // Set this in your environment variables
+const region = process.env.AWS_REGION as string; // Set this in your environment variables
+
+const domains = await getAmplifyDomain(appId, region);
+
+
 const apiStack = backend.createStack("APIStack");
 //TODO: Support using GET with path parameters
 const restAPI = new RestApi(apiStack, 'MyApi', {
@@ -64,7 +77,7 @@ const restAPI = new RestApi(apiStack, 'MyApi', {
         stageName: 'staging',
     },
     defaultCorsPreflightOptions: {
-        allowOrigins: [process.env.HOSTED_DOMAIN as string], // Restrict this to domains you trust
+        allowOrigins: domains, // Restrict this to domains you trust
         allowMethods: Cors.ALL_METHODS, // Specify only the methods you need to allow
         allowHeaders:["*"], // Specify only the headers you need to allow
     },
@@ -113,5 +126,3 @@ backend.addOutput({
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(restApiAccessPolicy);
 
 cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage());
-
-backend.
