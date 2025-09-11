@@ -2,9 +2,9 @@ import {APIGatewayProxyHandler, APIGatewayProxyEvent} from "aws-lambda";
 
 
 export const handler: APIGatewayProxyHandler = async(event: APIGatewayProxyEvent) => {
-    const { applicationId, environmentId, configurationProfileId } = JSON.parse(event.body as string);
+    const { application, environment, configuration } = event.pathParameters || {};
 
-    const config = await fetch(`http://localhost:2772/applications/${applicationId}/environments/${environmentId}/configurations/${configurationProfileId}`, {
+    const config = await fetch(`http://localhost:2772/applications/${application}/environments/${environment}/configurations/${configuration}`, {
         method: 'GET',
         headers : {
             "Content-Type": "application/json",

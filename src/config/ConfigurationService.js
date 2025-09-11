@@ -1,8 +1,4 @@
-import {
-    AppConfigDataClient,
-    GetLatestConfigurationCommand,
-    StartConfigurationSessionCommand
-} from "@aws-sdk/client-appconfigdata";
+import {getCurrentUser, fetchAuthSession} from "aws-amplify/auth";
 
 export default class ConfigurationService {
     static config = Promise.withResolvers();
@@ -12,9 +8,15 @@ export default class ConfigurationService {
             throw new Error("No configuration source defined");
         }
 
+        const auth = await fetchAuthSession()
         console.log("Loading configuration...");
         try {
-            const response = await fetch(import.meta.env.VITE_APP_CONFIG_URL);
+            const response = await fetch(import.meta.env.VITE_APP_CONFIG_URL, {
+                // credentials: "include",
+                headers: {
+                    "authorization": `Bearer ${auth.tokens.idToken}`
+                }
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

@@ -66,7 +66,7 @@ const restAPI = new RestApi(apiStack, 'MyApi', {
     defaultCorsPreflightOptions: {
         allowOrigins: Cors.ALL_ORIGINS, // Restrict this to domains you trust
         allowMethods: Cors.ALL_METHODS, // Specify only the methods you need to allow
-        allowHeaders: Cors.DEFAULT_HEADERS, // Specify only the headers you need to allow
+        allowHeaders:["*"], // Specify only the headers you need to allow
     },
 });
 
@@ -75,6 +75,9 @@ const configPath = restAPI.root.addResource("config", {
         authorizationType: AuthorizationType.COGNITO
     }
 });
+const applicationPath = configPath.addResource("{application}");
+const environmentPath = applicationPath.addResource("{environment}");
+const configurationPath = environmentPath.addResource("{configurationProfile}");
 
 const cognitoAuth = new CognitoUserPoolsAuthorizer(apiStack, 'CognitoAuthorizer', {
     cognitoUserPools: [backend.auth.resources.userPool]
@@ -82,7 +85,7 @@ const cognitoAuth = new CognitoUserPoolsAuthorizer(apiStack, 'CognitoAuthorizer'
 
 const lambdaIntegration = new LambdaIntegration(backend.fetchConfigurationFunction.resources.lambda);
 
-configPath.addMethod("POST", lambdaIntegration, {
+configurationPath.addMethod("GET", lambdaIntegration, {
     authorizer: cognitoAuth
 });
 
