@@ -16,11 +16,11 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { Stack } from 'aws-cdk-lib';
 import { AmplifyClient, ListDomainAssociationsCommand } from "@aws-sdk/client-amplify";
 
-async function getAmplifyDomain(appId: string, region: string): Promise<string[]> {
+async function getAmplifyDomain(appId: string, region: string, branch: string): Promise<string[]> {
     const amplify = new AmplifyClient({ region });
     const command = new ListDomainAssociationsCommand({ appId });
     const response = await amplify.send(command);
-    return response.domainAssociations?.map(domain => domain.domainName as string) || [];
+    return response.domainAssociations?.map(domain => `https:\\\\${branch}.${domain.domainName}`) || [];
 }
 
 export type BackendType = {
@@ -63,13 +63,14 @@ if (fetchConfigurationFunction.configure) {
 
 const appId = process.env.VITE_AMPLIFY_APP_ID as string; // Set this in your environment variables
 const region = process.env.VITE_AWS_REGION as string; // Set this in your environment variables
+const branch = process.env.VITE_AWS_BRANCH as string || "main"; // Set this in your environment variables
 if(!appId) {
     throw new Error("Missing required app id environment variable VITE_AMPLIFY_APP_ID");
 }
 if(!region) {
     throw new Error("Missing required region environment variable VITE_AWS_REGION");
 }
-const domains = await getAmplifyDomain(appId, region);
+const domains = await getAmplifyDomain(appId, region, branch);
 
 
 const apiStack = backend.createStack("APIStack");
