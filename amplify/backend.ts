@@ -61,9 +61,14 @@ if (fetchConfigurationFunction.configure) {
     fetchConfigurationFunction.configure(backend);
 }
 
-const appId = process.env.AMPLIFY_APP_ID as string; // Set this in your environment variables
-const region = process.env.AWS_REGION as string; // Set this in your environment variables
-
+const appId = process.env.VITE_AMPLIFY_APP_ID as string; // Set this in your environment variables
+const region = process.env.VITE_AWS_REGION as string; // Set this in your environment variables
+if(!appId) {
+    throw new Error("Missing required app id environment variable VITE_AMPLIFY_APP_ID");
+}
+if(!region) {
+    throw new Error("Missing required region environment variable VITE_AWS_REGION");
+}
 const domains = await getAmplifyDomain(appId, region);
 
 
