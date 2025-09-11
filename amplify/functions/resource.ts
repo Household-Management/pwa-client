@@ -1,13 +1,20 @@
-import {defineFunction} from "@aws-amplify/backend";
+import {defineFunction, Backend} from "@aws-amplify/backend";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import {ConstructFactory} from "@aws-amplify/plugin-types";
 
-export const inviteFunction = defineFunction({
+import { BackendType} from "../backend";
+
+export type ConfigurableFunction = ConstructFactory<any> & { configure?: (backend: Backend<BackendType>) => void };
+
+export const inviteFunction: ConfigurableFunction = defineFunction({
     name: "InviteToHousehold",
     entry: "./generate-invite-code/handler.js",
     resourceGroupName: "data"
 });
-//@ts-ignore
-inviteFunction.configure = backend => {
+// FIXME: Extend types to avoid ts-ignore
+
+inviteFunction.configure = (backend: Backend<any>) => {
     backend.inviteFunction.resources.cfnResources.cfnFunction.environment = {
         variables: {
             HOUSEHOLD_TABLE_NAME: backend.data.resources.tables["Household"].tableName,
@@ -30,13 +37,12 @@ inviteFunction.configure = backend => {
     }));
 }
 
-export const joinFunction = defineFunction({
+export const joinFunction:ConfigurableFunction = defineFunction({
     name: "JoinHousehold",
     entry: "./join-with-invite-code/handler.js",
     resourceGroupName: "data"
 });
-//@ts-ignore
-joinFunction.configure = backend => {
+joinFunction.configure = (backend: Backend<any>) => {
     backend.joinFunction.resources.cfnResources.cfnFunction.environment = {
         variables: {
             HOUSEHOLD_TABLE_NAME: backend.data.resources.tables["Household"].tableName,
@@ -55,13 +61,13 @@ joinFunction.configure = backend => {
     }));
 }
 
-export const createHouseholdFunction = defineFunction({
+export const createHouseholdFunction: ConfigurableFunction = defineFunction({
     name: "CreateHousehold",
     entry: "./create-household/handler.ts",
     resourceGroupName: "data"
 });
-//@ts-ignore
-createHouseholdFunction.configure = backend => {
+
+createHouseholdFunction.configure = (backend: Backend<BackendType>) => {
     backend.createHouseholdFunction.resources.cfnResources.cfnFunction.environment = {
         variables: {
             HOUSEHOLD_TABLE_NAME: backend.data.resources.tables["Household"].tableName,
@@ -92,3 +98,24 @@ createHouseholdFunction.configure = backend => {
         ]
     }));
 }
+
+export const fetchConfigurationFunction: ConfigurableFunction = defineFunction({
+    name: "FetchConfiguration",
+    entry: "./fetch-configuration/handler.ts",
+    resourceGroupName: "data"
+});
+
+fetchConfigurationFunction.configure = (backend: Backend<BackendType>) => {
+    const lambdaFunction: lambda.Function = backend.fetchConfigurationFunction.resources.lambda;
+    lambdaFunction.addToRolePolicy(new iam.PolicyStatement(
+        {
+            actions: [
+                "appconfig:GetLatestConfiguration",
+                "appconfig:StartConfigurationSession"
+            ],
+            resources: [`arn:aws:appconfig:${backend.stack.region}:${backend.stack.account}:application/2j0vk1v/environment/*/configuration/*`]
+        }
+    ));
+    const extensionLayer = lambda.LayerVersion.fromLayerVersionArn(lambdaFunction, 'AppConfigExtensionLayer', 'arn:aws:lambda:us-east-1:027255383542:layer:AWS-AppConfig-Extension:207');
+    lambdaFunction.addLayers(extensionLayer);
+};
