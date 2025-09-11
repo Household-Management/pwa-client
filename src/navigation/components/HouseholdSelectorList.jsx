@@ -39,7 +39,7 @@ export default function HouseholdSelectorList({
                             {errorMessage}
                         </Typography>}
                         <Typography sx={{textAlign: "center"}}>
-                            Select a household
+                            {households?.length ? "Select a household" : "You are not a member of any households yet"}
                         </Typography>
                         <Stack spacing={0} direction="column">
                             <List>
