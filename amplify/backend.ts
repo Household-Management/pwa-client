@@ -18,12 +18,9 @@ import { AmplifyClient, ListDomainAssociationsCommand } from "@aws-sdk/client-am
 import * as dotenv from 'dotenv';
 
 // TODO: Generate local configuration files for sandboxes.
-
-if(process.env.NODE_ENV !== 'production') {
-    dotenv.config({
-        path: "./.env.dev"
-    });
-}
+dotenv.config({
+    path: [".env.local", ".env"]
+});
 
 async function getAmplifyDomain(appId: string, region: string, branch: string): Promise<string[]> {
     const amplify = new AmplifyClient({ region });

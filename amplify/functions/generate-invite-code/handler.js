@@ -17,28 +17,48 @@ export const handler = async (event, context) => {
         Key: {id: householdId}
     }).promise();
 
-    // TODO: See if this can be moved into backend configuration, instead of checked programmatically
     // Check if the user is an admin
     if (household.Item.adminGroup.filter(t => authToken['cognito:groups'].indexOf(t) !== -1).length > 0) {
-        console.log("Generating invite code");
-        // Generate invite code
-        const inviteCode = generateInviteCode();
+        console.log("Checking unused invite codes");
 
-        // Save invite code to DynamoDB
-        await dynamoDb.put({
+        // Fetch existing invite codes for the household
+        // TODO: Add an index on householdId to make this query efficient
+        const existingCodes = await dynamoDb.query({
             TableName: process.env.HOUSEHOLD_INVITE_TABLE_NAME,
-            Item: {
-                id: AWS.util.uuid.v4(),
-                householdId,
-                inviteCode,
-                expiration: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+            IndexName: "householdInvitesByHouseholdId", // TODO: Find a way to avoid hardcoding
+            KeyConditionExpression: "householdId = :householdId",
+            ExpressionAttributeValues: {
+                ":householdId": householdId
             }
         }).promise();
 
-        // Return invite code
-        return inviteCode;
+        const unusedCodes = existingCodes.Items.filter(code => new Date(code.expiration) > new Date());
+
+        if (unusedCodes.length < 3) {
+            console.log("Generating new invite code");
+            const inviteCode = generateInviteCode();
+
+            // Save new invite code to DynamoDB
+            await dynamoDb.put({
+                TableName: process.env.HOUSEHOLD_INVITE_TABLE_NAME,
+                Item: {
+                    id: AWS.util.uuid.v4(),
+                    householdId,
+                    inviteCode,
+                    expiration: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+                }
+            }).promise();
+
+            unusedCodes.push({
+                inviteCode,
+                expiration: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+            });
+        }
+
+        // Return all unused invite codes
+        return unusedCodes.map(_ => _.inviteCode);
     } else {
-        throw new Error(`User does not have authorization to generate invites.`)
+        throw new Error(`User does not have authorization to generate invites.`);
     }
 };
 

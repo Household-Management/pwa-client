@@ -28,8 +28,10 @@ inviteFunction.configure = (backend: Backend<any>) => {
     }));
 
     backend.inviteFunction.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-        actions: ["dynamodb:GetItem", "dynamodb:PutItem"],
-        resources: [backend.data.resources.tables["HouseholdInvite"].tableArn]
+        actions: ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query"],
+        resources: [
+            backend.data.resources.tables["HouseholdInvite"].tableArn,
+            `${backend.data.resources.tables["HouseholdInvite"].tableArn}/index/householdInvitesByHouseholdId`]
     }));
 }
 
@@ -48,12 +50,21 @@ joinFunction.configure = (backend: Backend<any>) => {
 
     backend.joinFunction.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
         actions: ["dynamodb:GetItem", "dynamodb:UpdateItem"],
-        resources: [backend.data.resources.tables["Household"].tableArn]
+        resources: [
+            backend.data.resources.tables["Household"].tableArn,
+        ]
     }));
 
     backend.joinFunction.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
         actions: ["dynamodb:GetItem", "dynamodb:DeleteItem"],
         resources: [backend.data.resources.tables["HouseholdInvite"].tableArn]
+    }));
+
+    backend.joinFunction.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+        actions: ["cognito-idp:AdminAddUserToGroup"],
+        resources: [
+            backend.auth.resources.userPool.userPoolArn
+        ]
     }));
 }
 

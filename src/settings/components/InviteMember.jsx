@@ -14,7 +14,7 @@ const InviteMember = ({householdId}) => {
                     if (response.errors) {
                         throw new Error(response.errors[0].message);
                     }
-                    setInviteCode(response.data);
+                    setInviteCode(JSON.parse(response.data));
                 } catch (err) {
                     setError(err.message);
                 }
@@ -28,8 +28,12 @@ const InviteMember = ({householdId}) => {
         <div>
             {error && <p>Error: {error}</p>}
             {!error ? (inviteCode ? <Fragment>
-                <p>Share this code with the person you wish to invite</p>
-                <p>{inviteCode}</p>
+                <p>Share one of these codes with the person you wish to invite</p>
+                <ul>{inviteCode.map(c => {
+                    return <li>
+                        {c}
+                    </li>
+                })}</ul>
             </Fragment> : (
                 <p>Generating invite code...</p>
             )) : null}

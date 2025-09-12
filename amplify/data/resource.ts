@@ -160,6 +160,8 @@ const schema = a.schema({
         householdId: a.id().required(),
         household: a.belongsTo("Household", "householdId"),
         expiration: a.datetime(),
+    }).secondaryIndexes(index => {
+        return [index("householdId")]
     }).identifier(["inviteCode"]),
     ...tasksModels,
     ...kitchenModels,
