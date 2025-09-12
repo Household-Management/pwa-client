@@ -29,7 +29,7 @@ async function getAmplifyDomain(appId: string, region: string, branch: string): 
     const response = await amplify.send(command);
     return response.domainAssociations?.map(domain => {
         // @ts-ignore
-        return `https:\\\\${domain.subDomains[0].subDomainSetting.prefix}.${domain.domainName}`;
+        return `https://${domain.subDomains[0].subDomainSetting.prefix}.${domain.domainName}`;
     }) || [];
 }
 
