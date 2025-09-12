@@ -58,8 +58,8 @@ export default class ConfigurationService {
 
     static async getSimpleFlag(key) {
         const config = await this.config.promise;
-        const value = config[key];
-        return typeof value === 'boolean' ? value : false;
+        const value = config[key]?.enabled;
+        return !!value;
     }
 
     static async getVariantFlag(key) {
