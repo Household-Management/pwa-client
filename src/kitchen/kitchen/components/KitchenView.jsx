@@ -11,13 +11,13 @@ const KitchenView = () => {
     useEffect(() => {
         async function fetchConfig() {
             const config = [];
-            config[0] = await ConfigurationService.getSimpleFlag("pantry_enabled");
-            config[1] = await ConfigurationService.getSimpleFlag("recipes_enabled");
-            config[2] = await ConfigurationService.getSimpleFlag("grocery_enabled");
+            config[0] = await ConfigurationService.getSimpleFlag("pantry-enabled");
+            config[1] = await ConfigurationService.getSimpleFlag("recipes-enabled");
+            config[2] = await ConfigurationService.getSimpleFlag("grocery-enabled");
             setEnabledLinks(config);
         }
         fetchConfig();
-    });
+    }, [selectedView]);
     // Set the dynamic header content
     useEffect(() => {
         setHeaderContent(
