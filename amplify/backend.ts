@@ -17,6 +17,8 @@ import { Stack } from 'aws-cdk-lib';
 import { AmplifyClient, ListDomainAssociationsCommand } from "@aws-sdk/client-amplify";
 import * as dotenv from 'dotenv';
 
+// TODO: Generate local configuration files for sandboxes.
+
 if(process.env.NODE_ENV !== 'production') {
     dotenv.config({
         path: "./.env.dev"

@@ -17,6 +17,7 @@ export const handler = async (event, context) => {
         Key: {id: householdId}
     }).promise();
 
+    // TODO: See if this can be moved into backend configuration, instead of checked programmatically
     // Check if the user is an admin
     if (household.Item.adminGroup.filter(t => authToken['cognito:groups'].indexOf(t) !== -1).length > 0) {
         console.log("Generating invite code");
