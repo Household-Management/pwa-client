@@ -20,7 +20,8 @@ export default class ConfigurationService {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            this.config.resolve(await response.json());
+            const responseJson = await response.json();
+            this.config.resolve(responseJson);
             console.log('Configuration loaded from remote source.');
             return;
         } catch (error) {
