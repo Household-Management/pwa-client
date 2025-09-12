@@ -27,12 +27,12 @@ const InviteMember = ({householdId}) => {
     return (
         <div>
             {error && <p>Error: {error}</p>}
-            {inviteCode ? <Fragment>
+            {!error ? (inviteCode ? <Fragment>
                 <p>Share this code with the person you wish to invite</p>
                 <p>{inviteCode}</p>
             </Fragment> : (
                 <p>Generating invite code...</p>
-            )}
+            )) : null}
         </div>
     );
 };
