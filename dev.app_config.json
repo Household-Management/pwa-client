@@ -1,3 +1,5 @@
 {
-  "pantry_enabled": true
+  "pantry-enabled": {
+    "enabled": true
+  }
 }
