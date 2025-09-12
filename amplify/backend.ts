@@ -73,7 +73,7 @@ if (fetchConfigurationFunction.configure) {
 
 const appId = process.env.VITE_AMPLIFY_APP_ID as string; // Set this in your environment variables
 const region = process.env.VITE_AWS_REGION as string; // Set this in your environment variables
-const branch = process.env.VITE_AWS_BRANCH as string; // Set this in your environment variables
+const branch = process.env.AWS_BRANCH as string; // Set this in your environment variables
 if(!appId) {
     throw new Error("Missing required app id environment variable VITE_AMPLIFY_APP_ID");
 }
