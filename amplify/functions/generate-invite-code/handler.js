@@ -9,7 +9,7 @@ function generateInviteCode() {
 
 export const handler = async (event, context) => {
     const {householdId} = event.arguments;
-    const userId = decodeAuthHeader(event.request.headers?.authorization);
+    const authToken = decodeAuthHeader(event.request.headers?.authorization);
 
     console.log(`Getting household ${householdId} to generate code for...`);
     const household = await dynamoDb.get({
@@ -18,7 +18,7 @@ export const handler = async (event, context) => {
     }).promise();
 
     // Check if the user is an admin
-    if (household.Item.adminGroup.includes(userId)) {
+    if (household.Item.adminGroup.filter(t => authToken['cognito:groups'].indexOf(t) !== -1).length > 0) {
         console.log("Generating invite code");
         // Generate invite code
         const inviteCode = generateInviteCode();
@@ -45,8 +45,6 @@ function decodeAuthHeader(header) {
     console.log(header);
     const decoded = JWT.decode(header);
     if (decoded.sub) {
-        return decoded.sub;
-    } else {
-        throw "No user ID found in token";
+        return decoded;
     }
 }
