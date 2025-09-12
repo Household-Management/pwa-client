@@ -15,14 +15,21 @@ import {
 import * as iam from "aws-cdk-lib/aws-iam";
 import { Stack } from 'aws-cdk-lib';
 import { AmplifyClient, ListDomainAssociationsCommand } from "@aws-sdk/client-amplify";
+import * as dotenv from 'dotenv';
+
+if(process.env.NODE_ENV !== 'production') {
+    dotenv.config({
+        path: "./.env.dev"
+    });
+}
 
 async function getAmplifyDomain(appId: string, region: string, branch: string): Promise<string[]> {
     const amplify = new AmplifyClient({ region });
     const command = new ListDomainAssociationsCommand({ appId });
     const response = await amplify.send(command);
     return response.domainAssociations?.map(domain => {
-        console.log(`Using domain https:\\\\${branch}.${domain.domainName}`);
-        return `https:\\\\${branch}.${domain.domainName}`
+        // @ts-ignore
+        return `https:\\\\${domain.subDomains[0].subDomainSetting.prefix}.${domain.domainName}`;
     }) || [];
 }
 
