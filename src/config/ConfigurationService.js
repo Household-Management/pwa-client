@@ -28,37 +28,15 @@ export default class ConfigurationService {
             console.error('Failed to load configuration from local file:', error);
         }
 
-        // try {
-        //     console.log("Loading configuration from AWS AppConfig");
-        //     const appConfig = new AppConfigDataClient({region: 'us-east-1'}); // TODO: Externalize region
-        //     const params = {
-        //         ApplicationIdentifier: import.meta.env.VITE_APP_CONFIG_APPLICATION_ID,
-        //         EnvironmentIdentifier: import.meta.env.VITE_APP_CONFIG_ENVIRONMENT_ID,
-        //         ConfigurationProfileIdentifier: import.meta.env.VITE_APP_CONFIG_PROFILE_ID
-        //     };
-        //
-        //     const sessionStart = new StartConfigurationSessionCommand(params);
-        //
-        //     await appConfig.send(sessionStart);
-        //
-        //     const latestConfiguration = new GetLatestConfigurationCommand(params);
-        //
-        //     const configResponse = await appConfig.send(latestConfiguration);
-        //
-        //     if (configResponse.Content) {
-        //         this.config = JSON.parse(configResponse.Content.toString());
-        //         console.log('Configuration loaded from AWS AppConfig');
-        //         return;
-        //     }
-        // } catch (error) {
-        //     console.error('Failed to load configuration from AWS AppConfig:', error);
-        // }
-
         throw new Error('Unable to load configuration from either local file or AWS AppConfig');
     }
 
     static async getSimpleFlag(key) {
+        if(!this.config) {
+            throw new Error("No configuration value!")
+        }
         const config = await this.config.promise;
+        console.log(config);
         const value = config[key]?.enabled;
         return !!value;
     }
