@@ -37,10 +37,7 @@ export const handler = async (event, context) => {
         // Return invite code
         return inviteCode;
     } else {
-        return {
-            statusCode: 403,
-            body: JSON.stringify({message: `User does not have authorization to generate invites.`})
-        };
+        throw new Error(`User does not have authorization to generate invites.`)
     }
 };
 
