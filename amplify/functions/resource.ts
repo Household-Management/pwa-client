@@ -45,6 +45,7 @@ joinFunction.configure = (backend: Backend<any>) => {
         variables: {
             HOUSEHOLD_TABLE_NAME: backend.data.resources.tables["Household"].tableName,
             HOUSEHOLD_INVITE_TABLE_NAME: backend.data.resources.tables["HouseholdInvite"].tableName,
+            COGNITO_USER_POOL_ID: backend.auth.resources.userPool.userPoolId
         }
     }
 
@@ -56,7 +57,7 @@ joinFunction.configure = (backend: Backend<any>) => {
     }));
 
     backend.joinFunction.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-        actions: ["dynamodb:GetItem", "dynamodb:DeleteItem"],
+        actions: ["dynamodb:GetItem", "dynamodb:DeleteItem", "dynamodb:Query"],
         resources: [backend.data.resources.tables["HouseholdInvite"].tableArn]
     }));
 

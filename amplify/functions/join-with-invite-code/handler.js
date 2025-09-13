@@ -2,10 +2,7 @@ import AWS from "aws-sdk";
 import JWT from 'jsonwebtoken';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-
-function generateInviteCode() {
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
-}
+const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider();
 
 export const handler = async (event, context) => {
     const { inviteCode, joinerId } = event.arguments;
@@ -14,47 +11,53 @@ export const handler = async (event, context) => {
         throw "Missing inviteCode argument";
     }
 
+    if(typeof inviteCode !== "string") {
+        throw "inviteCode must be a string";
+    }
+
     if (!joinerId) {
         throw "Missing joinerId argument";
     }
 
     const userId = decodeAuthHeader(event.request.headers?.authorization);
 
-    if (joinerId != userId) {
+    if (joinerId !== userId) {
         throw "User ID argument does not match authenticated user";
     }
 
     console.log("Fetching invitation...");
 
-    const invite = await dynamoDb.get({
+    const invite = await dynamoDb.query({
         TableName: process.env.HOUSEHOLD_INVITE_TABLE_NAME,
-        Key: {
-            inviteCode
-             }
+        KeyConditionExpression: "inviteCode = :inviteCode",
+        ExpressionAttributeValues: {
+            ":inviteCode": inviteCode
+        }
     }).promise();
 
     console.log(invite);
 
-    if(!invite.Item) {
+    if (invite.Count === 0) {
         throw "Invite not found";
     }
 
     console.log("Fetching household associated with invite...");
     const household = await dynamoDb.get({
         TableName: process.env.HOUSEHOLD_TABLE_NAME,
-        Key: {id: invite.Item.householdId}
+        Key: { id: invite.Items[0].householdId }
     }).promise();
 
-    household.Item.memberGroup.push(userId);
+    if (!household.Item) {
+        throw "Household not found";
+    }
 
-    console.log("Updating household with new member...");
-    await dynamoDb.update({
-        TableName: process.env.HOUSEHOLD_TABLE_NAME,
-        Key: {id: household.Item.id},
-        UpdateExpression: "SET memberGroup = :memberGroup",
-        ExpressionAttributeValues: {
-            ":memberGroup": household.Item.memberGroup
-        }
+    const memberGroup = household.Item.membersGroup;
+
+    console.log("Adding user to Cognito group...");
+    await cognitoIdentityServiceProvider.adminAddUserToGroup({
+        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        Username: userId,
+        GroupName: memberGroup[0]
     }).promise();
 
     console.log("Deleting invite...");
@@ -65,11 +68,10 @@ export const handler = async (event, context) => {
         }
     }).promise();
 
-    return household.Item.id;
+    return `User ${userId} added to group ${memberGroup}`;
 };
 
 function decodeAuthHeader(header) {
-    console.log(header);
     const decoded = JWT.decode(header);
     if (decoded.sub) {
         return decoded.sub;
