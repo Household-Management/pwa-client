@@ -1,7 +1,7 @@
 import TaskDueAlert from "./TaskDueAlert";
 import Task, {RepeatDaily} from "../model/Task";
 import moment from "moment";
-import {fn} from "@storybook/test";
+import {fn} from "storybook/test";
 import {Fragment} from "react";
 import {Notifications} from "@mui/icons-material";
 

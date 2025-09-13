@@ -1,5 +1,5 @@
 import TaskListsBar from "./TaskListsBar";
-import {userEvent, within, fn} from "@storybook/test";
+import {userEvent, within, fn} from "storybook/test";
 import {useState} from "react";
 
 export default {

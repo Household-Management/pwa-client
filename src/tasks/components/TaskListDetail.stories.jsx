@@ -1,9 +1,10 @@
-import {fn, spyOn} from '@storybook/test';
+import {fn, spyOn} from 'storybook/test';
 import TaskListDetail from "./TaskListDetail";
 import Task from "../model/Task";
 import {useState} from "react";
 import {configureStore} from "@reduxjs/toolkit";
 import {Provider} from "react-redux";
+import moment from "moment";
 
 const store = configureStore({
     reducer: (state, action) => {
@@ -57,7 +58,7 @@ export default {
             cb(newTask.id);
         }
         const onTaskSelected = (id, toggled) => {
-            if(toggled) {
+            if (toggled) {
                 setSelectedTask(id);
             } else {
                 setSelectedTask(null);
@@ -99,9 +100,32 @@ export const TaskListDetailStory = {
             id: "1",
             name: "List 1",
             taskItems: [
-                new Task("1", "Task 1", "Description 1"),
-                new Task("2", "Task 2", "Description 2"),
-                new Task("3", "Task 3", "Description 3")
+                {
+                    ...new Task("1", "One Time Task", ""),
+                    repeats: "NEVER"
+                },
+                {
+                    ...new Task("2", "One Time Future Task", ""),
+                    scheduledTime: moment().add(1, "days").toISOString(),
+                    repeats: "NEVER"
+                },
+                {
+                    ...new Task("3", "One Time Past Task", ""),
+                    lastCompleted: [moment().subtract(1, "days").toISOString()],
+                    repeats: "NEVER"
+                },
+                {
+                    ...new Task("2", "Daily Task", "Description 1"),
+                    repeats: "DAILY"
+                },
+                {
+                    ...new Task("3", "Weekly Task", "Description 2"),
+                    repeats: "WEEKLY-0000000"
+                },
+                {
+                    ...new Task("4", "Task 3", "Description 3"),
+                repeats: "MONTHLY-0000000000000000000000000000000"
+                }
             ]
         },
         unremovable: false,

@@ -3,7 +3,7 @@ import {configureStore} from "@reduxjs/toolkit";
 import {Provider} from "react-redux";
 import {reactRouterParameters, withRouter} from "storybook-addon-remix-react-router";
 import {Box, Modal} from "@mui/material";
-import {fn} from "@storybook/test";
+import {fn} from "storybook/test";
 
 const store = configureStore({
     reducer: state => state || {}
@@ -40,7 +40,7 @@ export default {
                                     if(args.errorOnSubmit) {
                                         reject(args.errorOnSubmit);
                                     } else {
-                                        resolve();
+                                        resolve(null);
                                     }
                                 }, args.loadTime);
                             })

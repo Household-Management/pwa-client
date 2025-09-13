@@ -1,4 +1,4 @@
-import {fn, spyOn} from '@storybook/test';
+import {fn, spyOn} from 'storybook/test';
 import TaskDetailAccordion from "./TaskDetailAccordion";
 import {RepeatDaily, RepeatWeekly, RepeatMonthly} from "../model/Task";
 import moment from "moment/moment";

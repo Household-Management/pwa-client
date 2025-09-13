@@ -1,4 +1,4 @@
-import { fn } from "@storybook/test";
+import { fn } from "storybook/test";
 import HouseholdJoinModal from "./HouseholdJoinModal";
 
 const meta = {

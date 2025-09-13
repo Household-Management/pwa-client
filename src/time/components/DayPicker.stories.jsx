@@ -1,4 +1,4 @@
-import {fn} from '@storybook/test';
+import {fn} from 'storybook/test';
 import DayPicker from "./DayPicker";
 import React, {useState} from "react";
 

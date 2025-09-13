@@ -1,5 +1,5 @@
 import HouseholdSelectorList from './HouseholdSelectorList';
-import {fn} from "@storybook/test";
+import {fn} from "storybook/test";
 import {Provider} from "react-redux";
 import {configureStore} from "@reduxjs/toolkit";
 import {CookiesProvider} from "react-cookie";
