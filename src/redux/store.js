@@ -18,6 +18,13 @@ const client = generateClient();
 // TODO: Middleware for intercepting dangerous actions.
 export const combinedReducer = combineReducers({
     household: combineSlices({
+        name: (state, action) => {
+            if(action.type === "LOADED_STATE") {
+                return action.payload.name;
+            }
+
+            return state ? state : null;
+        },
         id: (state, action) => {
             if(action.type === "LOADED_STATE") {
                 return action.payload.id;
