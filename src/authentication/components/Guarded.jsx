@@ -2,13 +2,23 @@ import PropTypes from "prop-types";
 import {useSelector} from "react-redux";
 
 export default function Guarded({requiredRoles, children, deniedComponent, deniedAction}) {
+    const user = useSelector(state => state.user);
+    const household = useSelector(state => state.household);
+
+    return <Guard
+        household={household}
+        user={user}
+        requiredRoles={requiredRoles}
+        deniedComponent={deniedComponent}
+        deniedAction={deniedAction}
+    />
+}
+
+export function Guard({household, user, requiredRoles, children, deniedComponent, deniedAction}) {
     if (deniedAction && deniedComponent) {
         throw new Error("Guarded component cannot have both deniedComponent and deniedAction props");
     }
-    const household = useSelector(state => state.household);
-    const user = useSelector(state => {
-        return state.user
-    });
+
     const allowed = user.loginId && hasRoles(user, household, requiredRoles);
     if (allowed) {
         return children;
@@ -23,6 +33,7 @@ export default function Guarded({requiredRoles, children, deniedComponent, denie
     }
 
 }
+
 
 function hasRoles(user, household, roles) {
     return roles.length === 0 || roles.some(role => {

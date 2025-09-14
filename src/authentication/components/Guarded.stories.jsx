@@ -1,20 +1,14 @@
-import Guarded from './Guarded';
-import {Provider} from "react-redux";
-import {configureStore} from "@reduxjs/toolkit";
-
-const store = configureStore({
-    reducer: (state, action) => state || {
-        user: {}
-    }
-});
+import {Guard} from './Guarded';
 
 const meta = {
     component: ({requiredRoles, userRoles, forbiddenRoles, showDenial}) =>
-        (<Guarded requiredRoles={requiredRoles}
-                  user={{roles: userRoles}}
-                  deniedComponent={showDenial ? <div>Access Denied</div> : null}>
+        (<Guard
+            household={{id: "household-1"}}
+            user={{loginId: "1", roles: userRoles}}
+            requiredRoles={requiredRoles}
+            deniedComponent={showDenial ? <div>Access Denied</div> : null}>
             Access Granted
-        </Guarded>)
+        </Guard>)
 }
 
 export default meta;
@@ -25,7 +19,7 @@ export const GuardedComponent = {
             "admin"
         ],
         userRoles: [
-            "admin"
+            "admin:household-1"
         ],
         showDenial: false
     }
