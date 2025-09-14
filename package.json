@@ -85,6 +85,7 @@
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@rollup/plugin-json": "^6.1.0",
+    "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-links": "^9.1.5",
     "@storybook/addon-onboarding": "^9.1.5",
     "@storybook/addon-themes": "^9.1.5",
@@ -111,8 +112,7 @@
     "vite-plugin-node-polyfills": "^0.23.0",
     "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "webpack": "^5.91.0",
-    "@storybook/addon-docs": "^9.1.5"
+    "webpack": "^5.91.0"
   },
   "msw": {
     "workerDirectory": [
