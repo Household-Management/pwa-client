@@ -8,7 +8,6 @@ const config: StorybookConfig = {
   "addons": [
     "@storybook/addon-onboarding",
     "@chromatic-com/storybook",
-    "storybook-addon-remix-react-router",
     "@storybook/addon-docs"
   ],
   "framework": {
