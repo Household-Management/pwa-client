@@ -1,24 +1,25 @@
 import {useState} from "react";
 import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
-import {AuthContext, AuthContextType, AuthStep, SignUpAuthStep} from "./AppAuthenticator.tsx";
+import AuthContext, {AuthSignUpContextType} from "./AuthenticationContext.ts";
+import {AuthStep} from "./AppAuthenticator.tsx";
 import SignUp from "./SignUp.tsx";
 import {fn, Mock} from "storybook/test";
-import {ConfirmSignUpOutput} from "@aws-amplify/auth";
+import {ConfirmSignUpOutput, SignUpOutput} from "@aws-amplify/auth";
 
 export default {
-    title: "Authentication/SignUp",
+    title: "Authentication/Elements/SignUp",
     component: <SignUp/>
 };
 
 const SignUpTemplate = (args: any) => {
     const [email, setEmail] = useState("");
     const [authStep, setAuthStep] = useState<AuthStep>("BEGIN_SIGN_UP");
-    const auth: AuthContextType = {
+    const auth: AuthSignUpContextType = {
         email,
         setEmail,
         authStep,
         setAuthStep,
-        startSignup: async (email, password, confirmPassword): Promise<SignUpAuthStep> => {
+        startSignup: async (email, password, confirmPassword): Promise<SignUpOutput> => {
             if (args.latencyPause) {
                 await new Promise(resolve => setTimeout(resolve, args.latencyPause));
             }
@@ -26,8 +27,19 @@ const SignUpTemplate = (args: any) => {
                 throw new Error(args.startSignupError);
             }
             args.startSignup(email, password, confirmPassword);
-            setAuthStep("CONFIRM_SIGN_UP");
-            return "CONFIRM_SIGN_IN_WITH_EMAIL_CODE";
+            setAuthStep("CONFIRM_SIGN_IN_WITH_PASSWORD");
+            return {
+                isSignUpComplete: false,
+                nextStep: {
+                    signUpStep: "CONFIRM_SIGN_UP",
+                    codeDeliveryDetails: {
+                        attributeName: "email",
+                        deliveryMedium: "EMAIL",
+                        destination: email
+                    }
+                }
+
+            }
         },
         completeSignUp: async (email, code): Promise<ConfirmSignUpOutput> => {
             if (args.latencyPause) {
@@ -44,8 +56,7 @@ const SignUpTemplate = (args: any) => {
                 },
                 isSignUpComplete: true
             };
-        },
-        completeSignIn: args.completeSignIn,
+        }
     };
 
     return (
