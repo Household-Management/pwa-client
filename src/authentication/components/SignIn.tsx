@@ -1,25 +1,19 @@
 import {Stack, TextField, Button, Typography, LinearProgress} from "@mui/material";
-import {useContext, useEffect, useState} from "react";
-import {signIn, signOut} from "@aws-amplify/auth";
-import {Workbox} from "workbox-window";
-import {ServiceWorkerContext} from "../../service-worker/ServiceWorkerContext";
-import {useDispatch} from "react-redux";
-import {getCurrentUser} from "aws-amplify/auth";
-import {useNavigate} from "react-router-dom";
+import {useContext, useState} from "react";
+import {AuthContext} from "./AppAuthenticator";
 
-
-export default function ({onSubmit}) {
-    const [email, setEmail] = useState("");
+export default function () {
+    const {email, setEmail, completeSignIn, startPasswordReset} = useContext(AuthContext);
     const [password, setPassword] = useState("");
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<null | string>(null);
     const [loading, setLoading] = useState(false);
 
     async function submit() {
         try {
             setLoading(true);
-            await onSubmit(email, password);
+            await completeSignIn(email, password);
             setLoading(false);
-        } catch (e) {
+        } catch (e: any) {
             setLoading(false);
             switch (e.name) {
                 case "NotAuthorizedException":
@@ -41,10 +35,15 @@ export default function ({onSubmit}) {
             <TextField id="login-password" label="Password" type="password" value={password}
                        onChange={e => setPassword(e.target.value)}></TextField>
             <Button id="login-submit"
-                    label="Sign In"
                     variant="contained"
                     onClick={submit}
                     disabled={email?.length === 0 || password?.length === 0}>Sign In</Button>
+            <Button id="password-reset"
+                    variant="contained"
+                    onClick={startPasswordReset}
+                    disabled={!email || email?.length === 0}>
+                Forgot Password?
+            </Button>
         </Stack>
     </>
 }

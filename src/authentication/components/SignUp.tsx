@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {
     Box,
     Button, CircularProgress, IconButton,
@@ -8,11 +8,8 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import parsePhoneNumber from "libphonenumber-js";
-import {confirmSignUp, signIn, signOut, signUp} from "@aws-amplify/auth";
-import {MuiTelInput} from "mui-tel-input";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import {useNavigate} from "react-router-dom";
+import {AuthContext} from "./AppAuthenticator";
 
 export default function () {
     return <EmailSignUp/>
@@ -31,16 +28,16 @@ const modalStyle = {
 
 
 function EmailSignUp() {
-    const [email, setEmail] = useState("");
+    const {email, setEmail, completeSignIn, startSignup, authStep, setAuthStep, completeSignUp} = useContext(AuthContext);
+
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     const [confirmCode, setConfirmCode] = useState("");
-    const [nextStep, setNextStep] = useState(null);
     const [inProgress, setInProgress] = useState(false);
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (password.length > 0 && password.length < 12) {
@@ -53,45 +50,24 @@ function EmailSignUp() {
 
         if (confirmCode.length === 6) {
             (async () => {
-                try {
-                    await signOut();
-                    setInProgress(true);
-                    const signUpConfirmation = await confirmSignUp({
-                        username: email,
-                        confirmationCode: confirmCode
-                    });
-                    if (signUpConfirmation.isSignUpComplete) {
-                        await signIn({
-                            username: email,
-                            password
-                        });
-                        navigate("/household-select");
-                    }
-                    setNextStep(signUpConfirmation.signUpStep);
-                } catch (e) {
-                    setNextStep(null);
-                    setInProgress(false);
-                    setConfirmCode("");
-                    setError(e.message);
+                setInProgress(true);
+                const confirmation = await completeSignUp(email, confirmCode);
+                if(confirmation.isSignUpComplete) {
+                    await completeSignIn(email, password);
+                } else {
+
                 }
-            })()
+            })();
+
         }
     }, [email, password, confirmPassword, confirmCode]);
 
     async function submit() {
         try {
-            const {nextStep: signUpNextStep} = await signUp({
-                username: email,
-                password,
-                options: {
-                    userAttributes: {
-                        email
-                    }
-                }
-            })
+            const nextStep = await startSignup(email, password, confirmPassword);
 
-            setNextStep(signUpNextStep.signUpStep);
-        } catch (e) {
+            setAuthStep(nextStep);
+        } catch (e: any) {
             setError(e.message);
         }
     }
@@ -143,7 +119,7 @@ function EmailSignUp() {
                 Up</Button>
         </Stack>
 
-        <Modal open={nextStep === "CONFIRM_SIGN_UP"}>
+        <Modal open={authStep === "CONFIRM_SIGN_UP"}>
             <div style={{
                 display: "flex",
                 justifyContent: "center",
@@ -153,7 +129,7 @@ function EmailSignUp() {
             }}>
                 <Slide
                     direction="right"
-                    in={nextStep === "CONFIRM_SIGN_UP"} mountOnEnter unmountOnExit
+                    in={authStep === "CONFIRM_SIGN_UP"} mountOnEnter unmountOnExit
                 >
                     <Box sx={{...modalStyle}}>
                         <Stack spacing={2}>
@@ -163,7 +139,7 @@ function EmailSignUp() {
                                 onChange={e => setConfirmCode(e.target.value)}
                             ></TextField>
                             {inProgress && <CircularProgress /> } {/* TODO: Center horizontally. */}
-                            <Button variant="contained" color="error" onClick={() => setNextStep(null)}>Cancel</Button>
+                            <Button variant="contained" color="error" onClick={() => setAuthStep(null)}>Cancel</Button>
                         </Stack>
                     </Box>
                 </Slide>
