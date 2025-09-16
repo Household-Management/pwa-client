@@ -2,16 +2,15 @@ import {Stack, TextField, Button, Typography, LinearProgress} from "@mui/materia
 import {useContext, useState} from "react";
 import {AuthSignInContext} from "./AuthenticationContext.ts";
 
-export default function () {
-    const {email, setEmail, completeSignIn, startPasswordReset} = useContext(AuthSignInContext);
-    const [password, setPassword] = useState("");
+export default function ({}) {
+    const {email, setEmail, password, setPassword, completeSignIn, startPasswordReset} = useContext(AuthSignInContext);
     const [error, setError] = useState<null | string>(null);
     const [loading, setLoading] = useState(false);
 
     async function submit() {
         try {
             setLoading(true);
-            await completeSignIn(email, password);
+            await completeSignIn(email, password as string);
             setLoading(false);
         } catch (e: any) {
             setLoading(false);
