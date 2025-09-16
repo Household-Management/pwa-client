@@ -1,8 +1,9 @@
-import {useEffect, useState} from "react";
-import {Box, CircularProgress, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {useEffect, useState, useContext} from "react";
+import {Box, CircularProgress, Modal, Stack, ToggleButton, ToggleButtonGroup, Typography} from "@mui/material";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import PasswordReset from "./PasswordReset";
+import AuthContext from "./AuthenticationContext";
 import {useDispatch, useSelector} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
 import {getCurrentUser, fetchAuthSession, SignInOutput} from "aws-amplify/auth";
@@ -13,15 +14,15 @@ import {
     signIn as amplifySignIn,
     signOut,
     SignUpOutput,
-    signUp as amplifySignUp
+    signUp as amplifySignUp,
+    resetPassword as amplifyResetPassword,
+    confirmResetPassword as amplifyConfirmResetPassword
 } from "@aws-amplify/auth";
 
 export type AuthStep = null
     | SignInAuthStep
     | SignUpAuthStep
-    | ResetPasswordAuthStep
-    | "COMPLETE_AUTO_SIGN_IN"
-    | "CONFIRM_PASSWORD_RESET"
+    | ResetPasswordAuthStep;
 
 export type SignInAuthStep = "BEGIN_SIGN_IN"
     | "CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE"
@@ -37,9 +38,15 @@ export type SignInAuthStep = "BEGIN_SIGN_IN"
     | "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
     | "DONE"
 
-export type SignUpAuthStep = "BEGIN_SIGN_UP" | "CONFIRM_SIGN_UP" | "DONE";
+export type SignUpAuthStep = "BEGIN_SIGN_UP" | "CONFIRM_SIGN_UP" | "COMPLETE_AUTO_SIGN_IN" | "DONE";
 
-export type ResetPasswordAuthStep = "BEGIN_PASSWORD_RESET" | "DONE" | "CONFIRM_PASSWORD_RESET";
+export type ResetPasswordAuthStep = "BEGIN_PASSWORD_RESET" | "CONFIRM_RESET_PASSWORD_WITH_CODE" | "DONE";
+
+export const SignInPath: AuthenticationPath = "/sign-in";
+export const SignUpPath: AuthenticationPath = "/sign-up";
+export const ResetPasswordPath: AuthenticationPath = "/reset-password";
+
+export type AuthenticationPath = "/sign-in" | "/sign-up" | "/reset-password";
 
 export default function AppAuthenticator({children}: { children: React.ReactNode }) {
     const navigate = useNavigate();
@@ -48,8 +55,9 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
 
     const user = useSelector((state: any) => state.user);
 
-    const [tab, setTab] = useState("/sign-in");
+    const [tab, setTab] = useState<AuthenticationPath>(SignInPath);
     const [email, setEmail] = useState("");
+    const [message, setMessage] = useState<string | undefined>();
     const [password, setPassword] = useState<string | undefined>();
     const [authenticationNeeded, setAuthenticationNeeded] = useState(false);
     const [authStep, setAuthStep] = useState<AuthStep>("BEGIN_SIGN_IN");
@@ -124,16 +132,37 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
         }
     };
 
-    const startPasswordReset = function () {
+    const startPasswordReset = async function () {
+        const reset = await amplifyResetPassword({
+            username: email
+        });
 
+        setAuthStep(reset.nextStep.resetPasswordStep);
+
+        return reset;
     }
 
-    const completePasswordReset = async (_username) => {
+    const completePasswordReset = async (username: string, newPassword: string, confirmationCode: string) => {
+        try {
 
+            await amplifyConfirmResetPassword({
+                username,
+                newPassword,
+                confirmationCode
+            });
+            setAuthStep("DONE")
+            setMessage("Your password has been reset. Please sign in with your new password.");
+            navigate(SignInPath);
+        } catch (e: any) {
+            setAuthStep(null);
+            throw e;
+        }
     }
 
     const [authState] = useState({
         tab, // Which tab is shown
+        message,
+        setMessage,
         email, // The email address from the user
         setEmail, // Change the email address
         password,
@@ -176,10 +205,10 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
     useEffect(() => {
         switch (authStep) {
             case "BEGIN_SIGN_IN":
-                if (location.pathname !== "/sign-in") {
-                    navigate("/sign-in");
+                if (location.pathname !== SignInPath) {
+                    navigate(SignInPath);
                 }
-                setTab("/sign-in");
+                setTab(SignInPath);
                 break;
             case "CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE":
             case "CONTINUE_SIGN_IN_WITH_MFA_SELECTION":
@@ -192,21 +221,21 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
             case "CONTINUE_SIGN_IN_WITH_FIRST_FACTOR_SELECTION":
             case "CONFIRM_SIGN_IN_WITH_PASSWORD":
             case "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED":
-                if (location.pathname !== "/sign-up") {
-                    navigate("/sign-up");
+                if (location.pathname !== SignUpPath) {
+                    navigate(SignUpPath);
                 }
-                setTab("/sign-up");
+                setTab(SignUpPath);
                 break;
             case "BEGIN_PASSWORD_RESET":
-            case "CONFIRM_PASSWORD_RESET":
+            case "CONFIRM_RESET_PASSWORD_WITH_CODE":
             case "DONE":
-                if (location.pathname !== "/reset-password") {
-                    navigate("/reset-password");
+                if (location.pathname !== ResetPasswordPath) {
+                    navigate(ResetPasswordPath);
                 }
-                setTab("/reset-password");
+                setTab(ResetPasswordPath);
                 break;
             default:
-                navigate("/sign-in");
+                navigate(SignInPath);
                 break;
         }
     }, [authStep, location.pathname]);
@@ -222,7 +251,6 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
                         <AuthPasswordResetContext.Provider value={authState}>
                             <AuthenticationView
                                 navigate={navigate}
-                                tab={tab}
                             />
                         </AuthPasswordResetContext.Provider>
                     </AuthSignUpContext.Provider>
@@ -242,7 +270,8 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
     );
 }
 
-export function AuthenticationView({navigate, tab}) {
+export function AuthenticationView({navigate}) {
+    const {tab, message} = useContext(AuthContext);
     const modalStyle = {
         flexShrink: 1,
         display: "flex",
@@ -273,14 +302,15 @@ export function AuthenticationView({navigate, tab}) {
                             onChange={(_e: any, v: string) => navigate(v)}
                         >
                             <Stack direction="row" spacing={1}>
-                                <ToggleButton value="/sign-in">Sign In</ToggleButton>
-                                <ToggleButton value="/sign-up">Sign Up</ToggleButton>
+                                <ToggleButton value={SignInPath}>Sign In</ToggleButton>
+                                <ToggleButton value={SignUpPath}>Sign Up</ToggleButton>
                             </Stack>
                         </ToggleButtonGroup>
+                        {message && <Typography sx={{color: "green"}}>{message}</Typography>}
                         <div>
-                            {tab === "/sign-in" && <SignIn/>}
-                            {tab === "/sign-up" && <SignUp/>}
-                            {tab === "/reset-password" && <PasswordReset/>}
+                            {tab === SignInPath && <SignIn/>}
+                            {tab === SignUpPath && <SignUp/>}
+                            {tab === ResetPasswordPath && <PasswordReset/>}
                         </div>
                     </Stack>
                 </Box>

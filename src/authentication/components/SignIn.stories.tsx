@@ -6,8 +6,8 @@ import {fn} from "storybook/test";
 import {ContainerTemplate} from "./AppAuthenticator.stories.jsx";
 import {useState} from "react";
 import {AuthSignInContext} from "./AuthenticationContext.ts";
-import {AuthStep} from "./AppAuthenticator.tsx";
-import {SignInOutput} from "aws-amplify/auth";
+import {AuthStep, SignInPath} from "./AppAuthenticator.tsx";
+import {ResetPasswordOutput, SignInOutput} from "aws-amplify/auth";
 
 const store = configureStore({
     reducer: state => state || {}
@@ -21,6 +21,7 @@ export default {
         const [authStep, setAuthStep] = useState<AuthStep>("BEGIN_SIGN_IN");
 
         const auth = {
+            tab: SignInPath,
             email,
             setEmail,
             password,
@@ -46,14 +47,25 @@ export default {
                     }
                 };
             },
-            startPasswordReset: () => {
+            startPasswordReset: async (): Promise<ResetPasswordOutput> => {
                 alert("This is when you would be taken to the password reset screen");
+                return {
+                    isPasswordReset: false,
+                    nextStep: {
+                        resetPasswordStep: "CONFIRM_RESET_PASSWORD_WITH_CODE",
+                        codeDeliveryDetails: {
+                            attributeName: "email",
+                            deliveryMedium: "EMAIL",
+                            destination: email
+                        }
+                    }
+                }
             },
             authenticationNeeded: false
         }
         return (
             <Provider store={store}>
-                <MemoryRouter initialEntries={["/sign-in"]}>
+                <MemoryRouter initialEntries={[SignInPath]}>
                     <AuthSignInContext.Provider value={auth}>
                         <ContainerTemplate>
                             <SignIn/>

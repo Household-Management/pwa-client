@@ -1,74 +1,46 @@
-import { useState, useEffect } from "react";
-import { Stack, TextField, Button, Typography } from "@mui/material";
-import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
-import { useNavigate } from "react-router";
+import {useState, useEffect, useContext} from "react";
+import {Stack, TextField, Button, Typography} from "@mui/material";
+import {useNavigate} from "react-router";
+import {SignInPath} from "./AppAuthenticator";
+import {AuthPasswordResetContext} from "./AuthenticationContext";
 
-export default function PasswordReset({ email = "" }) {
+export default function PasswordReset() {
+    const {email, completePasswordReset, authStep} = useContext(AuthPasswordResetContext);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!email) {
+            navigate(SignInPath);
+        }
+    }, []);
+
+    const handleSubmit = async (email, confirmCode, newPassword) => {
+        return completePasswordReset(email, newPassword, confirmCode);
+    };
+
+    return <PasswordResetView email={email} authStep={authStep} onSubmit={handleSubmit}/>
+}
+
+export function PasswordResetView({email = "", authStep, onSubmit}) {
     const [resetCode, setResetCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const [error, setError] = useState(null);
-    const [validationError, setValidationError] = useState("");
-    const [stage, setStage] = useState("REQUESTING_CODE");
-    const navigate = useNavigate();
+    const [valid, setValid] = useState(false);
 
     useEffect(() => {
-        if(!email) {
-            navigate("/sign-in");
-        }
-    }, []);
-
-    useEffect(() => {
-        if (newPassword && passwordConfirmation && newPassword !== passwordConfirmation) {
-            setValidationError("Passwords do not match.");
+        if (newPassword && passwordConfirmation) {
+            if (newPassword !== passwordConfirmation) {
+                setValid(false);
+                setError("Passwords do not match.");
+            } else {
+                setError("");
+                setValid(true);
+            }
         } else {
-            setValidationError("");
+            setValid(false);
         }
     }, [newPassword, passwordConfirmation]);
-
-    useEffect(() => {
-        (async function() {
-            try {
-                const reset = await resetPassword({
-                    username: email
-                });
-
-
-                const {nextStep} = reset;
-                setStage(nextStep.resetPasswordStep);
-                switch (nextStep.resetPasswordStep) {
-                    case "CONFIRM_RESET_PASSWORD_WITH_CODE":
-                        // Code sent to user's email
-                        break;
-                    default:
-                        setError("Unexpected step in password reset process.");
-                }
-            } catch (err) {
-                switch (err.name) {
-                    case "LimitExceededException":
-                        setError("Attempt limit exceeded, please try again later.");
-                        break;
-                    default:
-                        setError("Failed to initiate password reset. Please try again.");
-                        break;
-                }
-            }
-        })();
-    }, []);
-
-    const onSubmit = async () => {
-        const confirm = await confirmResetPassword({
-            username: email,
-            confirmationCode: resetCode,
-            newPassword
-        });
-        const {nextStep} = confirm;
-        if (nextStep.resetPasswordStep === "DONE") {
-            navigate("/sign-in");
-        } else {
-            setError("Unexpected step in password reset confirmation.");
-        }
-    }
 
     const handleSubmit = async () => {
         try {
@@ -76,25 +48,25 @@ export default function PasswordReset({ email = "" }) {
                 setError("All fields are required.");
                 return;
             }
-            if (validationError) {
+
+            if (newPassword !== passwordConfirmation) {
+                setError("Passwords do not match.");
                 return;
             }
             await onSubmit(email, resetCode, newPassword);
         } catch (e) {
             setError("Failed to reset password. Please try again.");
         }
-    };
-
-    return <PasswordResetView email={email} stage={stage} error={error}/>
-}
-
-export function PasswordResetView({ email = "" , stage, error}) {
+    }
 
     return (
         <Stack spacing={2}>
-            {!error && stage === "REQUESTING_CODE" && <Typography sx={{textAlign: "center"}}>Requesting password reset code...</Typography>}
-            {!error && stage === "CONFIRM_RESET_PASSWORD_WITH_CODE" && <Typography sx={{textAlign: "center"}}>A confirmation code had been sent to {email}, enter it to change your password.</Typography> }
-            {error && <Typography sx={{ color: "red", textAlign: "center" }}>{error}</Typography>}
+            {!error && authStep === "REQUESTING_CODE" &&
+                <Typography sx={{textAlign: "center"}}>Requesting password reset code...</Typography>}
+            {!error && authStep === "CONFIRM_RESET_PASSWORD_WITH_CODE" &&
+                <Typography sx={{textAlign: "center"}}>A confirmation code had been sent to {email}, enter it to change
+                    your password.</Typography>}
+            {error && <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography>}
             <TextField
                 id="reset-code"
                 label="Reset Code"
@@ -116,13 +88,10 @@ export function PasswordResetView({ email = "" , stage, error}) {
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
             />
-            {validationError && (
-                <Typography sx={{ color: "red", textAlign: "center" }}>{validationError}</Typography>
-            )}
             <Button
                 variant="contained"
                 onClick={handleSubmit}
-                disabled={!resetCode || !newPassword || validationError}
+                disabled={!valid}
             >
                 Reset Password
             </Button>

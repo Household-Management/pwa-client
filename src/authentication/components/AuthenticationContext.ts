@@ -1,15 +1,19 @@
 import {Context, createContext} from "react";
 import {ConfirmSignUpOutput, SignUpOutput} from "@aws-amplify/auth";
-import {AuthStep} from "./AppAuthenticator.tsx";
-import {SignInOutput} from "aws-amplify/auth";
+import {AuthenticationPath, AuthStep} from "./AppAuthenticator.tsx";
+import {SignInOutput, ResetPasswordOutput} from "aws-amplify/auth";
 
+export type AuthGlobalContextType = AuthSignInContextType & AuthSignUpContextType & AuthPasswordResetContextType;
 
 export type AuthContextType = {
+    tab: AuthenticationPath;
+    message?: string;
+    setMessage: (message?: string) => void;
     email: string;
     setEmail: (email: string) => void;
 
     password?: string;
-    setPassword?: (password: string) => void;
+    setPassword: (password: string) => void;
 
     authStep: AuthStep;
     setAuthStep: (step: AuthStep) => void;
@@ -24,14 +28,14 @@ export type AuthSignInContextType = AuthContextType & {
     completeSignIn: (username: string, password: string) => Promise<SignInOutput | undefined>;
 
     authenticationNeeded: boolean;
-    startPasswordReset: () => void;
+    startPasswordReset: () => Promise<ResetPasswordOutput>;
 }
 
 export type AuthPasswordResetContextType = AuthContextType & {
-    completePasswordReset: (username: string) => Promise<void>;
+    completePasswordReset: (username: string, newPassword: string, confirmationCode: string) => Promise<void>;
 }
 
-const AuthContext: Context<AuthContextType> = createContext({} as any);
+const AuthContext: Context<AuthGlobalContextType> = createContext({} as any);
 const AuthSignUpContext: Context<AuthSignUpContextType> = createContext({} as any);
 const AuthSignInContext: Context<AuthSignInContextType> = createContext({} as any);
 const AuthPasswordResetContext: Context<AuthPasswordResetContextType> = createContext({} as any);
