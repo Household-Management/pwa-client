@@ -1,9 +1,9 @@
 import {Stack, TextField, Button, Typography, LinearProgress} from "@mui/material";
 import {useContext, useState} from "react";
-import {AuthContext} from "./AppAuthenticator";
+import {AuthSignInContext} from "./AuthenticationContext.ts";
 
 export default function () {
-    const {email, setEmail, completeSignIn, startPasswordReset} = useContext(AuthContext);
+    const {email, setEmail, completeSignIn, startPasswordReset} = useContext(AuthSignInContext);
     const [password, setPassword] = useState("");
     const [error, setError] = useState<null | string>(null);
     const [loading, setLoading] = useState(false);

@@ -24,10 +24,10 @@ export type AuthSignInContextType = AuthContextType & {
     completeSignIn: (username: string, password: string) => Promise<SignInOutput | undefined>;
 
     authenticationNeeded: boolean;
+    startPasswordReset: () => void;
 }
 
 export type AuthPasswordResetContextType = AuthContextType & {
-    startPasswordReset: () => void;
     completePasswordReset: (username: string) => Promise<void>;
 }
 

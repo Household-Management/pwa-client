@@ -2,11 +2,11 @@ import React, {useState} from "react";
 import {Provider} from "react-redux";
 import {configureStore} from "@reduxjs/toolkit";
 import {MemoryRouter, useNavigate} from "react-router-dom";
-import {AuthenticationView, AuthContext} from "./AppAuthenticator";
+import AuthContext from "./AuthenticationContext";
+import {AuthenticationView} from "./AppAuthenticator";
 import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {fn} from "storybook/test";
 import PasswordReset from "./PasswordReset";
-import SignUp from "./SignUp";
 import SignIn from "./SignIn";
 
 const store = configureStore({
@@ -110,49 +110,6 @@ SignInStory.args = {
     startPasswordReset: fn(),
     correctEmail: "test@email.com",
     correctPassword: "password123"
-};
-
-const SignUpTemplate = (args) => {
-    const [email, setEmail] = useState("");
-    const [authStep, setAuthStep] = useState("BEGIN_SIGN_UP");
-    const auth = {
-        email,
-        setEmail,
-        authStep,
-        setAuthStep,
-        startSignup: args.startSignup,
-        completeSignUp: args.completeSignUp,
-        completeSignIn: args.completeSignIn,
-    };
-
-    return (
-        <Modal open={true}>
-            <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
-                <Box sx={{width: 400, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4}}>
-                    <Stack sx={{flexGrow: 1, justifyContent: "center", alignContent: "center"}} spacing={3}>
-                        <ToggleButtonGroup exclusive value="/sign-up"
-                                           sx={{justifyContent: "center", alignContent: "center"}}>
-                            <Stack direction="row" spacing={1}>
-                                <ToggleButton value="/sign-in">Sign In</ToggleButton>
-                                <ToggleButton value="/sign-up">Sign Up</ToggleButton>
-                            </Stack>
-                        </ToggleButtonGroup>
-                        <AuthContext.Provider value={auth}>
-                            <SignUp/>
-                        </AuthContext.Provider>
-                    </Stack>
-                </Box>
-            </Box>
-        </Modal>
-    );
-};
-
-export const SignUpStory = SignUpTemplate.bind({});
-SignUpStory.args = {
-    startSignup: async (email, password, confirmPassword) =>
-        alert(`SignUp: ${email}, ${password}, ${confirmPassword}`),
-    completeSignUp: async (email, code) => alert(`Confirm SignUp: ${email}, ${code}`),
-    completeSignIn: async (email, password) => alert(`SignIn after SignUp: ${email}, ${password}`),
 };
 
 const PasswordResetTemplate = (args) => {

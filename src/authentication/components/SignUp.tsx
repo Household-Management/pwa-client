@@ -9,7 +9,7 @@ import {
     Typography
 } from "@mui/material";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import {AuthContext} from "./AppAuthenticator";
+import {AuthSignUpContext, AuthSignUpContextType} from "./AuthenticationContext.ts";
 
 export default function () {
     return <EmailSignUp/>
@@ -29,7 +29,7 @@ const modalStyle = {
 // export type SignUpErrors =
 // TODO: Pluggable password validation rules.
 function EmailSignUp() {
-    const {email, setEmail, completeSignIn, startSignup, authStep, setAuthStep, completeSignUp} = useContext(AuthContext);
+    const {email, setEmail, startSignup, authStep, setAuthStep, completeSignUp}: AuthSignUpContextType = useContext(AuthSignUpContext);
 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -54,10 +54,7 @@ function EmailSignUp() {
             (async () => {
                 try {
                     setInProgress(true);
-                    const confirmation = await completeSignUp(email, confirmCode);
-                    if (confirmation.isSignUpComplete) {
-                        await completeSignIn(email, password);
-                    }
+                    await completeSignUp(email, confirmCode);
                 } catch (e: any) {
                     setError(e.message);
                 } finally {

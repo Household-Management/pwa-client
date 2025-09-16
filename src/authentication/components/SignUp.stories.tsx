@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
-import AuthContext, {AuthSignUpContextType} from "./AuthenticationContext.ts";
+import {AuthSignUpContext, AuthSignUpContextType} from "./AuthenticationContext.ts";
 import {AuthStep} from "./AppAuthenticator.tsx";
 import SignUp from "./SignUp.tsx";
 import {fn, Mock} from "storybook/test";
@@ -71,9 +71,9 @@ const SignUpTemplate = (args: any) => {
                                 <ToggleButton value="/sign-up">Sign Up</ToggleButton>
                             </Stack>
                         </ToggleButtonGroup>
-                        <AuthContext.Provider value={auth}>
+                        <AuthSignUpContext.Provider value={auth}>
                             <SignUp/>
-                        </AuthContext.Provider>
+                        </AuthSignUpContext.Provider>
                     </Stack>
                 </Box>
             </Box>

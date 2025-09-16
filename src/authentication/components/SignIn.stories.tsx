@@ -10,7 +10,8 @@ const store = configureStore({
 });
 
 export default {
-    render: args => {
+    title: "Authentication/Elements/SignIn",
+    render: _args => {
         return (
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/sign-in"]}>
@@ -35,18 +36,7 @@ export default {
                                 display: "flex",
                                 bgcolor: "background.paper"
                             }}>
-                                <SignIn onSubmit={async (email, password) => {
-                                    args.onSubmit(email, password);
-                                    return new Promise((resolve, reject) => {
-                                        setTimeout(() => {
-                                            if (args.errorOnSubmit) {
-                                                reject(args.errorOnSubmit);
-                                            } else {
-                                                resolve(null);
-                                            }
-                                        }, args.loadTime);
-                                    });
-                                }} />
+                                <SignIn />
                             </Box>
                         </div>
                     </Modal>
