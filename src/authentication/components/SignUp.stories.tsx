@@ -1,10 +1,10 @@
 import {useState} from "react";
-import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {AuthSignUpContext, AuthSignUpContextType} from "./AuthenticationContext.ts";
 import {AuthStep} from "./AppAuthenticator.tsx";
 import SignUp from "./SignUp.tsx";
 import {fn, Mock} from "storybook/test";
 import {ConfirmSignUpOutput, SignUpOutput} from "@aws-amplify/auth";
+import {ContainerTemplate} from "./AppAuthenticator.stories.jsx";
 
 export default {
     title: "Authentication/Elements/SignUp",
@@ -12,11 +12,14 @@ export default {
 };
 
 const SignUpTemplate = (args: any) => {
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(args.email);
+    const [password, setPassword] = useState(args.password);
     const [authStep, setAuthStep] = useState<AuthStep>("BEGIN_SIGN_UP");
     const auth: AuthSignUpContextType = {
         email,
         setEmail,
+        password,
+        setPassword,
         authStep,
         setAuthStep,
         startSignup: async (email, password, confirmPassword): Promise<SignUpOutput> => {
@@ -60,24 +63,11 @@ const SignUpTemplate = (args: any) => {
     };
 
     return (
-        <Modal open={true}>
-            <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
-                <Box sx={{width: 400, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4}}>
-                    <Stack sx={{flexGrow: 1, justifyContent: "center", alignContent: "center"}} spacing={3}>
-                        <ToggleButtonGroup exclusive value="/sign-up"
-                                           sx={{justifyContent: "center", alignContent: "center"}}>
-                            <Stack direction="row" spacing={1}>
-                                <ToggleButton value="/sign-in">Sign In</ToggleButton>
-                                <ToggleButton value="/sign-up">Sign Up</ToggleButton>
-                            </Stack>
-                        </ToggleButtonGroup>
-                        <AuthSignUpContext.Provider value={auth}>
-                            <SignUp/>
-                        </AuthSignUpContext.Provider>
-                    </Stack>
-                </Box>
-            </Box>
-        </Modal>
+        <ContainerTemplate>
+            <AuthSignUpContext.Provider value={auth}>
+                <SignUp/>
+            </AuthSignUpContext.Provider>
+        </ContainerTemplate>
     );
 };
 
@@ -87,7 +77,9 @@ type SignUpArgs = {
     completeSignIn: Mock,
     latencyPause: number,
     startSignupError: string,
-    confirmSignUpError: string
+    confirmSignUpError: string,
+    email: string,
+    password: string
 }
 
 export const Default = SignUpTemplate.bind({}) as unknown as ((args: any) => Element) & { args: SignUpArgs };
@@ -97,6 +89,8 @@ Default.args = {
     completeSignUp: fn(),
     completeSignIn: fn(),
     latencyPause: 1000,
+    email: "email@website.com",
+    password: "password123",
     startSignupError: "", // Error thrown when starting the sign up process
     confirmSignUpError: "" // Error thrown when confirming the sign up process
 };
