@@ -2,12 +2,10 @@ import React, {useState} from "react";
 import {Provider} from "react-redux";
 import {configureStore} from "@reduxjs/toolkit";
 import {MemoryRouter, useNavigate} from "react-router-dom";
-import AuthContext from "./AuthenticationContext";
+import AuthContext, {AuthSignUpContext} from "./AuthenticationContext";
 import {AuthenticationView} from "./AppAuthenticator";
 import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {fn} from "storybook/test";
-import PasswordReset from "./PasswordReset";
-import SignIn from "./SignIn";
 
 const store = configureStore({
     reducer: (state) => state || {user: null},
@@ -27,6 +25,7 @@ export default {
             </Provider>
         ),
     ],
+    excludeStories: ["ContainerTemplate"]
 };
 
 const AuthenticatorTemplate = (args) => {
@@ -66,71 +65,24 @@ Authenticator.args = {
     navigate: fn()
 };
 
-const SignInTemplate = (args) => {
-    const [email, setEmail] = useState("");
-    const auth = {
-        email,
-        setEmail,
-        completeSignIn: (username, password) => {
-            args.completeSignIn(username, password)
-            if(password !== args.correctPassword || username !== args.correctEmail) {
-                const e = new Error("Incorrect username or password.");
-                e.name = "NotAuthorizedException";
-                throw e;
-            }
-        },
-        startPasswordReset: args.startPasswordReset,
-    };
-
-    return (
-        <Modal open={true}>
-            <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
-                <Box sx={{width: 400, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4}}>
-                    <Stack spacing={3}>
-                        <ToggleButtonGroup exclusive value="/sign-in"
-                                           sx={{justifyContent: "center", alignContent: "center"}}>
-                            <Stack direction="row" spacing={1}>
-                                <ToggleButton value="/sign-in">Sign In</ToggleButton>
-                                <ToggleButton value="/sign-up">Sign Up</ToggleButton>
-                            </Stack>
-                        </ToggleButtonGroup>
-                        <AuthContext.Provider value={auth}>
-                            <SignIn/>
-                        </AuthContext.Provider>
-                    </Stack>
-                </Box>
-            </Box>
-        </Modal>
-    );
-};
-
-export const SignInStory = SignInTemplate.bind({});
-SignInStory.args = {
-    completeSignIn: fn(),
-    startPasswordReset: fn(),
-    correctEmail: "test@email.com",
-    correctPassword: "password123"
-};
-
-const PasswordResetTemplate = (args) => {
-    return (
-        <Modal open={true}>
-            <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
-                <Box sx={{width: 400, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4}}>
-                    <Stack sx={{flexGrow: 1, justifyContent: "center", alignContent: "center"}} spacing={3}>
-                        <ToggleButtonGroup sx={{justifyContent: "center", alignContent: "center"}} exclusive value="/reset-password">
+// TODO: Extract the actual layout from the component so there's no need to coordinate these places
+/**
+ * Wrapper for the subcomponents to show them in a modal as though they were embedded in the Authenticator
+ */
+export const ContainerTemplate = ({children}) => (
+    <Modal open={true}>
+        <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
+            <Box sx={{width: 400, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4}}>
+                <Stack sx={{flexGrow: 1, justifyContent: "center", alignContent: "center"}} spacing={3}>
+                    <ToggleButtonGroup exclusive value="/sign-up"
+                                       sx={{justifyContent: "center", alignContent: "center"}}>
+                        <Stack direction="row" spacing={1}>
                             <ToggleButton value="/sign-in">Sign In</ToggleButton>
                             <ToggleButton value="/sign-up">Sign Up</ToggleButton>
-                        </ToggleButtonGroup>
-                        <PasswordReset email={args.email}/>
-                    </Stack>
-                </Box>
+                        </Stack>
+                    </ToggleButtonGroup>
+                    {children}
+                </Stack>
             </Box>
-        </Modal>
-    );
-};
-
-// export const PasswordResetStory = PasswordResetTemplate.bind({});
-// PasswordResetStory.args = {
-//     email: "test@example.com",
-// };
+        </Box>
+    </Modal>)
