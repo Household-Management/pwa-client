@@ -26,13 +26,15 @@ const modalStyle = {
     p: 4,
 }
 
-
+// export type SignUpErrors =
+// TODO: Pluggable password validation rules.
 function EmailSignUp() {
     const {email, setEmail, completeSignIn, startSignup, authStep, setAuthStep, completeSignUp} = useContext(AuthContext);
 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [submitDisabled, setSubmitDisabled] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -50,24 +52,28 @@ function EmailSignUp() {
 
         if (confirmCode.length === 6) {
             (async () => {
-                setInProgress(true);
-                const confirmation = await completeSignUp(email, confirmCode);
-                if(confirmation.isSignUpComplete) {
-                    await completeSignIn(email, password);
-                } else {
-
+                try {
+                    setInProgress(true);
+                    const confirmation = await completeSignUp(email, confirmCode);
+                    if (confirmation.isSignUpComplete) {
+                        await completeSignIn(email, password);
+                    }
+                } catch (e: any) {
+                    setError(e.message);
+                } finally {
+                    setInProgress(false);
                 }
             })();
 
         }
+        setSubmitDisabled(false);
     }, [email, password, confirmPassword, confirmCode]);
 
     async function submit() {
         try {
-            const nextStep = await startSignup(email, password, confirmPassword);
-
-            setAuthStep(nextStep);
+            await startSignup(email, password, confirmPassword);
         } catch (e: any) {
+            setSubmitDisabled(true);
             setError(e.message);
         }
     }
@@ -114,12 +120,12 @@ function EmailSignUp() {
                            }
                        }}
             />
-            <Button variant="contained" disabled={!!error || email.length === 0 || password.length === 0}
+            <Button variant="contained" disabled={submitDisabled || email.length === 0 || password.length === 0}
                     onClick={submit}>Sign
                 Up</Button>
         </Stack>
 
-        <Modal open={authStep === "CONFIRM_SIGN_UP"}>
+        <Modal id="confirm-modal" open={authStep === "CONFIRM_SIGN_UP"}>
             <div style={{
                 display: "flex",
                 justifyContent: "center",
@@ -138,6 +144,7 @@ function EmailSignUp() {
                                 label="Confirm Code"
                                 onChange={e => setConfirmCode(e.target.value)}
                             ></TextField>
+                            {error && <Typography color="error">{error}</Typography>}
                             {inProgress && <CircularProgress /> } {/* TODO: Center horizontally. */}
                             <Button variant="contained" color="error" onClick={() => setAuthStep(null)}>Cancel</Button>
                         </Stack>
