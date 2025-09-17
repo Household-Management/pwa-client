@@ -113,7 +113,6 @@ export default function HouseholdSelectorWrapper() {
                     "householdTasks.taskLists.*",
                     "kitchen.*",
                     "kitchen.pantry.*",
-                    "kitchen.pantry.items.*",
                     "recipes.*",
                     "householdTasks.taskLists.taskItems.*"
                 ],
@@ -125,6 +124,11 @@ export default function HouseholdSelectorWrapper() {
             setLoading(false);
             throw new Error();
         }
+        // For some reason, cannot load the pantry properties and the pantry items in one request
+        const pantryItems = await dataClient.models.PantryItem.list({
+            kitchenId: {eq: selected.data.kitchen.pantry.id}
+        });
+        selected.data.kitchen.pantry.items = pantryItems.data;
         if (!selected.data) {
             console.error("No data on selecting household");
             setError("Error selecting household");
