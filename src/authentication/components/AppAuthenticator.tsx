@@ -182,10 +182,10 @@ export default function AppAuthenticator({children}: { children?: React.ReactNod
             let authenticated = false;
             if (!user?.authenticated && !authenticationNeeded) {
                 try {
-                    const currentUser = await getCurrentUser();
                     const currentAuth = await fetchAuthSession();
 
-                    if (currentUser) {
+                    if (currentAuth.tokens) {
+                        const currentUser = await getCurrentUser();
                         dispatch({
                             type: "AUTHENTICATED",
                             payload: mapAuthenticationPayload(currentUser, currentAuth),
