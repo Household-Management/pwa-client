@@ -1,6 +1,7 @@
 import {Stack, TextField, Button, Typography, LinearProgress} from "@mui/material";
 import {useContext, useState} from "react";
 import {AuthSignInContext} from "./AuthenticationContext.ts";
+import PasswordField from "./PasswordField.tsx";
 
 export default function ({}) {
     const {email, setEmail, password, setPassword, completeSignIn, startPasswordReset} = useContext(AuthSignInContext);
@@ -31,8 +32,8 @@ export default function ({}) {
             {loading ? <LinearProgress/> : null}
             <TextField id="login-email" label="Email" type="text" value={email}
                        onChange={e => setEmail(e.target.value)}></TextField>
-            <TextField id="login-password" label="Password" type="password" value={password}
-                       onChange={e => setPassword(e.target.value)}></TextField>
+            <PasswordField id="login-password" label="Password" type="password" value={password}
+                       onChange={e => setPassword(e.target.value)}></PasswordField>
             <Button id="login-submit"
                     variant="contained"
                     onClick={submit}

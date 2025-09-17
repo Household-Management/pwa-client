@@ -1,15 +1,13 @@
 import {useContext, useEffect, useState} from "react";
 import {
     Box,
-    Button, CircularProgress, IconButton,
-    InputAdornment,
-    Modal, Slide,
+    Button, CircularProgress, Modal, Slide,
     Stack,
     TextField,
     Typography
 } from "@mui/material";
-import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {AuthSignUpContext, AuthSignUpContextType} from "./AuthenticationContext.ts";
+import PasswordField from "./PasswordField.tsx";
 
 export default function () {
     return <EmailSignUp/>
@@ -29,14 +27,19 @@ const modalStyle = {
 // export type SignUpErrors =
 // TODO: Pluggable password validation rules.
 function EmailSignUp() {
-    const {email, setEmail, startSignup, authStep, setAuthStep, completeSignUp}: AuthSignUpContextType = useContext(AuthSignUpContext);
+    const {
+        email,
+        setEmail,
+        startSignup,
+        authStep,
+        setAuthStep,
+        completeSignUp
+    }: AuthSignUpContextType = useContext(AuthSignUpContext);
 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [submitDisabled, setSubmitDisabled] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const [confirmCode, setConfirmCode] = useState("");
     const [inProgress, setInProgress] = useState(false);
@@ -85,37 +88,17 @@ function EmailSignUp() {
                        label="Email"
                        value={email}
                        onChange={e => setEmail(e.target.value)}/>
-            <TextField type={showPassword ? "text" : "password"}
-                       error={password?.length > 0 && password?.length < 12}
-                       label="Password"
-                       value={password}
-                       onChange={e => setPassword(e.target.value)}
-                       slotProps={{
-                           input: {
-                               endAdornment: (<InputAdornment position="end">
-                                   <IconButton
-                                       onClick={() => setShowPassword(!showPassword)}>
-                                       {showPassword ? <Visibility/> : <VisibilityOff/>}
-                                   </IconButton>
-                               </InputAdornment>)
-                           }
-                       }}
+            <PasswordField
+                error={password?.length > 0 && password?.length < 12}
+                label="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
             />
-            <TextField type={showConfirmPassword ? "text" : "password"}
-                       error={password?.length > 0 && password !== confirmPassword}
-                       label="Confirm Password"
-                       value={confirmPassword}
-                       onChange={e => setConfirmPassword(e.target.value)}
-                       slotProps={{
-                           input: {
-                               endAdornment: (<InputAdornment position="end">
-                                   <IconButton
-                                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                       {showConfirmPassword ? <Visibility/> : <VisibilityOff/>}
-                                   </IconButton>
-                               </InputAdornment>)
-                           }
-                       }}
+            <PasswordField
+                error={password?.length > 0 && password !== confirmPassword}
+                label="Confirm Password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
             />
             <Button variant="contained" disabled={submitDisabled || email.length === 0 || password.length === 0}
                     onClick={submit}>Sign
@@ -142,7 +125,7 @@ function EmailSignUp() {
                                 onChange={e => setConfirmCode(e.target.value)}
                             ></TextField>
                             {error && <Typography color="error">{error}</Typography>}
-                            {inProgress && <CircularProgress /> } {/* TODO: Center horizontally. */}
+                            {inProgress && <CircularProgress/>} {/* TODO: Center horizontally. */}
                             <Button variant="contained" color="error" onClick={() => setAuthStep(null)}>Cancel</Button>
                         </Stack>
                     </Box>
