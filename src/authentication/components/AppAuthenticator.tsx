@@ -180,7 +180,7 @@ export default function AppAuthenticator({children}: { children?: React.ReactNod
     useEffect(() => {
         (async () => {
             let authenticated = false;
-            if (!user && !authenticationNeeded) {
+            if (!user?.authenticated && !authenticationNeeded) {
                 try {
                     const currentUser = await getCurrentUser();
                     const currentAuth = await fetchAuthSession();
@@ -200,7 +200,7 @@ export default function AppAuthenticator({children}: { children?: React.ReactNod
             }
             setAuthenticationNeeded(!authenticated);
         })();
-    }, [user]);
+    }, [user?.authenticated, authenticationNeeded]);
 
     useEffect(() => {
         switch (authStep) {
