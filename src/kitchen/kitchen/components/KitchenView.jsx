@@ -30,7 +30,7 @@ const KitchenView = () => {
                 >
                     {enabledLinks[0] && <NavLink to="/kitchen/pantry" className="nav-link">
                         <ToggleButton value="/kitchen/pantry">
-                            Pantry & Fridge
+                            Pantry
                         </ToggleButton>
                     </NavLink>}
                     {enabledLinks[1] && <NavLink to="/kitchen/recipes" className="nav-link">
