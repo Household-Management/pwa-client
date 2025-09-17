@@ -51,7 +51,7 @@ async function PersistPantryLocation(client, state, action) {
 
 async function DeletePantryItem(client, state, action) {
     const itemId = action.payload;
-    const deleted = await client.models.PantryItem.delete(itemId);
+    const deleted = await client.models.PantryItem.delete({id: action.payload});
     if (deleted.errors) {
         throw new Error(deleted.errors.join(", "));
     }
