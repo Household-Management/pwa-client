@@ -295,7 +295,7 @@ const PantryView = props => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell sx={{width: "80%"}}><strong>Location</strong></TableCell>
+                                    <TableCell sx={{width: "80%"}}><strong>Name</strong></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
