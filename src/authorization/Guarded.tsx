@@ -2,8 +2,8 @@ import PropTypes from "prop-types";
 import {useSelector} from "react-redux";
 
 export default function Guarded({requiredRoles, children, deniedComponent, deniedAction}) {
-    const user = useSelector(state => state.user);
-    const household = useSelector(state => state.household);
+    const user = useSelector((state:any) => state.user);
+    const household = useSelector((state:any) => state.household);
 
     return <Guard
         household={household}
@@ -11,7 +11,7 @@ export default function Guarded({requiredRoles, children, deniedComponent, denie
         requiredRoles={requiredRoles}
         deniedComponent={deniedComponent}
         deniedAction={deniedAction}
-    />
+    >{children}</Guard>
 }
 
 export function Guard({household, user, requiredRoles, children, deniedComponent, deniedAction}) {
@@ -24,19 +24,23 @@ export function Guard({household, user, requiredRoles, children, deniedComponent
         return children;
     } else {
         if (deniedComponent) {
+            console.log("Access denied, rendering deniedComponent");
             return deniedComponent;
         } else if (deniedAction) {
+            console.log("Access denied, calling deniedAction");
             deniedAction();
         }
         return null;
-
     }
-
 }
 
 
 function hasRoles(user, household, roles) {
     return roles.length === 0 || roles.some(role => {
+        if(user?.roles && role === "*") {
+            return true;
+        }
+
         const tokens = `${role}:${household?.id}`.split(":");
         return user?.roles && user?.roles?.some(userRole => {
             const userRoleTokens = userRole.split(":");
