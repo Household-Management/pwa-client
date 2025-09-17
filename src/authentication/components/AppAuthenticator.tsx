@@ -48,7 +48,7 @@ export const ResetPasswordPath: AuthenticationPath = "/reset-password";
 
 export type AuthenticationPath = "/sign-in" | "/sign-up" | "/reset-password";
 
-export default function AppAuthenticator({children}: { children: React.ReactNode }) {
+export default function AppAuthenticator({children}: { children?: React.ReactNode }) {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
@@ -150,7 +150,7 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
                 newPassword,
                 confirmationCode
             });
-            setAuthStep("DONE")
+            setAuthStep("BEGIN_SIGN_IN")
             setMessage("Your password has been reset. Please sign in with your new password.");
             navigate(SignInPath);
         } catch (e: any) {
@@ -159,7 +159,7 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
         }
     }
 
-    const [authState] = useState({
+    const authState = {
         tab, // Which tab is shown
         message,
         setMessage,
@@ -175,7 +175,7 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
         authenticationNeeded, // Whether authentication is needed after attempting automatic sign-in
         authStep, // Current authentication step
         setAuthStep // Function to change the authentication step
-    });
+    };
 
     useEffect(() => {
         (async () => {
@@ -246,15 +246,17 @@ export default function AppAuthenticator({children}: { children: React.ReactNode
             {user?.authenticated ? (
                 children
             ) : authenticationNeeded ? (
-                <AuthSignInContext.Provider value={authState}>
-                    <AuthSignUpContext.Provider value={authState}>
-                        <AuthPasswordResetContext.Provider value={authState}>
-                            <AuthenticationView
-                                navigate={navigate}
-                            />
-                        </AuthPasswordResetContext.Provider>
-                    </AuthSignUpContext.Provider>
-                </AuthSignInContext.Provider>
+                <AuthContext.Provider value={authState}>
+                    <AuthSignInContext.Provider value={authState}>
+                        <AuthSignUpContext.Provider value={authState}>
+                            <AuthPasswordResetContext.Provider value={authState}>
+                                <AuthenticationView
+                                    navigate={navigate}
+                                />
+                            </AuthPasswordResetContext.Provider>
+                        </AuthSignUpContext.Provider>
+                    </AuthSignInContext.Provider>
+                </AuthContext.Provider>
             ) : (
                 <Box sx={{
                     width: "100%",
