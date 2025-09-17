@@ -19,6 +19,7 @@ import {
 import {Box, Modal, Stack, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {fn} from "storybook/test";
 import {ResetPasswordOutput} from "aws-amplify/auth";
+import {SignUpOutput} from "@aws-amplify/auth";
 
 const store = configureStore({
     reducer: (state) => state || {user: null},
@@ -41,11 +42,11 @@ export default {
     excludeStories: ["ContainerTemplate"]
 };
 
-const AuthenticatorTemplate = (args) => {
+const AuthenticatorTemplate = (storyArgs) => {
     const location = useLocation();
     const doNavigate = useNavigate();
     const navigate = (path: string) => {
-        args.navigate(path);
+        storyArgs.navigate(path);
         doNavigate(path);
     }
     const [email, setEmail] = useState("");
@@ -55,6 +56,18 @@ const AuthenticatorTemplate = (args) => {
     const [authenticationNeeded] = useState(false);
     let tab: AuthenticationPath = location.pathname as any;
 
+    function withLatency<T extends (this: any, ...args: any[]) => any>(
+        fn: T
+    ): (
+        this: ThisParameterType<T>,
+        ...args: Parameters<T>
+    ) => Promise<Awaited<ReturnType<T>>> {
+        return async function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+            await new Promise((resolve) => setTimeout(resolve, storyArgs.latency));
+            return await fn.apply(this, args as any);
+        };
+    }
+
     const auth: AuthSignUpContextType & AuthSignInContextType & AuthPasswordResetContextType = {
         tab, // Which tab is shown
         email, // The email address from the user
@@ -63,9 +76,23 @@ const AuthenticatorTemplate = (args) => {
         setMessage, // Change the message
         password,
         setPassword,
-        startSignup: args.startSignUp, // Function to start the sign-up process
+        startSignup: withLatency(async (): Promise<SignUpOutput> => {
+            storyArgs.startSignUp
+            return {
+                isSignUpComplete: false,
+                nextStep: {
+                    codeDeliveryDetails: {
+                        attributeName: "email",
+                        deliveryMedium: "EMAIL",
+                        destination: email
+                    },
+                    signUpStep: "CONFIRM_SIGN_UP",
+                },
+                userId: ""
+            }
+        }), // Function to start the sign-up process
         startPasswordReset: async (): Promise<ResetPasswordOutput> => {
-            args.startPasswordReset();
+            storyArgs.startPasswordReset();
             navigate(ResetPasswordPath)
             return {
                 isPasswordReset: false,
@@ -79,10 +106,19 @@ const AuthenticatorTemplate = (args) => {
                 }
             }
         }, // Function to start the password reset process
-        completeSignIn: args.completeSignIn, // Function to sign in
-        completeSignUp: args.completeSignIn, // Function to sign up
+        completeSignIn: withLatency(async (username, password) => {
+            if (storyArgs.signInErrorType) {
+                const e = new Error(storyArgs.signInErrorMessage || "Some error occurred");
+                e.name = storyArgs.signInErrorType;
+                throw e;
+            }
+
+            storyArgs.completeSignIn(username, password);
+            alert("You would now be signed in and redirected to the app");
+        }), // Function to sign in
+        completeSignUp: storyArgs.completeSignIn, // Function to sign up
         completePasswordReset: async (username, newPassword, confirmationCode) => {
-            args.completePasswordReset(username, newPassword, confirmationCode);
+            storyArgs.completePasswordReset(username, newPassword, confirmationCode);
             navigate(SignInPath);
             setMessage("Your password has been reset. Please sign in with your new password.");
         }, // Function to reset password
@@ -112,6 +148,12 @@ type AuthenticatorArgs = {
     completePasswordReset: (username: string, code: string, newPassword: string) => Promise<any>;
     submitAuth: () => void;
     navigate: (path: string) => void;
+    latency: number;
+    signInErrorType?: string;
+    signInErrorMessage?: string;
+    signUpErrorType?: string;
+    confirmSignUpError?: string;
+    resetPasswordError?: string;
 }
 
 export const Authenticator: ((args: any) => Element) & {
@@ -124,7 +166,21 @@ Authenticator.args = {
     startPasswordReset: fn(),
     completeSignIn: fn(),
     submitAuth: fn(),
-    navigate: fn()
+    navigate: fn(),
+    latency: 500,
+    signInErrorType: "",
+    signInErrorMessage: "",
+    signUpErrorType: "",
+    confirmSignUpError: "",
+    resetPasswordError: ""
+};
+
+export const AuthenticationError: ((args: any) => Element) & {
+    args: AuthenticatorArgs
+} = AuthenticatorTemplate.bind({}) as any;
+AuthenticationError.args = {...Authenticator.args,
+    signInErrorType: "NotAuthorizedException",
+    signInErrorMessage: "Incorrect username or password"
 };
 
 // TODO: Extract the actual layout from the component so there's no need to coordinate these places

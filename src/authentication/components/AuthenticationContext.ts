@@ -21,11 +21,11 @@ export type AuthContextType = {
 
 export type AuthSignUpContextType = AuthContextType & {
     startSignup: (email: string, password: string, passwordConfirm: string) => Promise<SignUpOutput>;
-    completeSignUp: (username: string, confirmCode: string) => Promise<ConfirmSignUpOutput | undefined>;
+    completeSignUp: (username: string, confirmCode: string) => Promise<ConfirmSignUpOutput | void>;
 }
 
 export type AuthSignInContextType = AuthContextType & {
-    completeSignIn: (username: string, password: string) => Promise<SignInOutput | undefined>;
+    completeSignIn: (username: string, password: string) => Promise<SignInOutput | void>;
 
     authenticationNeeded: boolean;
     startPasswordReset: () => Promise<ResetPasswordOutput>;
