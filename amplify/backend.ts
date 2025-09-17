@@ -13,8 +13,8 @@ import {
     RestApi
 } from 'aws-cdk-lib/aws-apigateway';
 import * as iam from "aws-cdk-lib/aws-iam";
-import { Stack } from 'aws-cdk-lib';
-import { AmplifyClient, ListDomainAssociationsCommand } from "@aws-sdk/client-amplify";
+import {Stack} from 'aws-cdk-lib';
+import {AmplifyClient, ListDomainAssociationsCommand} from "@aws-sdk/client-amplify";
 import * as dotenv from 'dotenv';
 
 // TODO: Generate local configuration files for sandboxes.
@@ -82,8 +82,7 @@ if(!region) {
 if(!branch) {
     throw new Error("Missing required branch environment variable VITE_AWS_BRANCH");
 }
-const domains = await getAmplifyDomain(appId, region, branch);
-
+// const domains: string[] = [...await getAmplifyDomain(appId, region, branch), "*"];
 
 const apiStack = backend.createStack("APIStack");
 //TODO: Support using GET with path parameters
@@ -95,12 +94,14 @@ const restAPI = new RestApi(apiStack, 'MyApi', {
         stageName: 'staging',
     },
     defaultCorsPreflightOptions: {
-        allowOrigins: domains, // Restrict this to domains you trust
+        allowOrigins: ["*"], // Restrict this to domains you trust
         allowMethods: Cors.ALL_METHODS, // Specify only the methods you need to allow
-        allowHeaders:["*"], // Specify only the headers you need to allow
-    },
+        allowHeaders:["*"], // Specify only the headers you need to allow,
+        disableCache: true
+    }
 });
 
+//TODO: Move this configuration API to its own file
 const configPath = restAPI.root.addResource("config", {
     defaultMethodOptions: {
         authorizationType: AuthorizationType.COGNITO
@@ -116,7 +117,12 @@ const cognitoAuth = new CognitoUserPoolsAuthorizer(apiStack, 'CognitoAuthorizer'
 
 const lambdaIntegration = new LambdaIntegration(backend.fetchConfigurationFunction.resources.lambda);
 
+environmentPath.addMethod("GET", lambdaIntegration, {
+    authorizationType: AuthorizationType.NONE
+});
+
 configurationPath.addMethod("GET", lambdaIntegration, {
+    authorizationType: AuthorizationType.COGNITO,
     authorizer: cognitoAuth
 });
 
@@ -124,10 +130,10 @@ const restApiAccessPolicy = new iam.Policy(apiStack, "RestApiAccessPolicy", {
     statements: [
         new iam.PolicyStatement({
             actions: ["execute-api:Invoke"],
-            resources: [`${restAPI.arnForExecuteApi("*", "/config", "staging")}`]
+            resources: [`${restAPI.arnForExecuteApi("*", "/* ", "*")}`]
         })
     ]
-})
+});
 
 backend.addOutput({
     custom: {
