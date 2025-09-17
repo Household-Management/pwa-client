@@ -8,11 +8,15 @@ import React from "react";
 import TasksView from "../../tasks/components/TasksView";
 import SettingsView from "../../settings/components/SettingsView";
 import HouseholdSelectorWrapper from "../components/HouseholdSelectorWrapper";
-import Guarded from "../../authentication/components/Guarded";
-import AppAuthenticator from "../../authentication/components/AppAuthenticator";
+import Guarded from "../../authorization/Guarded";
+import AppAuthenticator, {
+    ResetPasswordPath,
+    SignInPath,
+    SignUpPath
+} from "../../authentication/components/AppAuthenticator";
 
 function secured(component, roles) {
-    return <Guarded requiredRoles={roles} deniedComponent={<Navigate to="/sign-in"/>}>
+    return <Guarded requiredRoles={roles} deniedComponent={<Navigate to={SignInPath}/>}>
         {component}
     </Guarded>
 }
@@ -50,7 +54,7 @@ export const router = createBrowserRouter(
                 },
                 {
                     path: "/kitchen",
-                    element: secured(<KitchenView/> ,["members", "admin"]),
+                    element: secured(<KitchenView/>, ["members", "admin"]),
                     children: [
                         {
                             index: true,
@@ -75,16 +79,20 @@ export const router = createBrowserRouter(
                     element: secured(<SettingsView/>, ["members", "admin"]),
                 },
                 {
-                    path: "/sign-in",
+                    path: SignInPath,
                     element: <AppAuthenticator/>
                 },
                 {
-                    path: "/sign-up",
+                    path: SignUpPath,
+                    element: <AppAuthenticator/>
+                },
+                {
+                    path: ResetPasswordPath,
                     element: <AppAuthenticator/>
                 },
                 {
                     path: "/household-select",
-                    element: secured(<HouseholdSelectorWrapper/>, [])
+                    element: secured(<HouseholdSelectorWrapper/>, ["*"]),
                 }
             ]
         }
