@@ -7,15 +7,11 @@ import {
 } from "@mui/material";
 import {AddCircleOutline, Delete, Done, Edit} from "@mui/icons-material";
 import {Fragment, useState} from "react";
-import TaskDetailAccordion from "./TaskDetailAccordion";
 import PropTypes from "prop-types";
-import Fab from "@mui/material/Fab";
-import {useNavigate, useParams, useSearchParams} from "react-router-dom";
-import Guarded from "../../authentication/components/Guarded";
-import {useSelector} from "react-redux";
+import Guarded from "../../authorization/Guarded";
 import TaskListHeader from "./TaskListHeader";
 import TaskListItems from "./TaskListItems";
-import moment from "moment";
+import Task from "../model/Task";
 
 /**
  * Component for displaying the detailed view of a TaskList model instance.
@@ -52,14 +48,8 @@ export default function TaskListDetail({
     const [listEditing, setListEditing] = useState(false);
 
     // TODO: Filtering for weekly and monthly tasks.
-    const dueTasks = list.taskItems.filter(task => {
-        switch (task.repeats) {
-            case "DAILY":
-                return !task.completed;
-        }
-        return !task.completed && moment().diff(moment(task.scheduledTime, 'days')) <= 0
-    });
-    const completedTasks = list.taskItems.filter(task => task.completed);
+    const dueTasks = list.taskItems.filter(Task.dueToday);
+    const completedTasks = list.taskItems.filter(pipe([Task.dueToday, not(completed)]));
 
     return <Paper sx={{flexGrow: 1}}>
             <List>
@@ -130,4 +120,17 @@ TaskListDetail.propTypes = {
     onListDelete: PropTypes.func.isRequired,
     onTaskDelete: PropTypes.func.isRequired,
     selectedTaskId: PropTypes.string,
+}
+
+function completed(task) {
+    return task.completed;
+}
+
+
+function not(filter){
+    return (x => !filter(x));
+}
+
+function pipe(fns) {
+    return (x) => fns.reduce((v, f) => f(v), x);
 }
