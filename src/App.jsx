@@ -9,12 +9,30 @@ import {RouterProvider} from "react-router";
 import {router} from "./navigation/configuration/routing";
 import ConfigurationService from "./config/ConfigurationService";
 import {CookiesProvider} from "react-cookie";
+import {parseAmplifyConfig} from "aws-amplify/utils";
 
 console.log("Loading state from window");
 
-ConfigurationService.loadConfiguration();
+const amplifyConfiguration = parseAmplifyConfig(outputs);
 
-Amplify.configure(outputs);
+// This bypasses the parsing logic of Amplify, which only supports GraphQL. We trick amplify into using the underlying API.
+Amplify.configure(
+    {
+        ...amplifyConfiguration,
+        API: {
+            ...amplifyConfiguration.API,
+            REST: outputs.custom.API
+        }
+    },
+    {
+        API: {
+            REST: {
+                retryStrategy: "no-retry"
+            }
+        }
+    });
+
+ConfigurationService.loadConfiguration();
 
 // TODO: Implement notifications for tasks.
 function App() {

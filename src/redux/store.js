@@ -1,6 +1,6 @@
 import {combineReducers, combineSlices, configureStore} from "@reduxjs/toolkit";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
-import { TutorialStateConfiguration } from "../tutorials/state/TutorialStateConfiguration";
+import {TutorialStateConfiguration} from "../tutorials/state/TutorialStateConfiguration";
 import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsStateConfiguration";
 import {put, takeLeading, select, call, spawn, debounce, take, takeEvery} from "redux-saga/effects";
 import createSagaMiddleware from "redux-saga";
@@ -9,6 +9,7 @@ import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesSta
 import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
 
 import {generateClient} from "aws-amplify/data";
+import ConfigurationService from "../config/ConfigurationService";
 
 const client = generateClient();
 
@@ -19,28 +20,28 @@ const client = generateClient();
 export const combinedReducer = combineReducers({
     household: combineSlices({
         name: (state, action) => {
-            if(action.type === "LOADED_STATE") {
+            if (action.type === "LOADED_STATE") {
                 return action.payload.name;
             }
 
             return state ? state : null;
         },
         id: (state, action) => {
-            if(action.type === "LOADED_STATE") {
+            if (action.type === "LOADED_STATE") {
                 return action.payload.id;
             }
 
             return state ? state : null;
         },
         adminGroup: (state, action) => {
-            if(action.type === "LOADED_STATE") {
+            if (action.type === "LOADED_STATE") {
                 return action.payload.adminGroup;
             }
 
             return state ? state : null;
         },
         membersGroup: (state, action) => {
-            if(action.type === "LOADED_STATE") {
+            if (action.type === "LOADED_STATE") {
                 return action.payload.membersGroup;
             }
 
@@ -65,7 +66,7 @@ export const combinedReducer = combineReducers({
             if (isValidUser(action.payload)) {
                 return {...state, ...action.payload};
             } else {
-                throw new Error("Invalid user payload: " +  JSON.stringify(action.payload));
+                throw new Error("Invalid user payload: " + JSON.stringify(action.payload));
             }
         } else {
             return state ? state : {
@@ -109,6 +110,21 @@ function* persistOnChange() {
     })
 }
 
+function* loadConfigurationOnAuthenticate() {
+    yield spawn(function* () {
+        yield takeEvery((action) => {
+            return action.type === "AUTHENTICATED" || action.type === "UNAUTHENTICATED";
+        }, function* (action) {
+            if(action.type === "UNAUTHENTICATED") {
+                console.log("Reloading configuration for unauthenticated user");
+            } else {
+                console.log("Reloading configuration for authenticated user");
+            }
+            ConfigurationService.loadConfiguration();
+        })
+    })
+}
+
 export const store = configureStore({
     reducer: combinedReducer,
     middleware: (getDefaultMiddleware) => {
@@ -117,10 +133,11 @@ export const store = configureStore({
 });
 
 saga.run(function* () {
-    yield spawn(welcomeUser)
+    yield spawn(welcomeUser);
     // yield spawn(loadOnAuthenticate)
     // yield spawn(loadOnSelectHousehold)
-    yield spawn(persistOnChange)
+    yield spawn(persistOnChange);
+    yield spawn(loadConfigurationOnAuthenticate);
 });
 
 // // TODO: On load, show notification of tasks that are due today.

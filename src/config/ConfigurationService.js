@@ -1,26 +1,39 @@
 import {getCurrentUser, fetchAuthSession} from "aws-amplify/auth";
+import {get} from "aws-amplify/api";
 
 export default class ConfigurationService {
     static config = Promise.withResolvers();
 
     static async loadConfiguration() {
-        if(!import.meta.env.VITE_APP_CONFIG_URL) {
+        if (!import.meta.env.VITE_APP_CONFIG_URL) {
             throw new Error("No configuration source defined");
         }
+
+        // TODO: Local caching of configuration
 
         const auth = await fetchAuthSession()
         console.log("Loading configuration...");
         try {
-            const response = await fetch(import.meta.env.VITE_APP_CONFIG_URL, {
-                // credentials: "include",
-                headers: {
-                    "authorization": `Bearer ${auth.tokens.idToken}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            let headers = {};
+            let path;
+            // TODO: Use a single url and select the configuration programmatically in there
+            if (auth?.tokens?.accessToken) {
+                console.log("Getting configuration for authenticated user");
+                headers["Authorization"] = `Bearer ${auth.tokens.idToken}`;
+                path = "config/2j0vk1v/eyvmk0e/2vkz6hj"
+            } else {
+                console.log("Getting public configuration");
+                path = "config/2j0vk1v/eyvmk0e"
             }
-            const responseJson = await response.json();
+            const response = await get({
+                apiName: "Household Service",
+                path,
+                options: { headers }
+            }).response;
+            if (response.statusCode !== 200) {
+                throw new Error(`HTTP error! status: ${response.statusCode}`);
+            }
+            const responseJson = await response.body.json();
             this.config.resolve(responseJson);
             console.log('Configuration loaded from remote source.');
             return;
@@ -32,11 +45,7 @@ export default class ConfigurationService {
     }
 
     static async getSimpleFlag(key) {
-        if(!this.config) {
-            throw new Error("No configuration value!")
-        }
         const config = await this.config.promise;
-        console.log(config);
         const value = config[key]?.enabled;
         return !!value;
     }
