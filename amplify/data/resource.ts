@@ -79,9 +79,10 @@ const kitchenModels = {
         id: a.id().required(),
         name: a.string(),
         quantity: a.integer(),
+        units: a.string(),
         location: a.string(),
         expiration: a.date(),
-        pantryId: a.id(),
+        pantryId: a.id().required(),
         pantry: a.belongsTo("Pantry", "pantryId"),
     })).authorization(defaultOperations),
 }

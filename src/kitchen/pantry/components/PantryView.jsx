@@ -17,13 +17,13 @@ import {
     TableHead,
     TableRow,
     TextField, DialogContentText,
-    Typography, Box
+    Typography, Box, Divider
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Delete from "@mui/icons-material/Delete"
 import Edit from "@mui/icons-material/Edit"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { AddPantryItem, UpdatePantryItem, RemovePantryItem } from "../state/PantryStateConfiguration";
+import {AddPantryItem, UpdatePantryItem, RemovePantryItem} from "../state/PantryStateConfiguration";
 
 import moment from "moment";
 // TODO: Notifications of expiring items.
@@ -40,6 +40,7 @@ const PantryView = props => {
     const [itemLocation, setItemLocation] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [quantity, setQuantity] = useState(1);
+    const [units, setUnits] = useState("");
 
     const [editingItem, setEditingItem] = useState(null);
 
@@ -90,13 +91,14 @@ const PantryView = props => {
                             <TableCell>Location</TableCell>
                             <TableCell>Expiration</TableCell>
                             <TableCell>Quantity</TableCell>
+                            <TableCell>Units</TableCell>
                             <TableCell>Edit</TableCell>
                             <TableCell>Delete</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {items.map((item) => {
-                            const isEditing = editingItem?.id === item.id;
+                            const isEditing = editingItem && editingItem.id === item.id;
                             const expirationRemaining = item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999;
                             let backgroundColor = "inherit";
                             let expiration = (<strong>{item.expiration}</strong>);
@@ -163,29 +165,40 @@ const PantryView = props => {
                                     </TableCell>
                                     <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
                                         {isEditing ? (
+                                            <TextField
+                                                value={editingItem.units || ""}
+                                                onChange={(e) => setEditingItem({...editingItem, units: e.target.value})}
+                                                fullWidth
+                                            />
+                                        ) : (
+                                            item.units || "N/A"
+                                        )}
+                                    </TableCell>
+                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
+                                        {isEditing ? (
                                             <>
                                                 <Button onClick={handleUpdateItem}>Save</Button>
                                                 <Button onClick={() => setEditingItem(null)}>Cancel</Button>
                                             </>
                                         ) : (
                                             <>
-                                            <IconButton onClick={() => setEditingItem(item)}>
-                                                <Edit/>
-                                            </IconButton>
+                                                <IconButton onClick={() => setEditingItem(item)}>
+                                                    <Edit/>
+                                                </IconButton>
                                             </>
                                         )}
                                     </TableCell>
                                     <TableCell>
                                         {!isEditing &&
                                             (<>
-                                                <IconButton onClick={() => {
-                                                    setItemToDelete(item);
-                                                    setIsDeleteDialogOpen(true);
-                                                }}>
-                                                    <Delete/>
-                                                </IconButton>
-                                            </>
-                                        )}
+                                                    <IconButton onClick={() => {
+                                                        setItemToDelete(item);
+                                                        setIsDeleteDialogOpen(true);
+                                                    }}>
+                                                        <Delete/>
+                                                    </IconButton>
+                                                </>
+                                            )}
                                     </TableCell>
                                 </TableRow>
                             );
@@ -257,13 +270,22 @@ const PantryView = props => {
                             {/*<option value="new">New...</option>*/}
                         </select>
                     </Grid>
-                    <Grid size={{xs: 12, md: 6, lg: 2}}>
+                    <Grid size={{xs: 6, md: 4, lg: 1}}>
                         <div>Quantity</div>
                         <input
                             type="number"
                             value={quantity}
                             style={{width: "100%"}}
                             onChange={(e) => setQuantity(Number.parseInt(e.target.value))}
+                        />
+                    </Grid>
+                    <Grid size={{xs: 6, md: 4, lg: 1}}>
+                        <div>Units</div>
+                        <input
+                            type="string"
+                            value={units}
+                            style={{width: "100%"}}
+                            onChange={(e) => setUnits(e.target.value)}
                         />
                     </Grid>
                     <Grid size={{xs: 12, md: 6, lg: 2}}>
