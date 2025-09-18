@@ -33,8 +33,9 @@ if(import.meta.env.VITE_ENABLE_RUM === 'true') {
             APPLICATION_REGION,
             config
         );
+        window.awsRum = awsRum;
     } catch (error) {
-        // Ignore errors thrown during CloudWatch RUM web client initialization
+        console.error(error);
     }
 } else {
     console.log("RUM not enabled");
