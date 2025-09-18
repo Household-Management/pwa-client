@@ -11,7 +11,7 @@ import ConfigurationService from "./config/ConfigurationService";
 import {CookiesProvider} from "react-cookie";
 import {parseAmplifyConfig} from "aws-amplify/utils";
 import {AwsRum} from 'aws-rum-web';
-if(import.meta.env.VITE_ENABLE_RUM === true) {
+if(import.meta.env.VITE_ENABLE_RUM === 'true') {
     try {
         console.log("Enabling RUM");
         const config = {
