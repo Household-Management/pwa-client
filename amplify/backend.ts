@@ -149,4 +149,15 @@ backend.addOutput({
 
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(restApiAccessPolicy);
 
+const rumPutEventsPolicy = new iam.Policy(apiStack, "RumPutEventsPolicy", {
+    statements: [
+        new iam.PolicyStatement({
+            actions: ["rum:PutRumEvents"],
+            resources: ["*"]
+        })
+    ]
+});
+backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(rumPutEventsPolicy)
+backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(rumPutEventsPolicy);
+
 cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage());
