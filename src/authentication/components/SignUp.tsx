@@ -78,59 +78,34 @@ function EmailSignUp() {
         }
     }
 
-    return <>
-        <Stack spacing={3}>
-            <Typography>
-                Enter email and password to create a new account.
-            </Typography>
-            <Typography color="error" sx={{minHeight: 24}}>{error}</Typography>
-            <TextField type="email"
-                       label="Email"
-                       value={email}
-                       onChange={e => setEmail(e.target.value)}/>
-            <PasswordField
-                error={password?.length > 0 && password?.length < 12}
-                label="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-            />
-            <PasswordField
-                error={password?.length > 0 && password !== confirmPassword}
-                label="Confirm Password"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-            />
-            <Button variant="contained" disabled={submitDisabled || email.length === 0 || password.length === 0}
-                    onClick={submit}>Sign
-                Up</Button>
-        </Stack>
-
-        <Modal id="confirm-modal" open={authStep === "CONFIRM_SIGN_UP"}>
-            <div style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100vh",
-                width: "100vw"
-            }}>
-                <Slide
-                    direction="right"
-                    in={authStep === "CONFIRM_SIGN_UP"} mountOnEnter unmountOnExit
-                >
-                    <Box sx={{...modalStyle}}>
-                        <Stack spacing={2}>
-                            <span>Enter the confirmation code sent to your email.</span>
-                            <TextField
-                                label="Confirm Code"
-                                onChange={e => setConfirmCode(e.target.value)}
-                            ></TextField>
-                            {error && <Typography color="error">{error}</Typography>}
-                            {inProgress && <CircularProgress/>} {/* TODO: Center horizontally. */}
-                            <Button variant="contained" color="error" onClick={() => setAuthStep(null)}>Cancel</Button>
-                        </Stack>
-                    </Box>
-                </Slide>
-            </div>
-        </Modal>
-    </>
+    return (
+        <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
+            <Stack spacing={3}>
+                <Typography>
+                    Enter email and password to create a new account.
+                </Typography>
+                <Typography color="error" sx={{minHeight: 24}}>{error}</Typography>
+                <TextField type="email"
+                           label="Email"
+                           value={email}
+                           onChange={e => setEmail(e.target.value)} />
+                <PasswordField
+                    error={password?.length > 0 && password?.length < 12}
+                    label="Password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                />
+                <PasswordField
+                    error={password?.length > 0 && password !== confirmPassword}
+                    label="Confirm Password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                />
+                <Button variant="contained"
+                        disabled={submitDisabled || email.length === 0 || password.length === 0}
+                        type="submit"
+                        onClick={submit}>Sign Up</Button>
+            </Stack>
+        </form>
+    );
 }

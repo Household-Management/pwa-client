@@ -26,24 +26,27 @@ export default function ({}) {
         }
     }
 
-    return <>
-        <Stack spacing={2}>
-            {error ? <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography> : null}
-            {loading ? <LinearProgress/> : null}
-            <TextField id="login-email" label="Email" type="text" value={email}
-                       onChange={e => setEmail(e.target.value)}></TextField>
-            <PasswordField id="login-password" label="Password" type="password" value={password}
-                       onChange={e => setPassword(e.target.value)}></PasswordField>
-            <Button id="login-submit"
-                    variant="contained"
-                    onClick={submit}
-                    disabled={email?.length === 0 || password?.length === 0}>Sign In</Button>
-            <Button id="password-reset"
-                    variant="contained"
-                    onClick={startPasswordReset}
-                    disabled={!email || email?.length === 0}>
-                Forgot Password?
-            </Button>
-        </Stack>
-    </>
+    return (
+        <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
+            <Stack spacing={2}>
+                {error ? <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography> : null}
+                {loading ? <LinearProgress/> : null}
+                <TextField id="login-email" label="Email" type="text" value={email}
+                           onChange={e => setEmail(e.target.value)} />
+                <PasswordField id="login-password" label="Password" type="password" value={password}
+                               onChange={e => setPassword(e.target.value)} />
+                <Button id="login-submit"
+                        type="submit"
+                        variant="contained"
+                        // onClick={submit}
+                        disabled={email?.length === 0 || password?.length === 0}>Sign In</Button>
+                <Button id="password-reset"
+                        variant="contained"
+                        onClick={startPasswordReset}
+                        disabled={!email || email?.length === 0}>
+                    Forgot Password?
+                </Button>
+            </Stack>
+        </form>
+    );
 }

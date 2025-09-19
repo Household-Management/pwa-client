@@ -60,41 +60,47 @@ export function PasswordResetView({email = "", authStep, onSubmit}) {
     }
 
     return (
-        <Stack spacing={2}>
-            {!error && authStep === "REQUESTING_CODE" &&
-                <Typography sx={{textAlign: "center"}}>Requesting password reset code...</Typography>}
-            {!error && authStep === "CONFIRM_RESET_PASSWORD_WITH_CODE" &&
-                <Typography sx={{textAlign: "center"}}>A confirmation code had been sent to {email}, enter it to change
-                    your password.</Typography>}
-            {error && <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography>}
-            <TextField
-                id="reset-code"
-                label="Reset Code"
-                type="text"
-                value={resetCode}
-                onChange={(e) => setResetCode(e.target.value)}
-            />
-            <TextField
-                id="new-password"
-                label="New Password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <TextField
-                id="confirm-password"
-                label="Confirm New Password"
-                type="password"
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-            />
-            <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={!valid}
-            >
-                Reset Password
-            </Button>
-        </Stack>
+        <form onSubmit={e => {
+            e.preventDefault();
+            submit();
+        }}>
+            <Stack spacing={2}>
+                {!error && authStep === "REQUESTING_CODE" &&
+                    <Typography sx={{textAlign: "center"}}>Requesting password reset code...</Typography>}
+                {!error && authStep === "CONFIRM_RESET_PASSWORD_WITH_CODE" &&
+                    <Typography sx={{textAlign: "center"}}>A confirmation code had been sent to {email}, enter it to
+                        change
+                        your password.</Typography>}
+                {error && <Typography sx={{color: "red", textAlign: "center"}}>{error}</Typography>}
+                <TextField
+                    id="reset-code"
+                    label="Reset Code"
+                    type="text"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value)}
+                />
+                <TextField
+                    id="new-password"
+                    label="New Password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <TextField
+                    id="confirm-password"
+                    label="Confirm New Password"
+                    type="password"
+                    value={passwordConfirmation}
+                    onChange={(e) => setPasswordConfirmation(e.target.value)}
+                />
+                <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={!valid}
+                >
+                    Reset Password
+                </Button>
+            </Stack>
+        </form>
     );
 }
