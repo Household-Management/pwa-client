@@ -92,8 +92,7 @@ const kitchenModels = {
             fiber: a.float(),
             sugar: a.float(),
             sodium: a.float(),
-            servingSize: a.string(),
-            unit: a.string(),
+            servingSize: a.string()
         })
     })).authorization(defaultOperations),
 }

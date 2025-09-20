@@ -78,14 +78,14 @@ const PantryView = props => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell colSpan={2}>Item</TableCell>
-                            <TableCell>Location</TableCell>
-                            <TableCell>Expiration</TableCell>
-                            <TableCell>Quantity</TableCell>
-                            <TableCell>Units</TableCell>
-                            <TableCell>Nutrition</TableCell>
-                            <TableCell>Edit</TableCell>
-                            <TableCell>Delete</TableCell>
+                            <TableCell sx={{textAlign: "center"}}></TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Location</TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Expiration</TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Quantity</TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Units</TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Nutrition</TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Edit</TableCell>
+                            <TableCell sx={{textAlign: "center"}}>Delete</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -149,6 +149,8 @@ const PantryView = props => {
                     <NutritionInformation item={targetItem}/>
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={() => setOpenDialog(EDIT_ITEM_DIALOG)}>Edit</Button>
+                    {/* TODO: Add an edit button that opens the edit dialog */}
                     <Button onClick={() => setOpenDialog(null)}>Close</Button>
                 </DialogActions>
             </Dialog>
@@ -192,10 +194,10 @@ const EMPTY_ITEM = {
 function ItemDialog({open, setOpenDialog, locations, handleFinishItem, item = EMPTY_ITEM, setItem}) {
     const valid = item && item.name && item.name.length > 0;
     return <Dialog open={open} onClose={() => setOpenDialog(null)}>
-        <DialogTitle>Add New Item</DialogTitle>
+        <DialogTitle></DialogTitle>
         <DialogContent>
             <DialogContentText>
-                Enter the details of the new pantry item.
+
             </DialogContentText>
             <>
                 <TextField
@@ -288,34 +290,34 @@ export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
 
     return (
         <TableRow key={item.id} sx={{backgroundColor: backgroundColor}}>
-            <TableCell colSpan={2}>{item.name}</TableCell>
-            <TableCell>{item.location || "?"}</TableCell>
-            <TableCell>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
-            <TableCell>{item.quantity || 1}</TableCell>
-            <TableCell>{item.units || "N/A"}</TableCell>
-            <TableCell>
-                <Button onClick={() => {
+            <TableCell sx={{textAlign: "center"}}><strong>{item.name}</strong></TableCell>
+            <TableCell sx={{textAlign: "center"}}>{item.location || "?"}</TableCell>
+            <TableCell sx={{textAlign: "center"}}>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
+            <TableCell sx={{textAlign: "center"}}>{item.quantity || 1}</TableCell>
+            <TableCell sx={{textAlign: "center"}}>{item.units || "N/A"}</TableCell>
+            <TableCell sx={{textAlign: "center"}}>
+                <Button sx={{height: "100%", width: "100%"}} color="primary" onClick={() => {
                     setTargetItem(item);
                     setOpenDialog(VIEW_NUTRITION_DIALOG);
                 }}>
                     <MenuBook/>
                 </Button>
             </TableCell>
-            <TableCell>
-                <IconButton onClick={() => {
+            <TableCell sx={{textAlign: "center"}}>
+                <Button sx={{height: "100%", width: "100%"}} color="primary" onClick={() => {
                     setTargetItem(item);
                     setOpenDialog(EDIT_ITEM_DIALOG);
                 }}>
                     <Edit/>
-                </IconButton>
+                </Button>
             </TableCell>
-            <TableCell>
-                <IconButton disable={true} color="error" onClick={() => {
+            <TableCell sx={{textAlign: "center"}}>
+                <Button sx={{height: "100%", width: "100%"}} color="error" onClick={() => {
                     setTargetItem(item);
                     setOpenDialog(DELETE_ITEM_DIALOG);
                 }}>
                     <Delete/>
-                </IconButton>
+                </Button>
             </TableCell>
         </TableRow>
     );
@@ -324,6 +326,18 @@ export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
 function NutritionInformation({item, setItem}) {
     return (
         <>
+            <TextField
+                type="text"
+                label="Serving Size"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.servingSize || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, servingSize: e.target.value}
+                })}
+            />
             {/* FIXME: Keeps leading zero when typing */}
             <TextField
                 type="number"
@@ -407,30 +421,6 @@ function NutritionInformation({item, setItem}) {
                 onChange={(e) => setItem && setItem({
                     ...item,
                     nutrition: {...item.nutrition, sodium: Number(e.target.value)}
-                })}
-            />
-            <TextField
-                type="text"
-                label="Serving Size"
-                fullWidth
-                disabled={!setItem}
-                margin="dense"
-                value={item.nutrition?.servingSize || ""}
-                onChange={(e) => setItem && setItem({
-                    ...item,
-                    nutrition: {...item.nutrition, servingSize: e.target.value}
-                })}
-            />
-            <TextField
-                type="text"
-                label="Unit"
-                fullWidth
-                disabled={!setItem}
-                margin="dense"
-                value={item.nutrition?.unit || ""}
-                onChange={(e) => setItem && setItem({
-                    ...item,
-                    nutrition: {...item.nutrition, unit: e.target.value}
                 })}
             />
         </>
