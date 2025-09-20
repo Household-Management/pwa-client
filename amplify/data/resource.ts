@@ -84,6 +84,17 @@ const kitchenModels = {
         expiration: a.date(),
         pantryId: a.id().required(),
         pantry: a.belongsTo("Pantry", "pantryId"),
+        nutrition: a.customType({
+            calories: a.integer(),
+            protein: a.float(),
+            fat: a.float(),
+            carbohydrates: a.float(),
+            fiber: a.float(),
+            sugar: a.float(),
+            sodium: a.float(),
+            servingSize: a.string(),
+            unit: a.string(),
+        })
     })).authorization(defaultOperations),
 }
 

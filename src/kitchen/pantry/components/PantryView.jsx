@@ -22,6 +22,7 @@ import {
 import Delete from "@mui/icons-material/Delete"
 import Edit from "@mui/icons-material/Edit"
 import Add from "@mui/icons-material/Add";
+import MenuBook from "@mui/icons-material/MenuBook"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {AddPantryItem, UpdatePantryItem, RemovePantryItem} from "../state/PantryStateConfiguration";
 
@@ -31,6 +32,7 @@ const EDIT_ITEM_DIALOG = "edit-item";
 const DELETE_ITEM_DIALOG = "delete-item";
 const NEW_ITEM_DIALOG = "new-item";
 const NEW_LOCATION_DIALOG = "new-location";
+const VIEW_NUTRITION_DIALOG = "view-nutrition";
 
 // TODO: Notifications of expiring items.
 // TODO: Implement adding items to grocery list on expiration/usage.
@@ -76,11 +78,12 @@ const PantryView = props => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{width: "60%"}}>Item</TableCell>
+                            <TableCell colSpan={2}>Item</TableCell>
                             <TableCell>Location</TableCell>
                             <TableCell>Expiration</TableCell>
                             <TableCell>Quantity</TableCell>
                             <TableCell>Units</TableCell>
+                            <TableCell>Nutrition</TableCell>
                             <TableCell>Edit</TableCell>
                             <TableCell>Delete</TableCell>
                         </TableRow>
@@ -92,7 +95,7 @@ const PantryView = props => {
                             setOpenDialog={setOpenDialog}
                         />)}
                         <TableRow>
-                            <TableCell colSpan={7} align="center">
+                            <TableCell colSpan={9} align="center">
                                 <Button
                                     sx={{width: "100%"}}
                                     size="large"
@@ -118,6 +121,8 @@ const PantryView = props => {
                 setOpenDialog={setOpenDialog}
                 handleFinishItem={handleAddItem}
                 locations={locations}
+                item={targetItem}
+                setItem={setTargetItem}
             />
 
             <ItemDialog
@@ -135,6 +140,18 @@ const PantryView = props => {
                 setOpenDialog={setOpenDialog}
                 handleDelete={handleDelete}
             />
+
+            <Dialog open={openDialog === VIEW_NUTRITION_DIALOG}>
+                <DialogTitle>
+                    {targetItem ? targetItem.name : "Unknown"} Nutrition
+                </DialogTitle>
+                <DialogContent>
+                    <NutritionInformation item={targetItem}/>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDialog(null)}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };
@@ -173,58 +190,70 @@ const EMPTY_ITEM = {
 }
 
 function ItemDialog({open, setOpenDialog, locations, handleFinishItem, item = EMPTY_ITEM, setItem}) {
+    const valid = item && item.name && item.name.length > 0;
     return <Dialog open={open} onClose={() => setOpenDialog(null)}>
         <DialogTitle>Add New Item</DialogTitle>
         <DialogContent>
             <DialogContentText>
                 Enter the details of the new pantry item.
             </DialogContentText>
-            <TextField
-                autoFocus
-                margin="dense"
-                label="Item Name"
-                type="text"
-                fullWidth
-                value={item.name}
-                onChange={(e) => setItem({...item, name: e.target.value})}
-            />
-            <TextField
-                margin="dense"
-                label="Expiration Date"
-                type="date"
-                fullWidth
-                value={item.expiration}
-                onChange={(e) => setItem({...item, expiration: e.target.value})}
-                InputLabelProps={{
-                    shrink: true,
-                }}
-            />
-            <select
-                onChange={(e) => setItem({...item, location: e.target.value})}
-                style={{width: "100%", marginTop: "1rem"}}
-                defaultValue={""}
-            >
-                <option value="" disabled>Select Location</option>
-                {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
-            </select>
-            <TextField
-                type="number"
-                style={{width: "50%", marginTop: "1rem"}}
-                value={item.quantity}
-                onChange={e => setItem({...item, quantity: Number(e.target.value)})}
-                label="Quantity"
-            />
-            {/* Add some predefined units or let the user enter their own */}
-            <TextField
-                type="text"
-                style={{width: "50%", marginTop: "1rem"}}
-                value={item.units}
-                label="Units"
-            />
+            <>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Item Name"
+                    type="text"
+                    fullWidth
+                    value={item.name}
+                    onChange={(e) => setItem({...item, name: e.target.value})}
+                />
+                <TextField
+                    margin="dense"
+                    label="Expiration Date"
+                    type="date"
+                    fullWidth
+                    value={item.expiration}
+                    onChange={(e) => setItem({...item, expiration: e.target.value})}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                />
+                <select
+                    onChange={(e) => setItem({...item, location: e.target.value})}
+                    style={{width: "100%", marginTop: "1rem"}}
+                    defaultValue={""}
+                >
+                    <option value="" disabled>Select Location</option>
+                    {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
+                </select>
+                <TextField
+                    type="number"
+                    style={{width: "50%", marginTop: "1rem"}}
+                    value={item.quantity}
+                    onChange={e => setItem({...item, quantity: Number(e.target.value)})}
+                    label="Quantity"
+                />
+                {/* Add some predefined units or let the user enter their own */}
+                <TextField
+                    type="text"
+                    style={{width: "50%", marginTop: "1rem"}}
+                    value={item.units}
+                    label="Units"
+                />
+            </>
+            <Accordion>
+                <AccordionSummary>
+                    Nutrition Info
+                </AccordionSummary>
+                <AccordionDetails>
+                    <NutritionInformation item={item} setItem={setItem}/>
+                </AccordionDetails>
+
+            </Accordion>
         </DialogContent>
         <DialogActions
             sx={{width: "50%", marginLeft: "50%", justifyContent: "space-around", paddingLeft: 0, paddingRight: 0}}>
-            <Button onClick={() => handleFinishItem(item)}>Add</Button>
+            <Button disabled={!valid} onClick={() => handleFinishItem(item)}>Add</Button>
             <Button color="error" onClick={() => setOpenDialog(false)}>Cancel</Button>
         </DialogActions>
     </Dialog>
@@ -259,11 +288,19 @@ export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
 
     return (
         <TableRow key={item.id} sx={{backgroundColor: backgroundColor}}>
-            <TableCell>{item.name}</TableCell>
+            <TableCell colSpan={2}>{item.name}</TableCell>
             <TableCell>{item.location || "?"}</TableCell>
             <TableCell>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
             <TableCell>{item.quantity || 1}</TableCell>
             <TableCell>{item.units || "N/A"}</TableCell>
+            <TableCell>
+                <Button onClick={() => {
+                    setTargetItem(item);
+                    setOpenDialog(VIEW_NUTRITION_DIALOG);
+                }}>
+                    <MenuBook/>
+                </Button>
+            </TableCell>
             <TableCell>
                 <IconButton onClick={() => {
                     setTargetItem(item);
@@ -281,6 +318,122 @@ export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
                 </IconButton>
             </TableCell>
         </TableRow>
+    );
+}
+
+function NutritionInformation({item, setItem}) {
+    return (
+        <>
+            {/* FIXME: Keeps leading zero when typing */}
+            <TextField
+                type="number"
+                label="Calories"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.calories || 0}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, calories: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="number"
+                label="Protein (g)"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.protein || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, protein: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="number"
+                label="Fat (g)"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.fat || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, fat: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="number"
+                label="Carbohydrates (g)"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.carbohydrates || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, carbohydrates: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="number"
+                label="Fiber (g)"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.fiber || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, fiber: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="number"
+                label="Sugar (g)"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.sugar || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, sugar: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="number"
+                label="Sodium (mg)"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.sodium || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, sodium: Number(e.target.value)}
+                })}
+            />
+            <TextField
+                type="text"
+                label="Serving Size"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.servingSize || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, servingSize: e.target.value}
+                })}
+            />
+            <TextField
+                type="text"
+                label="Unit"
+                fullWidth
+                disabled={!setItem}
+                margin="dense"
+                value={item.nutrition?.unit || ""}
+                onChange={(e) => setItem && setItem({
+                    ...item,
+                    nutrition: {...item.nutrition, unit: e.target.value}
+                })}
+            />
+        </>
     );
 }
 
