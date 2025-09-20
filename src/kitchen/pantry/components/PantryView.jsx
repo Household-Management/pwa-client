@@ -17,11 +17,11 @@ import {
     TableHead,
     TableRow,
     TextField, DialogContentText,
-    Typography, Box, Divider
+    Typography
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
 import Delete from "@mui/icons-material/Delete"
 import Edit from "@mui/icons-material/Edit"
+import Add from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {AddPantryItem, UpdatePantryItem, RemovePantryItem} from "../state/PantryStateConfiguration";
 
@@ -36,33 +36,20 @@ const PantryView = props => {
     const locations = useSelector(state => state.household.kitchen.pantry.locations);
 
     const [itemName, setItemName] = useState("");
-    const [expirationDate, setExpirationDate] = useState("");
-    const [itemLocation, setItemLocation] = useState("");
-    const [isDialogOpen, setIsDialogOpen] = useState(false)
-    const [quantity, setQuantity] = useState(1);
-    const [units, setUnits] = useState("");
+    const [openDialog, setOpenDialog] = useState(null)
 
     const [editingItem, setEditingItem] = useState(null);
 
-    const [locationName, setLocationName] = useState("");
-
-    const handleAddItem = () => {
+    const handleAddItem = (newItem) => {
         if (itemName) {
-            const newItem = {
-                name: itemName,
-                expiration: expirationDate !== "" ? expirationDate : undefined,
-                location: itemLocation
-            };
             dispatch(AddPantryItem(newItem));
             setItemName("");
             setExpirationDate("");
         }
     };
-    const handleAddLocation = () => {
+    const handleAddLocation = (locationName) => {
         if (locationName) {
             dispatch(AddLocation(locationName));
-            setLocationName("");
-            setIsDialogOpen(false)
         }
     }
     const handleUpdateItem = () => {
@@ -70,14 +57,10 @@ const PantryView = props => {
         setEditingItem(null);
     }
 
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState(null);
-
     const handleDelete = () => {
         if (itemToDelete) {
             dispatch(RemovePantryItem(itemToDelete.id));
             setItemToDelete(null);
-            setIsDeleteDialogOpen(false);
         }
     };
 
@@ -127,7 +110,10 @@ const PantryView = props => {
                                         {isEditing ? (
                                             <select
                                                 value={editingItem.location}
-                                                onChange={(e) => setEditingItem({...editingItem, location: e.target.value})}
+                                                onChange={(e) => setEditingItem({
+                                                    ...editingItem,
+                                                    location: e.target.value
+                                                })}
                                                 style={{width: "100%"}}
                                             >
                                                 <option value="" disabled>Select Location</option>
@@ -144,7 +130,10 @@ const PantryView = props => {
                                             <input
                                                 type="date"
                                                 value={editingItem.expiration}
-                                                onChange={(e) => setEditingItem({...editingItem, expiration: e.target.value})}
+                                                onChange={(e) => setEditingItem({
+                                                    ...editingItem,
+                                                    expiration: e.target.value
+                                                })}
                                                 style={{width: "100%"}}
                                             />
                                         ) : (
@@ -156,7 +145,10 @@ const PantryView = props => {
                                             <input
                                                 type="number"
                                                 value={editingItem.quantity || 1}
-                                                onChange={(e) => setEditingItem({...editingItem, quantity: Number(e.target.value)})}
+                                                onChange={(e) => setEditingItem({
+                                                    ...editingItem,
+                                                    quantity: Number(e.target.value)
+                                                })}
                                                 style={{width: "100%"}}
                                             />
                                         ) : (
@@ -167,7 +159,10 @@ const PantryView = props => {
                                         {isEditing ? (
                                             <TextField
                                                 value={editingItem.units || ""}
-                                                onChange={(e) => setEditingItem({...editingItem, units: e.target.value})}
+                                                onChange={(e) => setEditingItem({
+                                                    ...editingItem,
+                                                    units: e.target.value
+                                                })}
                                                 fullWidth
                                             />
                                         ) : (
@@ -192,8 +187,7 @@ const PantryView = props => {
                                         {!isEditing &&
                                             (<>
                                                     <IconButton onClick={() => {
-                                                        setItemToDelete(item);
-                                                        setIsDeleteDialogOpen(true);
+                                                        setOpenDialog(null)
                                                     }}>
                                                         <Delete/>
                                                     </IconButton>
@@ -203,137 +197,153 @@ const PantryView = props => {
                                 </TableRow>
                             );
                         })}
+                        <TableRow>
+                            <TableCell colSpan={7} align="center">
+                                <Button
+                                    sx={{width: "100%"}}
+                                    size="large"
+                                    color="primary"
+                                    onClick={() => setOpenDialog("new-item")}
+                                >
+                                    <Add/>
+                                </Button>
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-                <DialogTitle>Add New Location</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Enter the name of the new location.
-                    </DialogContentText>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Location Name"
-                        type="text"
-                        fullWidth
-                        value={locationName}
-                        onChange={(e) => setLocationName(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddLocation}>Add</Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
-                <DialogTitle>Confirm Deletion</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to delete the item "{itemToDelete?.name}"?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleDelete} color="error">Delete</Button>
-                </DialogActions>
-            </Dialog>
-            <Box style={{padding: "2rem"}}>
-                <Grid
-                    container
-                    spacing={4}>
-                    <Grid size={{xs: 12, md: 6, lg: 4}}>
-                        <div>New Item</div>
-                        <input
-                            style={{width: "100%"}}
-                            type="text"
-                            value={itemName}
-                            onChange={(e) => setItemName(e.target.value)}
-                            placeholder="Item Name"
-                        />
-                    </Grid>
-                    <Grid size={{xs: 12, md: 6, lg: 2}}>
-                        <div>Location</div>
-                        <select
-                            onChange={(e) => {
-                                setItemLocation(e.target.value);
-                                if (e.target.value === "new") {
-                                    setIsDialogOpen(true)
-                                }
-                            }}
-                            style={{width: "100%"}}
-                            defaultValue={""}
-                        >
-                            <option value="" disabled>Select Location</option>
-                            {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
-                            {/*<option value="new">New...</option>*/}
-                        </select>
-                    </Grid>
-                    <Grid size={{xs: 6, md: 4, lg: 1}}>
-                        <div>Quantity</div>
-                        <input
-                            type="number"
-                            value={quantity}
-                            style={{width: "100%"}}
-                            onChange={(e) => setQuantity(Number.parseInt(e.target.value))}
-                        />
-                    </Grid>
-                    <Grid size={{xs: 6, md: 4, lg: 1}}>
-                        <div>Units</div>
-                        <input
-                            type="string"
-                            value={units}
-                            style={{width: "100%"}}
-                            onChange={(e) => setUnits(e.target.value)}
-                        />
-                    </Grid>
-                    <Grid size={{xs: 12, md: 6, lg: 2}}>
-                        <div>Expires</div>
-                        <input
-                            type="date"
-                            value={expirationDate}
-                            style={{width: "100%"}}
-                            onChange={(e) => setExpirationDate(e.target.value)}
-                        />
 
-                    </Grid>
-                    {/* TODO: Replace with material button */}
-                    <Grid size={{xs: 12, lg: 2}}>
-                        <button onClick={handleAddItem}>Add Item</button>
-                    </Grid>
-                </Grid>
-            </Box>
-            <Accordion>
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon/>}
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
-                >
-                    <Typography>Locations</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <TableContainer component={Paper}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell sx={{width: "80%"}}><strong>Name</strong></TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {locations.map((location) => (
-                                    <TableRow key={location}>
-                                        <TableCell>{location}</TableCell>
-                                        {/* TODO: Add back delete when create is implemented. */}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </AccordionDetails>
-            </Accordion>
+            {/*<Accordion>*/}
+            {/*    <AccordionSummary*/}
+            {/*        expandIcon={<ExpandMoreIcon/>}*/}
+            {/*        aria-controls="panel1a-content"*/}
+            {/*        id="panel1a-header"*/}
+            {/*    >*/}
+            {/*        <Typography>Locations</Typography>*/}
+            {/*    </AccordionSummary>*/}
+            {/*    <AccordionDetails>*/}
+            {/*        <TableContainer component={Paper}>*/}
+            {/*            <Table>*/}
+            {/*                <TableHead>*/}
+            {/*                    <TableRow>*/}
+            {/*                        <TableCell sx={{width: "80%"}}><strong>Name</strong></TableCell>*/}
+            {/*                    </TableRow>*/}
+            {/*                </TableHead>*/}
+            {/*                <TableBody>*/}
+            {/*                    {locations.map((location) => (*/}
+            {/*                        <TableRow key={location}>*/}
+            {/*                            <TableCell>{location}</TableCell>*/}
+            {/*                            /!* TODO: Add back delete when create is implemented. *!/*/}
+            {/*                        </TableRow>*/}
+            {/*                    ))}*/}
+            {/*                </TableBody>*/}
+            {/*            </Table>*/}
+            {/*        </TableContainer>*/}
+            {/*    </AccordionDetails>*/}
+            {/*</Accordion>*/}
+
+            <NewLocationDialog
+                isDialogOpen={"new-location" === openDialog}
+                setOpenDialog={setOpenDialog}
+                handleAddLocation={handleAddLocation}
+            />
+
+            <NewItemDialog
+                isDialogOpen={"new-item" === openDialog}
+                setOpenDialog={setOpenDialog}
+                handleAddItem={handleAddItem}
+                locations={locations}
+            />
+
+            <DeleteItemDialog
+                isDialogOpen={"delete-item" === openDialog}
+            />
         </div>
     );
 };
+
+function NewLocationDialog({isDialogOpen, setIsDialogOpen, handleAddLocation}) {
+    const [locationName, setLocationName] = useState("");
+    return <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <DialogTitle>Add New Location</DialogTitle>
+        <DialogContent>
+            <DialogContentText>
+                Enter the name of the new location.
+            </DialogContentText>
+            <TextField
+                autoFocus
+                margin="dense"
+                label="Location Name"
+                type="text"
+                fullWidth
+                value={locationName}
+                onChange={(e) => setLocationName(e.target.value)}
+            />
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setIsDialogOpen(null)}>Cancel</Button>
+            <Button onClick={() => handleAddLocation(locationName)}>Add</Button>
+        </DialogActions>
+    </Dialog>
+}
+
+function NewItemDialog({isDialogOpen, setIsDialogOpen, locations, handleAddItem}) {
+    const [item, setItem] = useState("");
+    return <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <DialogTitle>Add New Item</DialogTitle>
+        <DialogContent>
+            <DialogContentText>
+                Enter the details of the new pantry item.
+            </DialogContentText>
+            <TextField
+                autoFocus
+                margin="dense"
+                label="Item Name"
+                type="text"
+                fullWidth
+                value={item.name}
+                onChange={(e) => setItem({...item, name: e.target.value})}
+            />
+            <TextField
+                margin="dense"
+                label="Expiration Date"
+                type="date"
+                fullWidth
+                value={item.expirationDate}
+                onChange={(e) => setItem({...item, expirationDate: e.target.value})}
+                InputLabelProps={{
+                    shrink: true,
+                }}
+            />
+            <select
+                onChange={(e) => setItem({...item, location: e.target.value})}
+                style={{width: "100%", marginTop: "1rem"}}
+                defaultValue={""}
+            >
+                <option value="" disabled>Select Location</option>
+                {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
+            </select>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddItem}>Add</Button>
+        </DialogActions>
+    </Dialog>
+}
+
+function DeleteItemDialog({itemToDelete, isDialogOpen, setDialogOpen, handleDelete}) {
+    return <Dialog open={isDialogOpen} onClose={() => setDialogOpen(null)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+            <DialogContentText>
+                Are you sure you want to delete the item "{itemToDelete?.name}"?
+            </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setDialogOpen(null)}>Cancel</Button>
+            <Button onClick={handleDelete} color="error">Delete</Button>
+        </DialogActions>
+    </Dialog>
+}
 
 export default PantryView;
