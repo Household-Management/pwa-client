@@ -27,7 +27,7 @@ import {AddPantryItem, UpdatePantryItem, RemovePantryItem} from "../state/Pantry
 
 import moment from "moment";
 // TODO: Notifications of expiring items.
-// TODO: Implemenet assigning items to grocery list on expiration/usage.
+// TODO: Implement adding items to grocery list on expiration/usage.
 const PantryView = props => {
     const dispatch = useDispatch();
     const items = useSelector(state => {
@@ -35,16 +35,14 @@ const PantryView = props => {
     });
     const locations = useSelector(state => state.household.kitchen.pantry.locations);
 
-    const [itemName, setItemName] = useState("");
     const [openDialog, setOpenDialog] = useState(null)
 
     const [editingItem, setEditingItem] = useState(null);
 
     const handleAddItem = (newItem) => {
-        if (itemName) {
+        if (newItem.name) {
             dispatch(AddPantryItem(newItem));
-            setItemName("");
-            setExpirationDate("");
+            setOpenDialog(null);
         }
     };
     const handleAddLocation = (locationName) => {
@@ -243,28 +241,28 @@ const PantryView = props => {
             {/*</Accordion>*/}
 
             <NewLocationDialog
-                isDialogOpen={"new-location" === openDialog}
+                open={"new-location" === openDialog}
                 setOpenDialog={setOpenDialog}
                 handleAddLocation={handleAddLocation}
             />
 
             <NewItemDialog
-                isDialogOpen={"new-item" === openDialog}
+                open={"new-item" === openDialog}
                 setOpenDialog={setOpenDialog}
                 handleAddItem={handleAddItem}
                 locations={locations}
             />
 
             <DeleteItemDialog
-                isDialogOpen={"delete-item" === openDialog}
+                open={"delete-item" === openDialog}
             />
         </div>
     );
 };
 
-function NewLocationDialog({isDialogOpen, setIsDialogOpen, handleAddLocation}) {
+function NewLocationDialog({open, setOpenDialog, handleAddLocation}) {
     const [locationName, setLocationName] = useState("");
-    return <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+    return <Dialog open={open} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Add New Location</DialogTitle>
         <DialogContent>
             <DialogContentText>
@@ -281,15 +279,21 @@ function NewLocationDialog({isDialogOpen, setIsDialogOpen, handleAddLocation}) {
             />
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setIsDialogOpen(null)}>Cancel</Button>
+            <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
             <Button onClick={() => handleAddLocation(locationName)}>Add</Button>
         </DialogActions>
     </Dialog>
 }
 
-function NewItemDialog({isDialogOpen, setIsDialogOpen, locations, handleAddItem}) {
-    const [item, setItem] = useState("");
-    return <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+function NewItemDialog({open, setOpenDialog, locations, handleAddItem}) {
+    const [item, setItem] = useState({
+        name: "",
+        expiration: null,
+        location: null,
+        quantity: 1,
+        units: null
+    });
+    return <Dialog open={open} onClose={() => setOpenDialog(null)}>
         <DialogTitle>Add New Item</DialogTitle>
         <DialogContent>
             <DialogContentText>
@@ -309,8 +313,8 @@ function NewItemDialog({isDialogOpen, setIsDialogOpen, locations, handleAddItem}
                 label="Expiration Date"
                 type="date"
                 fullWidth
-                value={item.expirationDate}
-                onChange={(e) => setItem({...item, expirationDate: e.target.value})}
+                value={item.expiration}
+                onChange={(e) => setItem({...item, expiration: e.target.value})}
                 InputLabelProps={{
                     shrink: true,
                 }}
@@ -323,16 +327,31 @@ function NewItemDialog({isDialogOpen, setIsDialogOpen, locations, handleAddItem}
                 <option value="" disabled>Select Location</option>
                 {locations.map((location) => (<option key={location} value={location}>{location}</option>))}
             </select>
+            <TextField
+                type="number"
+                style={{width: "50%", marginTop: "1rem"}}
+                value={item.quantity}
+                onChange={e => setItem({...item, quantity: Number(e.target.value)})}
+                label="Quantity"
+            />
+            {/* Add some predefined units or let the user enter their own */}
+            <TextField
+                type="text"
+                style={{width: "50%", marginTop: "1rem"}}
+                value={item.units}
+                label="Units"
+            />
         </DialogContent>
-        <DialogActions>
-            <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddItem}>Add</Button>
+        <DialogActions
+            sx={{width: "50%", marginLeft: "50%", justifyContent: "space-around", paddingLeft: 0, paddingRight: 0}}>
+            <Button onClick={() => handleAddItem(item)}>Add</Button>
+            <Button color="error" onClick={() => setOpenDialog(false)}>Cancel</Button>
         </DialogActions>
     </Dialog>
 }
 
-function DeleteItemDialog({itemToDelete, isDialogOpen, setDialogOpen, handleDelete}) {
-    return <Dialog open={isDialogOpen} onClose={() => setDialogOpen(null)}>
+function DeleteItemDialog({open, itemToDelete, setOpenDialog, handleDelete}) {
+    return <Dialog open={open} onClose={() => setOpenDialog(null)}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
             <DialogContentText>
@@ -340,7 +359,7 @@ function DeleteItemDialog({itemToDelete, isDialogOpen, setDialogOpen, handleDele
             </DialogContentText>
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setDialogOpen(null)}>Cancel</Button>
+            <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
             <Button onClick={handleDelete} color="error">Delete</Button>
         </DialogActions>
     </Dialog>

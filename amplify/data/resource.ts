@@ -77,7 +77,7 @@ const kitchenModels = {
     })).authorization(defaultOperations),
     PantryItem: a.model(ownedModel({
         id: a.id().required(),
-        name: a.string(),
+        name: a.string().required(),
         quantity: a.integer(),
         units: a.string(),
         location: a.string(),
