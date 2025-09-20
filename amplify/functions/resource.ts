@@ -84,7 +84,8 @@ createHouseholdFunction.configure = (backend: Backend<BackendType>) => {
             KITCHEN_TABLE_NAME: backend.data.resources.tables["Kitchen"].tableName,
             HOUSEHOLD_RECIPES_TABLE_NAME: backend.data.resources.tables["HouseholdRecipes"].tableName,
             TASK_LIST_TABLENAME: backend.data.resources.tables["TaskList"].tableName,
-            COGNITO_USER_POOL_ID: backend.auth.resources.userPool.userPoolId
+            COGNITO_USER_POOL_ID: backend.auth.resources.userPool.userPoolId,
+            PANTRY_TABLE_NAME: backend.data.resources.tables["Pantry"].tableName,
         }
     };
 
@@ -96,6 +97,7 @@ createHouseholdFunction.configure = (backend: Backend<BackendType>) => {
             backend.data.resources.tables["Kitchen"].tableArn,
             backend.data.resources.tables["HouseholdRecipes"].tableArn,
             backend.data.resources.tables["TaskList"].tableArn,
+            backend.data.resources.tables["Pantry"].tableArn
         ]
     }));
 

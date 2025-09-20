@@ -14,6 +14,13 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
     const adminGroup = [`admin:${householdId}`];
     const membersGroup = [`members:${householdId}`];
 
+    const todoListId = crypto.randomUUID();
+    const householdTasksId = crypto.randomUUID();
+    const kitchenId = crypto.randomUUID();
+    const householdRecipesId = crypto.randomUUID();
+    const pantryId = crypto.randomUUID();
+    const groceriesId = crypto.randomUUID();
+
     const household = {
         id: householdId,
         name,
@@ -23,8 +30,6 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
         updatedAt: new Date().toISOString(),
     };
 
-    const todoListId = crypto.randomUUID();
-    const householdTasksId = crypto.randomUUID();
     const todoList = {
         id: todoListId,
         name: "Todo",
@@ -35,10 +40,8 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
         taskItems: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    }
+    };
 
-    // FIXME: This is error-prone doing it manually, need a way that makes use of AppSync's automatic handling that is also
-    // atomic.
     const householdTasks = {
         id: householdTasksId,
         householdId,
@@ -51,23 +54,31 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
         updatedAt: new Date().toISOString(),
     };
 
-    const kitchenId = crypto.randomUUID();
     const kitchen = {
         id: kitchenId,
         householdId,
-        groceries: null,
-        pantry: null,
+        groceries: groceriesId,
+        pantry: pantryId,
         adminGroup,
         membersGroup,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };
 
-    const householdRecipesId = crypto.randomUUID();
     const householdRecipes = {
         id: householdRecipesId,
         householdId,
         recipes: [],
+        adminGroup,
+        membersGroup,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+
+    const pantry = {
+        id: pantryId,
+        kitchenId,
+        items: [],
         adminGroup,
         membersGroup,
         createdAt: new Date().toISOString(),
@@ -105,6 +116,12 @@ export const handler = async (event: AppSyncResolverEvent<any>) => {
                 Put: {
                     TableName: process.env.TASK_LIST_TABLENAME!,
                     Item: todoList,
+                }
+            },
+            {
+                Put: {
+                    TableName: process.env.PANTRY_TABLE_NAME!,
+                    Item: pantry
                 }
             }
         ],
