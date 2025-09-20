@@ -26,6 +26,12 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {AddPantryItem, UpdatePantryItem, RemovePantryItem} from "../state/PantryStateConfiguration";
 
 import moment from "moment";
+
+const EDIT_ITEM_DIALOG = "edit-item";
+const DELETE_ITEM_DIALOG = "delete-item";
+const NEW_ITEM_DIALOG = "new-item";
+const NEW_LOCATION_DIALOG = "new-location";
+
 // TODO: Notifications of expiring items.
 // TODO: Implement adding items to grocery list on expiration/usage.
 const PantryView = props => {
@@ -35,9 +41,9 @@ const PantryView = props => {
     });
     const locations = useSelector(state => state.household.kitchen.pantry.locations);
 
-    const [openDialog, setOpenDialog] = useState(null)
-
-    const [editingItem, setEditingItem] = useState(null);
+    const [openDialog, setOpenDialog] = useState(null);
+    // Make sure to use undefined, not null, so the default in ItemDialog is used.
+    const [targetItem, setTargetItem] = useState(undefined);
 
     const handleAddItem = (newItem) => {
         if (newItem.name) {
@@ -50,15 +56,17 @@ const PantryView = props => {
             dispatch(AddLocation(locationName));
         }
     }
-    const handleUpdateItem = () => {
-        dispatch(UpdatePantryItem(editingItem));
-        setEditingItem(null);
+
+    const handleUpdateItem = (item) => {
+        dispatch(UpdatePantryItem(item));
+        setOpenDialog(null)
     }
 
-    const handleDelete = () => {
-        if (itemToDelete) {
-            dispatch(RemovePantryItem(itemToDelete.id));
-            setItemToDelete(null);
+    const handleDelete = (item) => {
+        if (item) {
+            dispatch(RemovePantryItem(item.id));
+            setOpenDialog(null);
+            setTargetItem(undefined);
         }
     };
 
@@ -78,123 +86,11 @@ const PantryView = props => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {items.map((item) => {
-                            const isEditing = editingItem && editingItem.id === item.id;
-                            const expirationRemaining = item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999;
-                            let backgroundColor = "inherit";
-                            let expiration = (<strong>{item.expiration}</strong>);
-                            if (expirationRemaining < 0) {
-                                expiration = (<strong style={{"color": "red"}}>{item.expiration}</strong>);
-                                backgroundColor = "rgba(255, 0, 0, 0.2)";
-                            } else if (expirationRemaining <= 3) {
-                                expiration = (<strong style={{"color": "orange"}}>{item.expiration}</strong>);
-                                backgroundColor = "rgba(255, 255, 0, 0.2)";
-                            }
-
-                            return (
-                                <TableRow key={item.id} sx={{backgroundColor: backgroundColor}}>
-                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)"}}>
-                                        {isEditing ? (
-                                            <TextField
-                                                value={editingItem.name}
-                                                onChange={(e) => setEditingItem({...editingItem, name: e.target.value})}
-                                                fullWidth
-                                            />
-                                        ) : (
-                                            item.name
-                                        )}
-                                    </TableCell>
-                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
-                                        {isEditing ? (
-                                            <select
-                                                value={editingItem.location}
-                                                onChange={(e) => setEditingItem({
-                                                    ...editingItem,
-                                                    location: e.target.value
-                                                })}
-                                                style={{width: "100%"}}
-                                            >
-                                                <option value="" disabled>Select Location</option>
-                                                {locations.map((location) => (
-                                                    <option key={location} value={location}>{location}</option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            item.location || "?"
-                                        )}
-                                    </TableCell>
-                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
-                                        {isEditing ? (
-                                            <input
-                                                type="date"
-                                                value={editingItem.expiration}
-                                                onChange={(e) => setEditingItem({
-                                                    ...editingItem,
-                                                    expiration: e.target.value
-                                                })}
-                                                style={{width: "100%"}}
-                                            />
-                                        ) : (
-                                            expirationRemaining !== 9999 ? expiration : "N/A"
-                                        )}
-                                    </TableCell>
-                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
-                                        {isEditing ? (
-                                            <input
-                                                type="number"
-                                                value={editingItem.quantity || 1}
-                                                onChange={(e) => setEditingItem({
-                                                    ...editingItem,
-                                                    quantity: Number(e.target.value)
-                                                })}
-                                                style={{width: "100%"}}
-                                            />
-                                        ) : (
-                                            item.quantity || 1
-                                        )}
-                                    </TableCell>
-                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
-                                        {isEditing ? (
-                                            <TextField
-                                                value={editingItem.units || ""}
-                                                onChange={(e) => setEditingItem({
-                                                    ...editingItem,
-                                                    units: e.target.value
-                                                })}
-                                                fullWidth
-                                            />
-                                        ) : (
-                                            item.units || "N/A"
-                                        )}
-                                    </TableCell>
-                                    <TableCell sx={{borderRight: "1px solid rgb(224, 224, 244)", textAlign: "center"}}>
-                                        {isEditing ? (
-                                            <>
-                                                <Button onClick={handleUpdateItem}>Save</Button>
-                                                <Button onClick={() => setEditingItem(null)}>Cancel</Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <IconButton onClick={() => setEditingItem(item)}>
-                                                    <Edit/>
-                                                </IconButton>
-                                            </>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {!isEditing &&
-                                            (<>
-                                                    <IconButton onClick={() => {
-                                                        setOpenDialog(null)
-                                                    }}>
-                                                        <Delete/>
-                                                    </IconButton>
-                                                </>
-                                            )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                        {items.map((item) => <PantryTableRow
+                            item={item}
+                            setTargetItem={setTargetItem}
+                            setOpenDialog={setOpenDialog}
+                        />)}
                         <TableRow>
                             <TableCell colSpan={7} align="center">
                                 <Button
@@ -211,50 +107,33 @@ const PantryView = props => {
                 </Table>
             </TableContainer>
 
-            {/*<Accordion>*/}
-            {/*    <AccordionSummary*/}
-            {/*        expandIcon={<ExpandMoreIcon/>}*/}
-            {/*        aria-controls="panel1a-content"*/}
-            {/*        id="panel1a-header"*/}
-            {/*    >*/}
-            {/*        <Typography>Locations</Typography>*/}
-            {/*    </AccordionSummary>*/}
-            {/*    <AccordionDetails>*/}
-            {/*        <TableContainer component={Paper}>*/}
-            {/*            <Table>*/}
-            {/*                <TableHead>*/}
-            {/*                    <TableRow>*/}
-            {/*                        <TableCell sx={{width: "80%"}}><strong>Name</strong></TableCell>*/}
-            {/*                    </TableRow>*/}
-            {/*                </TableHead>*/}
-            {/*                <TableBody>*/}
-            {/*                    {locations.map((location) => (*/}
-            {/*                        <TableRow key={location}>*/}
-            {/*                            <TableCell>{location}</TableCell>*/}
-            {/*                            /!* TODO: Add back delete when create is implemented. *!/*/}
-            {/*                        </TableRow>*/}
-            {/*                    ))}*/}
-            {/*                </TableBody>*/}
-            {/*            </Table>*/}
-            {/*        </TableContainer>*/}
-            {/*    </AccordionDetails>*/}
-            {/*</Accordion>*/}
-
             <NewLocationDialog
                 open={"new-location" === openDialog}
                 setOpenDialog={setOpenDialog}
                 handleAddLocation={handleAddLocation}
             />
 
-            <NewItemDialog
+            <ItemDialog
                 open={"new-item" === openDialog}
                 setOpenDialog={setOpenDialog}
-                handleAddItem={handleAddItem}
+                handleFinishItem={handleAddItem}
                 locations={locations}
             />
 
+            <ItemDialog
+                open={EDIT_ITEM_DIALOG === openDialog}
+                setOpenDialog={setOpenDialog}
+                handleFinishItem={handleUpdateItem}
+                locations={locations}
+                item={targetItem}
+                setItem={setTargetItem}
+            />
+
             <DeleteItemDialog
+                itemToDelete={targetItem}
                 open={"delete-item" === openDialog}
+                setOpenDialog={setOpenDialog}
+                handleDelete={handleDelete}
             />
         </div>
     );
@@ -285,14 +164,15 @@ function NewLocationDialog({open, setOpenDialog, handleAddLocation}) {
     </Dialog>
 }
 
-function NewItemDialog({open, setOpenDialog, locations, handleAddItem}) {
-    const [item, setItem] = useState({
-        name: "",
-        expiration: null,
-        location: null,
-        quantity: 1,
-        units: null
-    });
+const EMPTY_ITEM = {
+    name: "",
+    expiration: null,
+    location: null,
+    quantity: 1,
+    units: null
+}
+
+function ItemDialog({open, setOpenDialog, locations, handleFinishItem, item = EMPTY_ITEM, setItem}) {
     return <Dialog open={open} onClose={() => setOpenDialog(null)}>
         <DialogTitle>Add New Item</DialogTitle>
         <DialogContent>
@@ -344,7 +224,7 @@ function NewItemDialog({open, setOpenDialog, locations, handleAddItem}) {
         </DialogContent>
         <DialogActions
             sx={{width: "50%", marginLeft: "50%", justifyContent: "space-around", paddingLeft: 0, paddingRight: 0}}>
-            <Button onClick={() => handleAddItem(item)}>Add</Button>
+            <Button onClick={() => handleFinishItem(item)}>Add</Button>
             <Button color="error" onClick={() => setOpenDialog(false)}>Cancel</Button>
         </DialogActions>
     </Dialog>
@@ -360,9 +240,48 @@ function DeleteItemDialog({open, itemToDelete, setOpenDialog, handleDelete}) {
         </DialogContent>
         <DialogActions>
             <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-            <Button onClick={handleDelete} color="error">Delete</Button>
+            <Button onClick={() => handleDelete(itemToDelete)} color="error">Delete</Button>
         </DialogActions>
     </Dialog>
+}
+
+export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
+    const expirationRemaining = item.expiration ? moment(item.expiration).diff(moment(), "days") : 9999;
+    let backgroundColor = "inherit";
+    let expiration = (<strong>{item.expiration}</strong>);
+    if (expirationRemaining < 0) {
+        expiration = (<strong style={{"color": "red"}}>{item.expiration}</strong>);
+        backgroundColor = "rgba(255, 0, 0, 0.2)";
+    } else if (expirationRemaining <= 3) {
+        expiration = (<strong style={{"color": "orange"}}>{item.expiration}</strong>);
+        backgroundColor = "rgba(255, 255, 0, 0.2)";
+    }
+
+    return (
+        <TableRow key={item.id} sx={{backgroundColor: backgroundColor}}>
+            <TableCell>{item.name}</TableCell>
+            <TableCell>{item.location || "?"}</TableCell>
+            <TableCell>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
+            <TableCell>{item.quantity || 1}</TableCell>
+            <TableCell>{item.units || "N/A"}</TableCell>
+            <TableCell>
+                <IconButton onClick={() => {
+                    setTargetItem(item);
+                    setOpenDialog(EDIT_ITEM_DIALOG);
+                }}>
+                    <Edit/>
+                </IconButton>
+            </TableCell>
+            <TableCell>
+                <IconButton disable={true} color="error" onClick={() => {
+                    setTargetItem(item);
+                    setOpenDialog(DELETE_ITEM_DIALOG);
+                }}>
+                    <Delete/>
+                </IconButton>
+            </TableCell>
+        </TableRow>
+    );
 }
 
 export default PantryView;
