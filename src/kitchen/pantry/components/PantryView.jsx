@@ -84,7 +84,6 @@ const PantryView = props => {
                             <TableCell sx={{textAlign: "center"}}>Quantity</TableCell>
                             <TableCell sx={{textAlign: "center"}}>Units</TableCell>
                             <TableCell sx={{textAlign: "center"}}>Nutrition</TableCell>
-                            <TableCell sx={{textAlign: "center"}}>Edit</TableCell>
                             <TableCell sx={{textAlign: "center"}}>Delete</TableCell>
                         </TableRow>
                     </TableHead>
@@ -290,7 +289,18 @@ export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
 
     return (
         <TableRow key={item.id} sx={{backgroundColor: backgroundColor}}>
-            <TableCell sx={{textAlign: "center"}}><strong>{item.name}</strong></TableCell>
+            <TableCell sx={{textAlign: "center"}}>
+                <Button sx={{height: "100%", width: "100%", textTransform: "none", display:"flex", alignItems: "space-between"}}
+                        variant="contained"
+                        color="primary" onClick={() => {
+                    setTargetItem(item);
+                    setOpenDialog(EDIT_ITEM_DIALOG);
+                }}
+                        startIcon={<Edit/>}
+                >
+                    <strong>{item.name}</strong>
+                </Button>
+            </TableCell>
             <TableCell sx={{textAlign: "center"}}>{item.location || "?"}</TableCell>
             <TableCell sx={{textAlign: "center"}}>{expirationRemaining !== 9999 ? expiration : "N/A"}</TableCell>
             <TableCell sx={{textAlign: "center"}}>{item.quantity || 1}</TableCell>
@@ -301,14 +311,6 @@ export function PantryTableRow({item, setTargetItem, setOpenDialog}) {
                     setOpenDialog(VIEW_NUTRITION_DIALOG);
                 }}>
                     <MenuBook/>
-                </Button>
-            </TableCell>
-            <TableCell sx={{textAlign: "center"}}>
-                <Button sx={{height: "100%", width: "100%"}} color="primary" onClick={() => {
-                    setTargetItem(item);
-                    setOpenDialog(EDIT_ITEM_DIALOG);
-                }}>
-                    <Edit/>
                 </Button>
             </TableCell>
             <TableCell sx={{textAlign: "center"}}>
