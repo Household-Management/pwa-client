@@ -1,6 +1,6 @@
 import './App.css';
 import {Provider} from 'react-redux'
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import {Amplify} from "aws-amplify";
 import outputs from "../amplify_outputs";
 import {store} from "./redux/store";
@@ -10,7 +10,9 @@ import {router} from "./navigation/configuration/routing";
 import ConfigurationService from "./config/ConfigurationService";
 import {CookiesProvider} from "react-cookie";
 import {parseAmplifyConfig} from "aws-amplify/utils";
-import {AwsRum} from 'aws-rum-web';
+import {MonitoringAllowed, MonitoringNotSet} from "./monitoring/Monitoring";
+import MonitoringConsent from "./monitoring/components/MonitoringConsent";
+import {Dialog, DialogContent} from "@mui/material";
 
 
 const amplifyConfiguration = parseAmplifyConfig(outputs);
@@ -34,16 +36,38 @@ Amplify.configure(
 
 ConfigurationService.loadConfiguration();
 
+export const monitoringContext = React.createContext({});
+
 // TODO: Implement notifications for tasks.
 function App() {
+    const [monitoringConsentRequired, setMonitoringConsentRequired] = React.useState(MonitoringNotSet());
+    useEffect(() => {
+        if (MonitoringAllowed()) {
+            console.log("Enabling RUM due to user preference");
+            window.awsRum.enable();
+        } else {
+            console.log("Disabling RUM due to user preference");
+            window.awsRum.disable();
+        }
+    }, [monitoringConsentRequired])
+
     return (<div className="App" style={{display: "flex", flexDirection: "column", height: "100vh"}}>
-        <Provider store={store}>
-            <HeaderProvider>
-                <CookiesProvider>
-                    <RouterProvider router={router}/>
-                </CookiesProvider>
-            </HeaderProvider>
-        </Provider>
+        <monitoringContext.Provider value={{monitoringConsentRequired, setMonitoringConsentRequired}}>
+            <Provider store={store}>
+                <HeaderProvider>
+                    <CookiesProvider>
+                        <RouterProvider router={router}/>
+                    </CookiesProvider>
+                </HeaderProvider>
+            </Provider>
+        </monitoringContext.Provider>
+        <Dialog open={monitoringConsentRequired}>
+            <DialogContent>
+                <MonitoringConsent onComplete={() => {
+                    setMonitoringConsentRequired(MonitoringNotSet());
+                }}/>
+            </DialogContent>
+        </Dialog>
     </div>);
 
 }
