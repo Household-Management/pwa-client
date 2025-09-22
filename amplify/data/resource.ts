@@ -78,8 +78,6 @@ const kitchenModels = {
     ItemData: a.model({
         id: a.id().required(),
         name: a.string().required(),
-        quantity: a.integer(),
-        units: a.string(),
         pantryItemLinks: a.hasMany("PantryItem", "itemDataId"),
         nutrition: a.customType({
             calories: a.integer(),
@@ -99,6 +97,8 @@ const kitchenModels = {
         itemDataId: a.id().required(),
         itemData: a.belongsTo("ItemData", "itemDataId"),
         location: a.string(),
+        quantity: a.integer(),
+        units: a.string(),
         expiration: a.date(),
     })).authorization(defaultOperations),
 };

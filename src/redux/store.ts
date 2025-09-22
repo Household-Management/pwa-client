@@ -2,16 +2,23 @@ import {combineReducers, combineSlices, configureStore} from "@reduxjs/toolkit";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
 import {TutorialStateConfiguration} from "../tutorials/state/TutorialStateConfiguration";
 import AlertsStateConfiguration, {Alert} from "../alerts/configuration/AlertsStateConfiguration";
-import {put, takeLeading, select, call, spawn, debounce, take, takeEvery} from "redux-saga/effects";
+import {put, takeLeading, select, spawn, takeEvery} from "redux-saga/effects";
 import createSagaMiddleware from "redux-saga";
 import PantryStateConfiguration from "../kitchen/pantry/state/PantryStateConfiguration";
 import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesStateConfiguration";
 import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
+import Client from "../data/AmplifyClient";
 
-import {generateClient} from "aws-amplify/data";
 import ConfigurationService from "../config/ConfigurationService";
+import AppState from "./AppState.ts";
 
-const client = generateClient();
+export type Action = {
+    type: string,
+    payload?: any,
+    meta?: {
+        persister?: (client: any, state: AppState, action: Action) => Promise<void>
+    }
+}
 
 // TODO: Create a default "to-do" task list
 // TODO: Implement remote persistence.
@@ -19,28 +26,28 @@ const client = generateClient();
 // TODO: Middleware for intercepting dangerous actions.
 export const combinedReducer = combineReducers({
     household: combineSlices({
-        name: (state, action) => {
+        name: (state: AppState, action: Action) => {
             if (action.type === "LOADED_STATE") {
                 return action.payload.name;
             }
 
             return state ? state : null;
         },
-        id: (state, action) => {
+        id: (state: AppState, action: Action) => {
             if (action.type === "LOADED_STATE") {
                 return action.payload.id;
             }
 
             return state ? state : null;
         },
-        adminGroup: (state, action) => {
+        adminGroup: (state, action: Action) => {
             if (action.type === "LOADED_STATE") {
                 return action.payload.adminGroup;
             }
 
             return state ? state : null;
         },
-        membersGroup: (state, action) => {
+        membersGroup: (state, action: Action) => {
             if (action.type === "LOADED_STATE") {
                 return action.payload.membersGroup;
             }
@@ -56,7 +63,7 @@ export const combinedReducer = combineReducers({
         }),
     }),
     alerts: AlertsStateConfiguration,
-    user: (state = null, action) => {
+    user: (state: null | object, action: Action) => {
         if (action.type === "UNAUTHENTICATED") {
             return {
                 user: null,
@@ -84,7 +91,7 @@ const saga = createSagaMiddleware()
 
 function* welcomeUser() {
     let welcomed = false
-    yield takeLeading("AUTHENTICATED", function* (action) {
+    yield takeLeading("AUTHENTICATED", function* (_action) {
         if (!welcomed) {
             const user = yield select(state => state.user);
             welcomed = true
@@ -93,7 +100,7 @@ function* welcomeUser() {
             )
         }
     })
-    yield takeLeading("UNAUTHENTICATED", function* (action) {
+    yield takeLeading("UNAUTHENTICATED", function* (_action) {
         welcomed = false
     });
 }
@@ -105,7 +112,7 @@ function* persistOnChange() {
         }, function* (action) {
             const state = yield select(state => state)
             const persistenceFunction = action.meta.persister;
-            persistenceFunction(client, state, action);
+            persistenceFunction(Client, state, action);
         });
     })
 }
@@ -115,7 +122,7 @@ function* loadConfigurationOnAuthenticate() {
         yield takeEvery((action) => {
             return action.type === "AUTHENTICATED" || action.type === "UNAUTHENTICATED";
         }, function* (action) {
-            if(action.type === "UNAUTHENTICATED") {
+            if (action.type === "UNAUTHENTICATED") {
                 console.log("Reloading configuration for unauthenticated user");
             } else {
                 console.log("Reloading configuration for authenticated user");
