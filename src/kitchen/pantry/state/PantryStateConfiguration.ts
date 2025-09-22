@@ -1,12 +1,22 @@
-import {createSlice} from "@reduxjs/toolkit";
-import * as _ from "lodash";
+import {createSlice, PrepareAction, UnknownAction} from "@reduxjs/toolkit";
+import _ from "lodash";
+import Client from "../../../data/AmplifyClient.ts";
+import type {Schema} from "../../../../amplify/data/resource.ts";
+import {Persister} from "../../../redux/Persister.ts";
+
+export type PantryItemModel = Schema["PantryItem"]["type"];
+export type ItemDataModel = Schema["ItemData"]["type"];
+export type NutritionModel = ItemDataModel["nutrition"];
+
+export type ItemDataInput = Parameters<typeof Client.models.ItemData.create>[0];
+export type PantryItemInput = Parameters<typeof Client.models.PantryItem.create>[0];
 
 const initialState = {
-    items: [],
+    items: [] as PantryItemModel[],
     locations: ["Pantry", "Fridge", "Freezer"]
 };
 
-async function PersistNewPantryItem(client, item, relationship) {
+async function PersistNewPantryItem(client, item: ItemDataInput, relationship: PantryItemInput) {
     const createdItem = await client.models.ItemData.create(item);
     const createRelationship = await client.models.PantryItem.create(relationship)
     if (createdItem.errors) {
@@ -26,14 +36,16 @@ async function PersistUpdatedPantryItem(client, item) {
     }
 }
 
-async function PersistPantryItem(client, state, action) {
+const PersistPantryItem: Persister = async (client, state, action) => {
     const item = state.household.kitchen.pantry.items.find(i => i.id === action.payload.id);
     if (item) {
         if (item.id) {
             await PersistUpdatedPantryItem(client, item);
         } else {
             const itemId = crypto.randomUUID();
-            await PersistNewPantryItem(client, {..._.pick(item, ["name", "quantity", "nutrition", "units"]),
+            await PersistNewPantryItem(client, {
+                name: item.name as "string",
+                nutrition: item.nutrition as object,
                 id: itemId
             }, {
                 id: crypto.randomUUID(),
@@ -49,18 +61,7 @@ async function PersistPantryItem(client, state, action) {
     }
 }
 
-async function PersistPantryLocation(client, state, action) {
-    const location = action.payload;
-    if (location) {
-        const updated = await client.models.PantryLocation.update({name: location});
-        if (updated.errors) {
-            throw new Error(updated.errors);
-        }
-    }
-}
-
-async function DeletePantryItem(client, state, action) {
-    const itemId = action.payload;
+const DeletePantryItem: Persister = async (client, _state, action) => {
     const deleted = await client.models.PantryItem.delete({id: action.payload});
     if (deleted.errors) {
         throw new Error(deleted.errors.join(", "));
@@ -76,11 +77,12 @@ const slice = createSlice({
                 state.items.push({...action.payload});
                 return state;
             },
-            prepare: (payload) => ({
+            prepare: (payload: PrepareAction<[ItemDataInput, PantryItemInput]>) => ({
                 payload,
                 meta: {
                     persister: PersistPantryItem
-                }
+                },
+                error: undefined
             })
         },
         UpdatePantryItem: {
@@ -95,7 +97,8 @@ const slice = createSlice({
                 payload,
                 meta: {
                     persister: PersistPantryItem
-                }
+                },
+                error: undefined
             })
         },
         RemovePantryItem: {
@@ -107,36 +110,15 @@ const slice = createSlice({
                 payload,
                 meta: {
                     persister: DeletePantryItem
-                }
-            })
-        },
-        AddPantryLocation: {
-            reducer: (state, action) => {
-                state.locations.push(action.payload);
-                return state;
-            },
-            prepare: (payload) => ({
-                payload,
-                meta: {
-                    persister: PersistPantryLocation
-                }
-            })
-        },
-        RemovePantryLocation: {
-            reducer: (state, action) => {
-                state.locations = state.locations.filter(location => location !== action.payload);
-                return state;
-            },
-            prepare: (payload) => ({
-                payload,
-                meta: {
-                    persister: PersistPantryLocation
-                }
+                },
+                error: undefined
             })
         }
     },
     extraReducers: builder => {
-        builder.addMatcher(action => action.type === "LOADED_STATE", (state, action) => {
+        builder.addMatcher(action => action.type === "LOADED_STATE", (_state, action: UnknownAction & {
+            payload: any
+        }) => {
             return _.merge(action?.payload?.kitchen.pantry || {}, initialState);
         });
     }
@@ -145,9 +127,13 @@ const slice = createSlice({
 export const {
     AddPantryItem,
     RemovePantryItem,
-    AddPantryLocation,
-    RemovePantryLocation,
     UpdatePantryItem
 } = slice.actions;
 
 export default slice.reducer;
+
+export type PantryState = {
+    id: string,
+    items: PantryItemModel[],
+    locations: string[]
+}
