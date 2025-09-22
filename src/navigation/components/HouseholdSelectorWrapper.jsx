@@ -127,8 +127,15 @@ export default function HouseholdSelectorWrapper() {
         // For some reason, cannot load the pantry properties and the pantry items in one request
         const pantryItems = await dataClient.models.PantryItem.list({
             kitchenId: {eq: selected.data.kitchen.pantry.id}
+        }, {
+            selectionSet: ["*", "itemData.*"],
+
         });
-        selected.data.kitchen.pantry.items = pantryItems.data;
+
+        selected.data.kitchen.pantry.items = await Promise.all(pantryItems.data.map(async (_) => {
+            const pi = await _.itemData();
+            return pi.data;
+        }));
         if (!selected.data) {
             console.error("No data on selecting household");
             setError("Error selecting household");

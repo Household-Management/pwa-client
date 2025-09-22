@@ -6,12 +6,17 @@ const initialState = {
     locations: ["Pantry", "Fridge", "Freezer"]
 };
 
-async function PersistNewPantryItem(client, item) {
-    const created = await client.models.PantryItem.create(item);
-    if (created.errors) {
-        throw new Error(created.errors.join(", "));
+async function PersistNewPantryItem(client, item, relationship) {
+    const createdItem = await client.models.ItemData.create(item);
+    const createRelationship = await client.models.PantryItem.create(relationship)
+    if (createdItem.errors) {
+        throw new Error(createdItem.errors.join(", "));
     }
-    return created;
+
+    if (createRelationship.errors) {
+        throw new Error(createRelationship.errors.join(", "));
+    }
+    return createdItem;
 }
 
 async function PersistUpdatedPantryItem(client, item) {
@@ -24,12 +29,17 @@ async function PersistUpdatedPantryItem(client, item) {
 async function PersistPantryItem(client, state, action) {
     const item = state.household.kitchen.pantry.items.find(i => i.id === action.payload.id);
     if (item) {
-        if(item.id) {
+        if (item.id) {
             await PersistUpdatedPantryItem(client, item);
         } else {
-            await PersistNewPantryItem(client, {...item,
+            const itemId = crypto.randomUUID();
+            await PersistNewPantryItem(client, {..._.pick(item, ["name", "quantity", "nutrition", "units"]),
+                id: itemId
+            }, {
                 id: crypto.randomUUID(),
-                pantryId : state.household.kitchen.pantry.id,
+                pantryId: state.household.kitchen.pantry.id,
+                itemDataId: itemId,
+                location: item.location,
                 membersGroup: [`members:${state.household.id}`],
                 adminGroup: [`admin:${state.household.id}`]
             });
@@ -63,7 +73,7 @@ const slice = createSlice({
     reducers: {
         AddPantryItem: {
             reducer: (state, action) => {
-                state.items.push({...action.payload });
+                state.items.push({...action.payload});
                 return state;
             },
             prepare: (payload) => ({
@@ -127,7 +137,7 @@ const slice = createSlice({
     },
     extraReducers: builder => {
         builder.addMatcher(action => action.type === "LOADED_STATE", (state, action) => {
-            return _.merge(action?.payload?.kitchen.pantry || {},  initialState);
+            return _.merge(action?.payload?.kitchen.pantry || {}, initialState);
         });
     }
 });
