@@ -1,7 +1,6 @@
 import {BottomNavigation, BottomNavigationAction, Paper} from "@mui/material";
-import ListIcon from "@mui/icons-material/List";
 import {Link} from "react-router-dom";
-import KitchenIcon from "@mui/icons-material/Kitchen";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
 import SettingsIcon from "@mui/icons-material/Settings";
 import React, {useState} from "react";
 
@@ -27,7 +26,7 @@ const routes = [
     // },
     {
         label: "Pantry and Recipes",
-        icon: <KitchenIcon/>,
+        icon: <RestaurantIcon/>,
         path: "/kitchen"
     },
     {
