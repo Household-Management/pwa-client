@@ -8,22 +8,27 @@ function defaultOperations(allow: any): any[] {
     ]
 }
 
-function ownedModel(modelDef) {
+/**
+ * Helper to add household linking fields to a model definition.
+ * @param modelDef
+ */
+function householdLinkedModel(modelDef) {
     return {
         ...modelDef,
         membersGroup: a.string().array().required(), // Name for group members of the household
         adminGroup: a.string().array().required(), // Name for admins of the household
+        dependentsGroup: a.string().array()
     }
 }
 
 const tasksModels = {
-    HouseholdTasks: a.model(ownedModel({
+    HouseholdTasks: a.model(householdLinkedModel({
         id: a.id().required(),
         taskLists: a.hasMany("TaskList", "householdTasksId"),
         householdId: a.id(),
         household: a.belongsTo("Household", "householdId"),
     })),
-    TaskList: a.model(ownedModel({
+    TaskList: a.model(householdLinkedModel({
         id: a.id().required(),
         name: a.string(),
         householdTasksId: a.id().required(),
@@ -42,20 +47,20 @@ const tasksModels = {
 }
 
 const kitchenModels = {
-    Kitchen: a.model(ownedModel({
+    Kitchen: a.model(householdLinkedModel({
         id: a.id().required(),
         groceries: a.hasOne("Groceries", "kitchenId"),
         pantry: a.hasOne("Pantry", "kitchenId"),
         householdId: a.id(),
         household: a.belongsTo("Household", "householdId"),
     })).authorization(defaultOperations),
-    Groceries: a.model(ownedModel({
+    Groceries: a.model(householdLinkedModel({
         id: a.id().required(),
         lists: a.hasMany("GroceryList", "groceriesId"),
         kitchenId: a.id(),
         kitchen: a.belongsTo("Kitchen", "kitchenId"),
     })).authorization(defaultOperations),
-    GroceryList: a.model(ownedModel({
+    GroceryList: a.model(householdLinkedModel({
         id: a.id().required(),
         items: a.ref("GroceryItem").array(),
         groceriesId: a.id(),
@@ -68,14 +73,14 @@ const kitchenModels = {
         unit: a.string(),
         groceryListId: a.id(),
     }),
-    Pantry: a.model(ownedModel({
+    Pantry: a.model(householdLinkedModel({
         id: a.id().required(),
         locations: a.string().array(),
         pantryItemLinks: a.hasMany("PantryItem", "pantryId"),
         kitchenId: a.id(),
         kitchen: a.belongsTo("Kitchen", "kitchenId"),
     })).authorization(defaultOperations),
-    ItemData: a.model(ownedModel({
+    ItemData: a.model(householdLinkedModel({
         id: a.id().required(),
         name: a.string().required(),
         pantryItemLinks: a.hasMany("PantryItem", "itemDataId"),
@@ -90,7 +95,7 @@ const kitchenModels = {
             servingSize: a.string()
         })
     })).authorization(defaultOperations),
-    PantryItem: a.model(ownedModel({
+    PantryItem: a.model(householdLinkedModel({
         pantryId: a.id().required(),
         pantry: a.belongsTo("Pantry", "pantryId"),
         itemDataId: a.id().required(),
@@ -104,13 +109,13 @@ const kitchenModels = {
 };
 
 const recipeModels = {
-    HouseholdRecipes: a.model(ownedModel({
+    HouseholdRecipes: a.model(householdLinkedModel({
         id: a.id().required(),
         recipes: a.hasMany("Recipe", "householdRecipesId"),
         householdId: a.id(),
         household: a.belongsTo("Household", "householdId"),
     })).authorization(defaultOperations),
-    Recipe: a.model(ownedModel({
+    Recipe: a.model(householdLinkedModel({
         id: a.id().required(),
         title: a.string(),
         description: a.string(),
@@ -119,7 +124,7 @@ const recipeModels = {
         householdRecipesId: a.id(),
         belongsTo: a.belongsTo("HouseholdRecipes", "householdRecipesId"),
     })).authorization(defaultOperations),
-    RecipeIngredient: a.model(ownedModel({
+    RecipeIngredient: a.model(householdLinkedModel({
         id: a.id().required(),
         recipeId: a.id(),
         recipe: a.belongsTo("Recipe", "recipeId"),
@@ -139,16 +144,15 @@ const recipeModels = {
 }
 
 const schema = a.schema({
-    Household: a.model({
+    Household: a.model(householdLinkedModel({
         id: a.id().required(),
+        householdOwner: a.string().required(),
         name: a.string().required(),
         kitchen: a.hasOne("Kitchen", "householdId"),
         householdTasks: a.hasOne("HouseholdTasks", "householdId"),
         recipes: a.hasOne("HouseholdRecipes", "householdId"),
-        pendingInvites: a.hasMany("HouseholdInvite", "householdId"),
-        membersGroup: a.string().array().required(), // Name for group members of the household
-        adminGroup: a.string().array().required(), // Name for admins of the household
-    }).authorization(allow => [
+        pendingInvites: a.hasMany("HouseholdInvite", "householdId")
+    })).authorization(allow => [
         allow.groupsDefinedIn("membersGroup").to(["read"]),
         allow.groupsDefinedIn("adminGroup").to(["read",]),
     ]),

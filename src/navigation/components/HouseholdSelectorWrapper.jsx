@@ -122,7 +122,7 @@ export default function HouseholdSelectorWrapper() {
             console.error("Errors on selecting household", selected.errors);
             setError("Error selecting household");
             setLoading(false);
-            throw new Error();
+            throw new Error(selected.errors.map(_ => _.message).join(", "));
         }
         // For some reason, cannot load the pantry properties and the pantry items in one request
         const pantryItems = await dataClient.models.PantryItem.list({
