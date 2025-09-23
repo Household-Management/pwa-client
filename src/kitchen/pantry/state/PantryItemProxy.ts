@@ -1,15 +1,15 @@
-import {ItemDataInput, PantryItemInput, PantryItemModel} from "./PantryStateConfiguration.ts";
+import {PantryItemModel, ItemDataModel, PantryItem} from "./PantryStateConfiguration.ts";
 
-export default class PantryItemProxy implements ItemDataInput, PantryItemInput {
+export default class PantryItemProxy implements PantryItemModel, ItemDataModel {
     private proxy: any;
 
     [index: string]: any;
 
-    static proxy(target: PantryItemModel | undefined) {
+    static proxy(target: PantryItem | undefined) {
         return new PantryItemProxy(target).proxy;
     }
 
-    constructor(target: PantryItemModel | undefined) {
+    constructor(target: PantryItem | undefined) {
         this.proxy = new Proxy(target || {}, {
             get: (obj: any, prop) => {
                 if (prop === "name") {
@@ -27,7 +27,7 @@ export default class PantryItemProxy implements ItemDataInput, PantryItemInput {
                 if (prop === "quantity") {
                     return obj.state?.quantity;
                 }
-                return obj[prop as keyof PantryItemModel];
+                return obj[prop as keyof PantryItem];
             },
             set: (obj, prop, value) => {
                 if(obj.item) {
@@ -54,7 +54,7 @@ export default class PantryItemProxy implements ItemDataInput, PantryItemInput {
                         return true;
                     }
                 }
-                obj[prop as keyof PantryItemModel] = value;
+                obj[prop as keyof PantryItem] = value;
                 return true;
             },
         });
@@ -65,10 +65,14 @@ export default class PantryItemProxy implements ItemDataInput, PantryItemInput {
     }
 
     public get expiration() {
-        return this.proxy.state.expiration;
+        return this.proxy.expiration;
     }
 
     public get quantity() {
-        return this.proxy.state.quantity;
+        return this.proxy.quantity;
+    }
+
+    public get pantryId() {
+        return this.proxy.pantryId;
     }
 }

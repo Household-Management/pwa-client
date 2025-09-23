@@ -1,68 +1,119 @@
-import {createSlice, PrepareAction, UnknownAction} from "@reduxjs/toolkit";
+import {createSlice, PayloadAction, UnknownAction} from "@reduxjs/toolkit";
 import _ from "lodash";
 import Client from "../../../data/AmplifyClient.ts";
-import type {Schema} from "../../../../amplify/data/resource.ts";
 import {Persister} from "../../../redux/Persister.ts";
 
-export type PantryItemModel = Schema["PantryItem"]["type"];
-export type ItemDataModel = Schema["ItemData"]["type"];
-export type NutritionModel = ItemDataModel["nutrition"];
+// FIXME: I don't want to have to synchronize with the Amplify models manually, but Amplify uses a lot of magic under
+//  the hood that I don't want to sift through right now.
+/**
+ * A runtime type representing a pantry item, which includes both the item data and its state within the pantry.
+ */
+export type PantryItem = {
+    item: ItemDataModel,
+    state: PantryItemModel
+}
 
-export type ItemDataInput = Parameters<typeof Client.models.ItemData.create>[0];
-export type PantryItemInput = Parameters<typeof Client.models.PantryItem.create>[0];
+/**
+ * A type representing the state of the pantry, including the list of items and their locations.
+ */
+type PantryState = {
+    items: PantryItem[],
+    locations: string[],
+    id?: string
+}
 
-const initialState = {
-    items: [] as PantryItemModel[],
+export interface ItemDataModel {
+    [index: string]: any;
+    id?: string;
+    name: string;
+    nutrition?: {
+        calories?: number;
+        protein?: number;
+        fat?: number;
+        carbohydrates?: number;
+        fiber?: number;
+        sugar?: number;
+        sodium?: number;
+        servingSize?: string;
+    };
+    pantryItemLinks?: PantryItemModel[];
+};
+
+export interface PantryItemModel {
+    [index: string]: any;
+    pantryId: string;
+    pantry?: {
+        id: string;
+        locations?: string[];
+    };
+    itemDataId?: string;
+    itemData?: ItemDataModel;
+    location?: string;
+    quantity?: number;
+    units?: string;
+    expiration?: string;
+    membersGroup?: string[];
+    adminGroup?: string[];
+};
+
+const initialState: PantryState = {
+    items: [] as PantryItem[],
     locations: ["Pantry", "Fridge", "Freezer"]
 };
 
-async function PersistNewPantryItem(client, item: ItemDataInput, relationship: PantryItemInput) {
+async function PersistNewPantryItem(client: typeof Client, item: ItemDataModel, relationship: PantryItemModel) {
     const createdItem = await client.models.ItemData.create(item);
-    const createRelationship = await client.models.PantryItem.create(relationship)
     if (createdItem.errors) {
         throw new Error(createdItem.errors.join(", "));
     }
 
+    const createRelationship = await client.models.PantryItem.create({
+        ...relationship,
+        itemDataId: createdItem.data?.id,
+    });
     if (createRelationship.errors) {
         throw new Error(createRelationship.errors.join(", "));
     }
     return createdItem;
 }
 
-async function PersistUpdatedPantryItem(client, item) {
+async function PersistUpdatedPantryItem(client: typeof Client, item: ItemDataModel, state: PantryItemModel) {
+    // TODO: Custom handler for transaction support.
     const updated = await client.models.PantryItem.update(item);
     if (updated.errors) {
-        throw new Error(updated.errors);
+        throw new Error(updated.errors.map(_ => _.message).join(", "));
+    }
+
+    const relationshipUpdated = await client.models.PantryItem.update(state);
+    if (relationshipUpdated.errors) {
+        throw new Error(relationshipUpdated.errors.map(_ => _.message).join(", "));
     }
 }
 
-const PersistPantryItem: Persister = async (client, state, action) => {
-    const item = state.household.kitchen.pantry.items.find(i => i.id === action.payload.id);
-    if (item) {
-        if (item.id) {
-            await PersistUpdatedPantryItem(client, item);
+const PersistPantryItem: Persister = async (client, state, action: PayloadAction<PantryItem, string>) => {
+    const input: PantryItem = action.payload;
+    if (input) {
+        if (input.item.id) {
+            await PersistUpdatedPantryItem(client, input.item as any, input.state);
         } else {
             const itemId = crypto.randomUUID();
             await PersistNewPantryItem(client, {
-                name: item.name as "string",
-                nutrition: item.nutrition as object,
-                id: itemId
+                name: input.item.name as "string",
+                nutrition: input.item.nutrition as object,
+                id: itemId,
+                membersGroup: [`members:${state.household.id}`],
+                adminGroup: [`admin:${state.household.id}`]
             }, {
-                id: crypto.randomUUID(),
-                pantryId: state.household.kitchen.pantry.id,
-                itemDataId: itemId,
-                location: item.location,
+                ...input.state,
                 membersGroup: [`members:${state.household.id}`],
                 adminGroup: [`admin:${state.household.id}`]
             });
         }
-    } else {
-        throw new Error("Item not found: " + JSON.stringify(action.payload.id));
     }
 }
 
 const DeletePantryItem: Persister = async (client, _state, action) => {
-    const deleted = await client.models.PantryItem.delete({id: action.payload});
+    const deleted = await client.models.PantryItem.delete(action.payload);
     if (deleted.errors) {
         throw new Error(deleted.errors.join(", "));
     }
@@ -73,11 +124,11 @@ const slice = createSlice({
     initialState,
     reducers: {
         AddPantryItem: {
-            reducer: (state, action) => {
+            reducer: (state: PantryState, action: PayloadAction<PantryItem, string>) => {
                 state.items.push({...action.payload});
                 return state;
             },
-            prepare: (payload: PrepareAction<[ItemDataInput, PantryItemInput]>) => ({
+            prepare: (payload: PantryItem) => ({
                 payload,
                 meta: {
                     persister: PersistPantryItem
@@ -86,8 +137,8 @@ const slice = createSlice({
             })
         },
         UpdatePantryItem: {
-            reducer: (state, action) => {
-                const index = state.items.findIndex(item => item.id === action.payload.id);
+            reducer: (state: PantryState, action: PayloadAction<PantryItem, string>) => {
+                const index = state.items.findIndex(item => item.state.pantryId === action.payload.state.pantryId && item.item.id === action.payload.item.id);
                 if (index !== -1) {
                     state.items[index] = {...state.items[index], ...action.payload};
                 }
@@ -102,8 +153,8 @@ const slice = createSlice({
             })
         },
         RemovePantryItem: {
-            reducer: (state, action) => {
-                state.items = state.items.filter(item => item.id !== action.payload);
+            reducer: (state: PantryState, action: PayloadAction<PantryItem, string>) => {
+                state.items = state.items.filter(item => item.item.id !== action.payload.item.id && item.state.pantryId !== action.payload.state.pantryId);
                 return state;
             },
             prepare: (payload) => ({
@@ -131,9 +182,3 @@ export const {
 } = slice.actions;
 
 export default slice.reducer;
-
-export type PantryState = {
-    id: string,
-    items: PantryItemModel[],
-    locations: string[]
-}

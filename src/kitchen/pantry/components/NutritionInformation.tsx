@@ -1,13 +1,13 @@
-import {PantryItemModel} from "../state/PantryStateConfiguration.ts";
+import {PantryItem} from "../state/PantryStateConfiguration.ts";
 import PantryItemProxy from "../state/PantryItemProxy";
 import {Dispatch, SetStateAction} from "react";
 import {TextField} from "@mui/material";
 
-export default function NutritionInformation({input , setItem}: {
-    input?: PantryItemModel,
-    setItem?: Dispatch<SetStateAction<PantryItemModel | undefined>>
+export default function NutritionInformation({value , setItem}: {
+    value: PantryItem,
+    setItem?: Dispatch<SetStateAction<PantryItem | undefined>>
 }) {
-    const item = PantryItemProxy.proxy(input);
+    const proxied = PantryItemProxy.proxy(value);
     return (
         <>
             <TextField
@@ -16,13 +16,13 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.servingSize || ""}
+                value={proxied.nutrition?.servingSize || ""}
                 onChange={(e: any) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
+                        ...value.item,
                         nutrition: {
-                            ...input.item.nutrition, servingSize: e.target.value
+                            ...value.item.nutrition, servingSize: e.target.value
                         }
                     }
                 })}
@@ -34,12 +34,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.calories || 0}
+                value={proxied.nutrition?.calories || 0}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...item.nutrition, calories: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...proxied.nutrition, calories: Number(e.target.value)}
                     }
                 })}
             />
@@ -49,12 +49,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.protein || ""}
+                value={proxied.nutrition?.protein || ""}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...item.nutrition, protein: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...proxied.nutrition, protein: Number(e.target.value)}
                     }
                 })}
             />
@@ -64,12 +64,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.fat || ""}
+                value={proxied.nutrition?.fat || ""}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...item.nutrition, fat: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...proxied.nutrition, fat: Number(e.target.value)}
                     }
                 })}
             />
@@ -79,12 +79,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.carbohydrates || ""}
+                value={proxied.nutrition?.carbohydrates || ""}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...input.item.nutrition, carbohydrates: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...value.item.nutrition, carbohydrates: Number(e.target.value)}
                     }
                 })}
             />
@@ -94,12 +94,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.fiber || ""}
+                value={proxied.nutrition?.fiber || ""}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...input.item.nutrition, fiber: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...value.item.nutrition, fiber: Number(e.target.value)}
                     }
                 })}
             />
@@ -109,12 +109,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.sugar || ""}
+                value={proxied.nutrition?.sugar || ""}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...input.item.nutrition, sugar: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...value.item.nutrition, sugar: Number(e.target.value)}
                     }
                 })}
             />
@@ -124,12 +124,12 @@ export default function NutritionInformation({input , setItem}: {
                 fullWidth
                 disabled={!setItem}
                 margin="dense"
-                value={item.nutrition?.sodium || ""}
+                value={proxied.nutrition?.sodium || ""}
                 onChange={(e) => setItem && setItem({
-                    ...input,
+                    ...value,
                     item: {
-                        ...input.item,
-                        nutrition: {...input.item.nutrition, sodium: Number(e.target.value)}
+                        ...value.item,
+                        nutrition: {...value.item.nutrition, sodium: Number(e.target.value)}
                     }
                 })}
             />

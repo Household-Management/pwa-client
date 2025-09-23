@@ -75,7 +75,7 @@ const kitchenModels = {
         kitchenId: a.id(),
         kitchen: a.belongsTo("Kitchen", "kitchenId"),
     })).authorization(defaultOperations),
-    ItemData: a.model({
+    ItemData: a.model(ownedModel({
         id: a.id().required(),
         name: a.string().required(),
         pantryItemLinks: a.hasMany("PantryItem", "itemDataId"),
@@ -89,9 +89,8 @@ const kitchenModels = {
             sodium: a.float(),
             servingSize: a.string()
         })
-    }).authorization(allow => allow.authenticated()),
+    })).authorization(defaultOperations),
     PantryItem: a.model(ownedModel({
-        id: a.id().required(),
         pantryId: a.id().required(),
         pantry: a.belongsTo("Pantry", "pantryId"),
         itemDataId: a.id().required(),
@@ -100,7 +99,8 @@ const kitchenModels = {
         quantity: a.integer(),
         units: a.string(),
         expiration: a.date(),
-    })).authorization(defaultOperations),
+    })).identifier(["pantryId", "itemDataId"])
+        .authorization(defaultOperations),
 };
 
 const recipeModels = {

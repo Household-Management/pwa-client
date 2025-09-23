@@ -133,8 +133,11 @@ export default function HouseholdSelectorWrapper() {
         });
 
         selected.data.kitchen.pantry.items = await Promise.all(pantryItems.data.map(async (_) => {
-            const pi = await _.itemData();
-            return pi.data;
+            const itemData = await _.itemData();
+            return {
+                state: _,
+                item: itemData.data
+            };
         }));
         if (!selected.data) {
             console.error("No data on selecting household");
