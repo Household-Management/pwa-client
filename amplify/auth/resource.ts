@@ -9,3 +9,13 @@ export const auth = defineAuth({
     email: true
   },
 });
+
+/**
+ * The possible roles in each household.
+ *
+ * - `owner`: The user who created the household. Has full permissions.
+ * - `admin`: A user with elevated permissions to manage household settings and members.
+ * - `member`: A regular user who can participate in household activities.
+ * - `dependent`: A user with limited permissions, typically a child or guest.
+ */
+export type AuthRole = "owner" | "admin" | "member" | "dependent";
