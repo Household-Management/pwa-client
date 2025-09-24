@@ -20,10 +20,10 @@ export default class ConfigurationService {
             if (auth?.tokens?.accessToken) {
                 console.log("Getting configuration for authenticated user");
                 headers["Authorization"] = `Bearer ${auth.tokens.idToken}`;
-                path = "config/2j0vk1v/eyvmk0e/2vkz6hj"
+                path = import.meta.env.VITE_APP_CONFIG_URL;
             } else {
                 console.log("Getting public configuration");
-                path = "config/2j0vk1v/eyvmk0e"
+                path = import.meta.env.VITE_APP_DEFAULT_CONFIG_URL;
             }
             const response = await get({
                 apiName: "Household Service",
