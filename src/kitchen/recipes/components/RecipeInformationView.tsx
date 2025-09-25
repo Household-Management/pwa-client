@@ -1,4 +1,14 @@
-import {Autocomplete, Button, ListItem, Stack, TextField, Typography} from "@mui/material";
+import {
+    Autocomplete,
+    Button,
+    IconButton,
+    List,
+    ListItem,
+    Stack,
+    TextField,
+    Typography,
+    useTheme
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import * as React from "react";
@@ -13,6 +23,7 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
     recipe: RecipeModel,
     updateRecipe?: React.Dispatch<React.SetStateAction<RecipeModel>>
 }) {
+    const theme = useTheme();
     const onRecipeChange = (value) => {
         if (updateRecipe) {
             updateRecipe(value);
@@ -57,19 +68,25 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
             />
         </ListItem>
         <Typography variant="h6">Ingredients:</Typography>
-        <ul>
+        <List>
             {recipe.ingredients.map((ingredient, index) => (
-                <ListItem key={index} sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <ListItem key={index} sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    '&:hover': {backgroundColor: theme.palette.action.hover},
+                    '&:has(:hover)': {backgroundColor: theme.palette.background.default}
+                }}>
                     {`${ingredient.quantity} ${ingredient.unit} ${ingredient.name}`}
-                    {!readOnly && <Button onClick={() => onRecipeChange({
+                    {!readOnly && <IconButton color="error" onClick={() => onRecipeChange({
                         ...recipe,
                         ingredients: recipe.ingredients.filter((_, i) => i !== index)
                     })}>
                         <Delete/>
-                    </Button>}
+                    </IconButton>}
                 </ListItem>
             ))}
-        </ul>
+        </List>
         {!readOnly && <ListItem>
             <TextField
                 label="Ingredient Name"
@@ -99,19 +116,27 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
             </Button>
         </ListItem>}
         <Typography variant="h6">Instructions:</Typography>
-        <ol>
+        <List>
             {recipe.instructions?.map((instruction, index) => (
-                <ListItem key={index} sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <ListItem key={index} sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    '&:hover': {backgroundColor: theme.palette.action.hover},
+                    '&:has(:hover)': {backgroundColor: theme.palette.background.default}
+                }}>
                     {`${instruction}`}
-                    {!readOnly && <Button onClick={() => onRecipeChange({
+                    {!readOnly && <IconButton color="error" onClick={() => onRecipeChange({
                         ...recipe,
                         instructions: recipe.instructions?.filter((_, i) => i !== index)
-                    })}>
+                    })}
+                                              onMouseEnter={e => e.stopPropagation()}
+                    >
                         <Delete/>
-                    </Button>}
+                    </IconButton>}
                 </ListItem>
             ))}
-        </ol>
+        </List>
         {!readOnly && <ListItem>
             <TextField
                 label="New Instruction"
