@@ -16,7 +16,7 @@ export type PantryItem = {
 /**
  * A type representing the state of the pantry, including the list of items and their locations.
  */
-type PantryState = {
+export type PantryState = {
     items: PantryItem[],
     locations: string[],
     id?: string
