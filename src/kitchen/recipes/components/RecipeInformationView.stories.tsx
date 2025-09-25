@@ -9,18 +9,18 @@ export default {
 };
 
 const Template = (args) => {
-    const [recipe, setRecipe] = useState<RecipeModel>(args.recipe);
+    const [recipe, setRecipe] = useState<RecipeModel | null>(args.recipe);
     const fetchIngredients = async () => {
-        return args.ingredients;
+        return args.ingredients || [];
     }
     if (args.modal) {
         return <Dialog open={true}>
             <DialogContent>
-                <RecipeInformationView fetchPantryIngredients={fetchIngredients} recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>
+                <RecipeInformationView fetchPantryIngredients={fetchIngredients} recipe={recipe as RecipeModel} updateRecipe={args.readonly ? undefined : setRecipe}/>
             </DialogContent>
         </Dialog>
     } else {
-        return <RecipeInformationView recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>
+        return <RecipeInformationView recipe={recipe as RecipeModel} updateRecipe={args.readonly ? undefined : setRecipe}/>
     }
 };
 

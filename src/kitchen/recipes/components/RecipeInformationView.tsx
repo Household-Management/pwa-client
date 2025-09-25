@@ -23,7 +23,7 @@ const initialInstructionState = '';
 //TODO: Allow reordering of instructions and ingredients
 const RecipeInformationView = function ({recipe, updateRecipe, fetchPantryIngredients}: {
     recipe: RecipeModel,
-    updateRecipe?: React.Dispatch<React.SetStateAction<RecipeModel>>,
+    updateRecipe?: React.Dispatch<React.SetStateAction<RecipeModel | null>>,
     fetchPantryIngredients?: () => Promise<string[]>
 }) {
     const theme = useTheme();
@@ -54,7 +54,7 @@ const RecipeInformationView = function ({recipe, updateRecipe, fetchPantryIngred
                 placeholder="New Recipe"
                 fullWidth
                 sx={{overflowY: 'visible'}}
-                value={recipe.title}
+                value={recipe.name}
                 onChange={(e) => onRecipeChange({...recipe, title: e.target.value})}
             />
         </ListItem>
