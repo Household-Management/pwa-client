@@ -1,9 +1,9 @@
-import {PantryState} from "../kitchen/pantry/state/PantryStateConfiguration.ts";
+import { PantryState } from "../kitchen/pantry/state/PantryStateConfiguration.ts";
 import TaskStateConfiguration from "../tasks/state/TaskStateConfiguration";
 import {TutorialStateConfiguration} from "../tutorials/state/TutorialStateConfiguration";
 import AlertsStateConfiguration from "../alerts/configuration/AlertsStateConfiguration";
 import GroceriesStateConfiguration from "../kitchen/groceries/state/GroceriesStateConfiguration";
-import RecipesStateConfiguration from "../kitchen/recipes/state/RecipesStateConfiguration";
+import {RecipesState} from "../kitchen/recipes/state/RecipesStateConfiguration";
 
 type AppState = {
     household: {
@@ -16,7 +16,7 @@ type AppState = {
         kitchen: {
             pantry: PantryState,
             groceries: GroceriesStateConfiguration.State,
-            recipes: RecipesStateConfiguration.State
+            recipes: RecipesState
         }
     },
     alerts: AlertsStateConfiguration.State,
