@@ -16,7 +16,7 @@ import NewRecipeModal from './NewRecipeModal';
 
 export default function RecipesView() {
     const recipes = useSelector((state) => {
-        return state.kitchen.recipes;
+        return state.household.kitchen.recipes;
     });
     const dispatch = useDispatch();
     const [selectedRecipe, setSelectedRecipe] = useState(null);
