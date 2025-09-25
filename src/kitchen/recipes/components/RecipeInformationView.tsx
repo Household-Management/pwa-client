@@ -19,6 +19,8 @@ const unitOptions = ['ounces', 'pounds', 'teaspoons', 'tablespoons', 'cups', 'gr
 const initialIngredientState = {name: '', quantity: 0, unit: ''};
 const initialInstructionState = '';
 
+//TODO: Allow editing of instructions and ingredients
+//TODO: Allow reordering of instructions and ingredients
 const RecipeInformationView = function ({recipe, updateRecipe}: {
     recipe: RecipeModel,
     updateRecipe?: React.Dispatch<React.SetStateAction<RecipeModel>>
@@ -88,32 +90,37 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
             ))}
         </List>
         {!readOnly && <ListItem>
-            <TextField
-                label="Ingredient Name"
-                variant="outlined"
-                fullWidth
-                value={newIngredient.name}
-                onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
-            />
-            <TextField
-                label="Quantity"
-                variant="outlined"
-                fullWidth
-                value={newIngredient.quantity}
-                onChange={(e) => setNewIngredient({...newIngredient, quantity: Number(e.target.value)})}
-            />
-            <Autocomplete
-                options={unitOptions}
-                value={newIngredient.unit}
-                onChange={(_e, newValue) => setNewIngredient({...newIngredient, unit: newValue})}
-                renderInput={(params) => <TextField {...params} label="Unit" variant="outlined" fullWidth/>}
-            />
-            <Button color="primary" onClick={() => {
-                updateRecipe({...recipe, ingredients: [...recipe.ingredients, newIngredient]})
-                setNewIngredient(initialIngredientState)
-            }} variant="contained">
-                <AddIcon/>
-            </Button>
+            <Stack direction="row" spacing={1}>
+                <TextField
+                    label="Ingredient Name"
+                    variant="outlined"
+                    fullWidth
+                    value={newIngredient.name}
+                    onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
+                />
+                <TextField
+                    label="Quantity"
+                    variant="outlined"
+                    fullWidth
+                    value={newIngredient.quantity}
+                    onChange={(e) => setNewIngredient({...newIngredient, quantity: Number(e.target.value)})}
+                />
+                <Autocomplete
+                    freeSolo
+                    options={unitOptions}
+                    value={newIngredient.unit}
+                    onChange={(_e, newValue) => setNewIngredient({...newIngredient, unit: newValue})}
+                    renderInput={(params) => <TextField {...params} label="Unit" variant="outlined" fullWidth/>}
+                />
+                <div>
+                    <Button sx={{height: "100%"}} color="primary" onClick={() => {
+                        updateRecipe({...recipe, ingredients: [...recipe.ingredients, newIngredient]})
+                        setNewIngredient(initialIngredientState)
+                    }} variant="contained">
+                        <AddIcon/>
+                    </Button>
+                </div>
+            </Stack>
         </ListItem>}
         <Typography variant="h6">Instructions:</Typography>
         <List>
@@ -138,19 +145,28 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
             ))}
         </List>
         {!readOnly && <ListItem>
-            <TextField
-                label="New Instruction"
-                variant="outlined"
-                fullWidth
-                value={newInstruction}
-                onChange={(e) => setNewInstruction(e.target.value)}
-            />
-            <Button color="primary" onClick={() => {
-                updateRecipe({...recipe, instructions: [...(recipe?.instructions || []), newInstruction]})
-                setNewInstruction("");
-            }} variant="contained">
-                <AddIcon/>
-            </Button>
+            <Stack direction="row" spacing={1} sx={{width: '100%'}}>
+                <TextField
+                    label="Add Instruction"
+                    variant="outlined"
+                    fullWidth
+                    value={newInstruction}
+                    onChange={(e) => setNewInstruction(e.target.value)}
+                />
+                <div>
+                    <Button color="primary"
+                            sx={{height: "100%"}}
+                            onClick={() => {
+                                updateRecipe({
+                                    ...recipe,
+                                    instructions: [...(recipe?.instructions || []), newInstruction]
+                                })
+                                setNewInstruction("");
+                            }} variant="contained">
+                        <AddIcon/>
+                    </Button>
+                </div>
+            </Stack>
         </ListItem>}
     </Stack>
 }
