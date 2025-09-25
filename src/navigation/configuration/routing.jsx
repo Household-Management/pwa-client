@@ -20,7 +20,7 @@ function secured(component, roles) {
         {component}
     </Guarded>
 }
-
+// TODO: Look into custom fields in here, so we can remove the configuration in BottomNavigation
 export const router = createBrowserRouter(
     [
         {
