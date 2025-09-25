@@ -1,6 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit';
-const initialState = {
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import RecipeModel from "./RecipeModel.ts";
+const initialState: RecipesState = {
 
+}
+
+export type RecipesState = {
+    [id: string] : RecipeModel
 }
 export const slice = createSlice({
     name: 'recipes',
@@ -19,7 +24,7 @@ export const slice = createSlice({
     extraReducers: builder => {
         builder.addMatcher(action => {
             return action.type === "LOADED_STATE";
-        }, (state, action) => {
+        }, (_state, action: PayloadAction<any>) => {
             return action.payload?.kitchen?.recipes || initialState;
         })
     }
