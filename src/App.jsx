@@ -44,10 +44,10 @@ function App() {
     useEffect(() => {
         if (MonitoringAllowed()) {
             console.log("Enabling RUM due to user preference");
-            window.awsRum.enable();
+            window.awsRum?.enable();
         } else {
             console.log("Disabling RUM due to user preference");
-            window.awsRum.disable();
+            window.awsRum?.disable();
         }
     }, [monitoringConsentRequired])
 
