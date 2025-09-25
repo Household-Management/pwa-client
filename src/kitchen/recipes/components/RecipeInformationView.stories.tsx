@@ -13,11 +13,11 @@ const Template = (args) => {
     if (args.modal) {
         return <Dialog open={true}>
             <DialogContent>
-                <RecipeInformationView recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>;
+                <RecipeInformationView recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>
             </DialogContent>
         </Dialog>
     } else {
-        return <RecipeInformationView recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>;
+        return <RecipeInformationView recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>
     }
 };
 
