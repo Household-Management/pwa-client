@@ -16,7 +16,7 @@ import AddIcon from '@mui/icons-material/Add';
 
 const unitOptions = ['ounces', 'pounds', 'teaspoons', 'tablespoons', 'cups', 'grams', 'kilograms', 'liters', 'milliliters'];
 
-export default function NewRecipeModal({ isOpen, onClose, onAddRecipe }) {
+export default function RecipeInformationModal({ isOpen, onClose, onAddRecipe }) {
     const [newRecipe, setNewRecipe] = useState({ title: '', ingredients: [], instructions: [], prepTime: '', cookTime: '' });
     const [newIngredient, setNewIngredient] = useState({ name: '', quantity: '', unit: '' });
     const [newInstruction, setNewInstruction] = useState('');
