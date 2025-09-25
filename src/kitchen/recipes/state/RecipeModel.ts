@@ -1,6 +1,6 @@
 export default interface RecipeModel {
     id: string;
-    title?: string;
+    name?: string;
     prepTime?: string;
     cookTime?: string;
     ingredients: {
