@@ -10,10 +10,13 @@ export default {
 
 const Template = (args) => {
     const [recipe, setRecipe] = useState<RecipeModel>(args.recipe);
+    const fetchIngredients = async () => {
+        return args.ingredients;
+    }
     if (args.modal) {
         return <Dialog open={true}>
             <DialogContent>
-                <RecipeInformationView recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>
+                <RecipeInformationView fetchPantryIngredients={fetchIngredients} recipe={recipe} updateRecipe={args.readonly ? undefined : setRecipe}/>
             </DialogContent>
         </Dialog>
     } else {
@@ -43,4 +46,5 @@ Default.args = {
             'Serve the sauce over the spaghetti.',
         ],
     },
+    ingredients: ['Spaghetti', 'Ground Beef', 'Tomato Sauce', 'Onion', 'Garlic', 'Olive Oil', 'Salt', 'Pepper'],
 };

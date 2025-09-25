@@ -14,16 +14,17 @@ import Delete from "@mui/icons-material/Delete";
 import * as React from "react";
 import RecipeModel from "../state/RecipeModel.ts";
 
-const unitOptions = ['ounces', 'pounds', 'teaspoons', 'tablespoons', 'cups', 'grams', 'kilograms', 'liters', 'milliliters'];
+const unitOptions = ['oz', 'lb', 'tsp', 'tbsp', 'cup', 'g', 'kg', 'l', 'ml'];
 
-const initialIngredientState = {name: '', quantity: 0, unit: ''};
+const initialIngredientState = {name: '', quantity: 1, unit: ''};
 const initialInstructionState = '';
 
 //TODO: Allow editing of instructions and ingredients
 //TODO: Allow reordering of instructions and ingredients
-const RecipeInformationView = function ({recipe, updateRecipe}: {
+const RecipeInformationView = function ({recipe, updateRecipe, fetchPantryIngredients}: {
     recipe: RecipeModel,
-    updateRecipe?: React.Dispatch<React.SetStateAction<RecipeModel>>
+    updateRecipe?: React.Dispatch<React.SetStateAction<RecipeModel>>,
+    fetchPantryIngredients?: () => Promise<string[]>
 }) {
     const theme = useTheme();
     const onRecipeChange = (value) => {
@@ -38,6 +39,13 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
         unit: string | null
     }>(initialIngredientState);
     const [newInstruction, setNewInstruction] = React.useState<string>(initialInstructionState);
+    const [pantryIngredients, setPantryIngredients] = React.useState<string[]>([]);
+    React.useEffect(() => {
+        // Abstract out fetching pantry so the fetching logic can be defined elsewhere
+        if (fetchPantryIngredients) {
+            fetchPantryIngredients().then(setPantryIngredients);
+        }
+    }, [fetchPantryIngredients])
     return <Stack spacing={2}>
         <ListItem>
             <TextField
@@ -91,30 +99,37 @@ const RecipeInformationView = function ({recipe, updateRecipe}: {
         </List>
         {!readOnly && <ListItem>
             <Stack direction="row" spacing={1}>
-                <TextField
-                    label="Ingredient Name"
-                    variant="outlined"
-                    fullWidth
-                    value={newIngredient.name}
-                    onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
+                <Autocomplete options={pantryIngredients}
+                              sx={{flexGrow: 3, minWidth: 200}}
+                              renderInput={(params) => <TextField
+                                  {...params}
+                                  label="Ingredient Name"
+                                  variant="outlined"
+                                  fullWidth
+                                  value={newIngredient.name}
+                              />}
+                              onChange={(e, value) => setNewIngredient({...newIngredient, name: value})}
                 />
+
                 <TextField
                     label="Quantity"
                     variant="outlined"
                     fullWidth
+                    sx={{flexGrow: 1, minWidth: 100}}
                     value={newIngredient.quantity}
                     onChange={(e) => setNewIngredient({...newIngredient, quantity: Number(e.target.value)})}
                 />
                 <Autocomplete
                     freeSolo
                     options={unitOptions}
+                    sx={{flexGrow: 2, minWidth: 100}}
                     value={newIngredient.unit}
                     onChange={(_e, newValue) => setNewIngredient({...newIngredient, unit: newValue})}
                     renderInput={(params) => <TextField {...params} label="Unit" variant="outlined" fullWidth/>}
                 />
                 <div>
                     <Button sx={{height: "100%"}} color="primary" onClick={() => {
-                        updateRecipe({...recipe, ingredients: [...recipe.ingredients, newIngredient]})
+                        onRecipeChange({...recipe, ingredients: [...recipe.ingredients, newIngredient]})
                         setNewIngredient(initialIngredientState)
                     }} variant="contained">
                         <AddIcon/>
