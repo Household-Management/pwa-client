@@ -108,7 +108,7 @@ const RecipeInformationView = function ({recipe, updateRecipe, fetchPantryIngred
                                   fullWidth
                                   value={newIngredient.name}
                               />}
-                              onChange={(e, value) => setNewIngredient({...newIngredient, name: value})}
+                              onChange={(_e, value) => setNewIngredient({...newIngredient, name: (value !== null ? value : '') as string})}
                 />
 
                 <TextField
