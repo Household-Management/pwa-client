@@ -1,5 +1,7 @@
+export const RumEnabled = import.meta.env.VITE_ENABLE_RUM === 'true'
+
 export function MonitoringAllowed(){
-    return document.cookie.includes("APPLICATION_MONITORING=allowed");
+    return window.awsRum && document.cookie.includes("APPLICATION_MONITORING=allowed");
 }
 
 export function MonitoringNotSet() {
